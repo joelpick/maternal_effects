@@ -1,0 +1,379 @@
+---
+title: Effect of modelling a phenotype as a trait of an individual's mother on estimating $V_A$
+author: "Joel Pick"
+output: html_document
+---
+
+# Introduction
+Maternal effects are common, especially in traits expressed in juveniles (Moore et al 2019).
+ When the traits underlying the maternal effects have a genetic basis (i.e. maternal genetic effects), then the response to selection of these traits is no longer predicted by $V_A$ alone, with the 'total' $V_A$ being calculated as 
+$$
+V_A + 3/2 COV_{A,Mg} + 1/2 V_{Mg}
+$$
+(Willham, 1963;1972).
+<!-- look at willham, kirkpatrick and lande etc - does that equation work with selection gradient to predict phenotypic change -->
+
+Previous work has shown that not accounting for these maternal effects can bias estimates of $V_A$ (Clements et al 2001), including in empirical estimates of wild populations (e.g. Wilson et al 2005 Soay Sheep, Kruuk and Hadfield 2007 Red Deer
+<!-- mcfarlane? -->
+), and so in turn the total evolutionary potential of a trait. We do not know the systematically to what extent estimates of $V_A$ are affected, or how pedigree structure influences this (need to look more at Clements et al 2001).
+
+<!-- has anyone looked specifically at how it cahnges te evolutionary potential -->
+
+<!-- separating out between direct and maternal genetic effects important because maternal effects can cause time-lags etc, as crosses generations -->
+
+<!-- Many studies have shown the presence maternal effects (N from moore et al) but by far the majority of which have not modelled maternal genetic effects. This is likely because of data constraints, and the assumption is maybe that this maternal genetic variation is captured by the maternal environment effect. From the few studies that have estimated maternal genetic effects, it is common for this maternal variation to have a considerable genetic component (check), which is corroborated by studies demonstrating genetic variation in parental care behaviours. Given this, it is important to understand to what extent the maternal genetic effects are captured by maternal environment, or whether they bias the estimation of Va. can also be correlated which will affect this.  furthermore if maternal genetic effects are not detected then total Va will be underestimated.   -->
+
+Sometimes juvenile traits (e.g. body size or survival) are considered to be a trait of the mother (e.g. Morrissey et al 2012 - Red Deer - survival). The consequences of estimating $V_A$ in this manner, and so the impact on estimating total $V_A$ and selection response, have not been explored.
+
+Here we investigate 3 questions:
+
+- How estimation of total $V_A$ is affected by whether/how maternal effects are modelled
+- How estimation of total $V_A$ is affected when juvenile traits are considered a phenotype of the mother
+- How the above are affected by pedigree structure (relatedness and depth)
+
+<!-- in situations where we dont have enough data to fit VMg, does the reduction in Va between models with and without Vme us about the size of Vmg? probably complicated by covariances? -->
+<!-- fits in with lay date MGE stuff? needs MGEs, but probably cant estimate. But can see how h2 changes with m2? -->
+
+<!-- how different is this from clements, meyer etc?
+- full sib versus half sib
+- juvenile survival
+- social versus genetic pedigree - don't think anything has been done (strangely) on how this affects estimation of h2/ maternal effects. In an animal model i would think that this causes maternal effects to be underestimated and h2 to be overestimated, as siblings sharing a mother would be assumed to be genetically similar.
+
+ -->
+
+
+# Methods
+
+## Simulations
+Individual based simulations using squidPed R package. 
+
+Assumptions:
+
+Discrete generations, Random mating, Fixed fecundity (4 offspring per individual), Closed population, Fixed population size, Fixed equal sex ratio. Juvenile survival = 0.5
+
+Two mating systems:
+
+- full sib families (each female mates with one male and each male mates with one female)
+- half sib families (paternity of offspring random assigned across all males)
+
+Two pedigree depths:
+
+- shallow - 2 gens with 1000 individuals per generation
+- deep - 20 gens with 100 individuals per generation
+
+
+<!-- ignoring problems in assigning sires due to EPP - social vs genetic pedigree. Check whether any of these papers have consider the impact on estimating/accounting for maternal effects  -->
+
+
+## Relatedness structure in real pedigrees
+
+How much does relatedness within mothers vary in natural pedigrees? 
+
+Used 17 of 19 pedigrees from Bonnet et al 2022 (through backtransforming inverse A matrices), and two additional pedigrees (Dalmeny Blue tits and Lundy House Sparrows), calculated the average relatedness of offspring within each mother. 
+
+```{r, echo=FALSE}
+rm(list=ls())
+
+data_dir <- "/Users/joelpick/Dropbox/0_fitness/fitness_timing/Data/Intermediate/"
+
+breaks<-seq(0.25,0.8,length.out=56)
+
+meta<-read.csv("/Users/joelpick/Dropbox/0_fitness/fitness_timing/Data/Raw/pops.csv")
+
+# par(mfrow=c(4,5),mar=c(3,3,3,0))
+# for(i in 1:19){
+# 	load(paste0(data_dir,"/mr_",meta$code[i],".Rdat"))
+# 	hist(mr, main=meta$population[i], breaks=breaks, xlab="Average relatedness within mothers", xlim=c(0.25,0.8), col=ifelse(meta$taxa[i]=="bird","yellow","green"))
+# 	abline(v=mean(mr), col="red", lwd=3)
+# 	abline(v=c(0.25,0.5), col="blue", lwd=1)
+# }
+```
+
+Relatedness should vary between 0.25 and 0.5, but can be higher, I think because of inbreeding. 
+
+Broadly the populations can be split into 3 groups - those that have mostly full sibs:
+
+```{r, 'mr_plot1', echo=FALSE, fig.width=10, fig.height=5}
+par(mfrow=c(2,3),mar=c(3,3,3,0))
+for(i in 1:6){
+	load(paste0(data_dir,"/mr_",meta$code[i],".Rdat"))
+	hist(mr, main=meta$population[i], breaks=breaks, xlab="Average relatedness within mothers", xlim=c(0.25,0.8), col=ifelse(meta$taxa[i]=="bird","yellow","green"))
+	abline(v=mean(mr), col="red", lwd=3)
+	abline(v=c(0.25,0.5), col="blue", lwd=1)
+}
+```
+
+The blue tit and collared flycatcher populations are remarkably similar, and have other small peaks, which likely correspond to females switching partners between breeding attempts. The Dalmeny blue tits are more smoothed, likely representing the use of genetic rather than social pedigree. 
+
+The song sparrows have a very strange distribution - perhaps they are super inbred? But this seems quite extreme?!
+
+Then species where there is both a peak at 0.5 and 0.25, and a peak in-between.
+
+```{r, 'mr_plot2', echo=FALSE, fig.width=10, fig.height=5}
+par(mfrow=c(2,2),mar=c(3,3,3,0))
+for(i in 7:10){
+	load(paste0(data_dir,"/mr_",meta$code[i],".Rdat"))
+	hist(mr, main=meta$population[i], breaks=breaks, xlab="Average relatedness within mothers", xlim=c(0.25,0.8), col=ifelse(meta$taxa[i]=="bird","yellow","green"))
+	abline(v=mean(mr), col="red", lwd=3)
+	abline(v=c(0.25,0.5), col="blue", lwd=1)
+}
+```
+
+And then species where there is a clear peak at 0.25, with a bit of variation, indicating that most offspring are half-sibs.
+
+```{r, 'mr_plot3', echo=FALSE, fig.width=10, fig.height=7.5}
+par(mfrow=c(3,3),mar=c(3,3,3,0))
+for(i in 11:19){
+	load(paste0(data_dir,"/mr_",meta$code[i],".Rdat"))
+	hist(mr, main=meta$population[i], breaks=breaks, xlab="Average relatedness within mothers", xlim=c(0.25,0.8), col=ifelse(meta$taxa[i]=="bird","yellow","green"))
+	abline(v=mean(mr), col="red", lwd=3)
+	abline(v=c(0.25,0.5), col="blue", lwd=1)
+}
+```
+
+Overall it seems that simulating full-sib and half-sib structure are reasonable representations of natural populations. Should maybe consider an intermediate structure? Have some level of EPP?
+
+
+
+
+## Simulated scenarios
+A) Direct genetic effects only
+B) Maternal environment only
+C) Maternal genetic only
+D) Direct genetic and maternal environment
+E) Maternal genetic and maternal environment
+F) Direct and maternal genetic, no covariance
+G) Direct and maternal genetic, positive covariance
+H) Direct and maternal genetic, negative covariance
+I) Direct and maternal genetic, no covariance and maternal environment
+J) Direct and maternal genetic, positive covariance and maternal environment
+K) Direct and maternal genetic, negative covariance and maternal environment
+
+Phenotypes simulated across the simulated pedigrees using squidSim package. Phenotypes simulated to have 0 mean and unit variance. Set the total VA to be constant? Or vary across the different scenarios?
+
+## Models 
+
+Assuming trait of juvenile
+
+1. $V_A$  
+2. $V_A$ and $V_{Me}$
+3. $V_A$ and $V_{Mg}$
+4. $V_A$, $V_{Me}$ and $V_{Mg}$
+5. $V_A$, $V_{Me}$, $V_{Mg}$ and $COV_{A,Mg}$
+
+Assuming trait of Mother
+
+6. $V_A$
+7. $V_A$ and $V_{PE}$
+8. $V_A$ of mean offspring measures
+
+
+## Model comparison
+
+Will compare different variance components in the different models, especially $V_A$. Will also compare the estimated total $V_A$ - although some models may be biased in the estimation of specific components, it maybe that they predict response to selection equally well
+
+
+
+# Results
+
+```{r, echo=FALSE}
+
+
+load(file="/Users/joelpick/Dropbox/0_fitness/fitness_timing/Data/Intermediate/gaussian_sims.Rdata")
+
+list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(NULL,c("A","Me","Mg","cov_AMg","E"),NULL))
+
+
+sim_sum <- function(x,models=4){
+	s_array <- list2array(x)[1:models,,]
+	s_means<-apply(s_array,c(1,2),mean)
+	s_ses<-apply(s_array,c(1,2),function(x) sd(x)/sqrt(length(x)) ) 
+	list(mean=s_means,se=s_ses)
+}
+
+plot_model <- function(hs, fs, sim_values, models=4, mod_names){
+	
+	h_sum <- sim_sum(hs, models=models)
+	f_sum <- sim_sum(fs, models=models)
+	n_traits <- 5
+
+	plot(NA,ylim=c(0,1),xlim=c(1,n_traits * models + models-1), xaxt="n", xlab="", ylab="Variance")
+	# axis(1, (1:models)*n_traits+(1:models)-mean(1:n_traits), mod_names)
+	axis(1, 1:(models*n_traits + models), rep(c("Va","Vme","Vmg","COVa,mg","Ve",""),models))
+	axis(3, (1:models)*n_traits+(1:models)-mean(1:n_traits), mod_names)
+
+	# plot(NA,ylim=c(0,1),xlim=c(1,models+1))
+	for(i in 1:models){
+
+		x<- rep(i*n_traits+i,n_traits)+(1:n_traits)-mean(1:n_traits)*2
+
+		# sim values
+		arrows(x-0.5, sim_values,x+0.5, sim_values, code=0, col="grey")
+
+		arrows(x,h_sum$mean[i,]+h_sum$se[i,],x,h_sum$mean[i,]-h_sum$se[i,],code=3, angle=90, col=1:5, length=0.05)
+		points(x,h_sum$mean[i,], pch=19, col=1:5)
+
+		arrows(x,f_sum$mean[i,]+f_sum$se[i,],x,f_sum$mean[i,]-f_sum$se[i,],code=3, angle=90, col=1:5, length=0.05)
+		points(x,f_sum$mean[i,], pch=18, col=1:5)
+	}
+	abline(v=c((1:models)*(n_traits+1)))
+
+	# legend("topleft", c("") col=1:5)
+
+}
+
+
+plot_trait <- function(hs, fs, sim_values, models=5){
+	
+	h_sum <- sim_sum(hs, models=models)
+	f_sum <- sim_sum(fs, models=models)
+	traits <- c("V_A","V_Me","V_Mg","cov_A,Mg","V_E")
+	n_traits <- 5
+
+	plot(NA,ylim=c(0,1),xlim=c(1,n_traits * models + n_traits), xaxt="n")
+	axis(1, (1:n_traits)*models+(1:n_traits)-mean(1:models), traits)
+	for(i in 1:n_traits){
+
+		x<- rep(i*models+i,models)+(1:models)-mean(1:models)*2
+
+		# sim values
+		arrows(x[1]-0.5, sim_values[i],x[models]+0.5, sim_values[i], code=0, col="grey")
+
+		arrows(x,h_sum$mean[,i]+h_sum$se[,i],x,h_sum$mean[,i]-h_sum$se[,i],code=3, angle=90, col=1:models, length=0.1)
+		points(x,h_sum$mean[,i], pch=19, col=1:models)
+
+		arrows(x,f_sum$mean[,i]+f_sum$se[,i],x,f_sum$mean[,i]-f_sum$se[,i],code=3, angle=90, col=1:models, length=0.1)
+		points(x,f_sum$mean[,i], pch=18, col=1:models)
+	}
+	abline(v=c((1:models)*(n_traits+1)))
+
+}
+
+
+```
+
+
+
+
+
+## Scenario A - Direct genetic effects only
+
+Expectations
+- Models 1-4 will all estimate $V_A$ properly
+- Model 5 will estimate 1/4 with half sib and 1/2 with full sib
+- Model 6 will estimate 1/4 with half sib with both, as maternal ID will capture additional 1/4 $V_A$
+- Model 7 will estimate 1/4 with both
+
+
+```{r, 's1-hs-plot', echo=FALSE, fig.width=10}
+
+# plot_trait(s1_hs,s1_fs, c(Va=0.5, Vme=0, Vmg=0.000001, r_amg=0, Ve=0.5), models=4)
+plot_model(s1_hs,s1_fs, c(Va=0.5, Vme=0, Vmg=0.000001, r_amg=0, Ve=0.5), models=4, mod_names=paste0("M",c(1,2,3,5)))
+
+```
+
+
+## Scenario B - Maternal environmental effects only
+
+Expectations
+- Models 1-4 will all estimate $V_A$ properly
+- Model 5 will estimate 1/4 with half sib and 1/2 with full sib
+- Model 6 will estimate 1/4 with half sib with both, as maternal ID will capture additional 1/4 $V_A$
+- Model 7 will estimate 1/4 with both
+
+
+
+
+## Scenario C - Maternal genetic effects only
+
+```{r, 's2-hs-plot', echo=FALSE, fig.width=10}
+# plot_trait(s2_hs,s2_fs, c(Va=0.000001, Vme=0, Vmg=0.5, r_amg=0, Ve=0.5), models=4)
+plot_model(s2_hs,s2_fs, c(Va=0.000001, Vme=0, Vmg=0.5, r_amg=0, Ve=0.5), models=4, mod_names=paste0("M",c(1,2,3,5)))
+```
+
+
+
+## Scenario C - Both Uncorrelated
+```{r, 's3-hs-plot', echo=FALSE, fig.width=10}
+plot_model(s3_hs,s3_fs, c(Va=0.25, Vme=0, Vmg=0.25, r_amg=0, Ve=0.5), models=4,mod_names=paste0("M",c(1,2,3,5)))
+
+```
+
+## Scenario D - Both Positively Correlated
+```{r, 's4-hs-plot', echo=FALSE, fig.width=10}
+plot_model(s4_hs,s4_fs, c(Va=0.2, Vme=0, Vmg=0.2, COV_amg=0.05, Ve=0.5), models=5,mod_names=paste0("M",c(1,2,3,5,6)))
+
+# D <- diag(sqrt(c(0.2,0.2)))
+# 	R <- matrix(c(1,0.25,0.25,1),nrow=2)
+# 	G <- D%*%R%*%D
+
+```
+
+## Scenario E - Both Negatively Correlated
+
+
+## Comparison of 
+```{r,echo=FALSE, fig.width=10}
+	# h_sum <- sim_sum(hs, models=models)
+s1_hs[[1]]
+
+mg_out<-sapply(c(s1_hs,s1_fs,s2_hs,s2_fs,s3_hs,s3_fs,s4_hs,s4_fs),function(x)x[3,])
+mg_out2<-array(mg_out,dim=c(5,100,8))
+
+s_means<-apply(mg_out2,c(1,3),mean)
+s_ses<-apply(mg_out2,c(1,3),function(x) sd(x)/sqrt(length(x)) ) 
+
+plot(NA, ylim=c(0,1), xlim=c(1,ncol(s_means)+1))
+# apply(s_means, 1, points)
+
+for(i in 1:nrow(s_means)){
+	points((1:8)+i/10,s_means[i,], pch=19, col=i)
+}
+abline(v=2:8, col="grey")
+```
+
+## Comparing evolutionary potential
+
+When only direct genetic effects, models assuming trait of mother are highly biased.
+
+When only maternal genetic, all models except the true model are highly biased. Although the correct the genetic variance is correctly estimated when assuming trait of mother, the 
+
+The bias is much smaller when both direct and maternal genetic effects are present. 
+
+Interestingly the models with fill sibs are less bad based on total va 
+
+```{r,echo=FALSE, fig.width=10}
+
+change2zero <- function(x) ifelse(is.na(x), 0, x)
+
+total_va <- function(x, j, m){
+	out<-rep(NA, nrow(x))
+	y <- change2zero(x)
+	out[j]<- y[j,"A"] + 3/2 * y[j,"cov_AMg"] + 1/2 * y[j,"Mg"]
+	out[m]<-  y[m,"Mg"]
+	out
+}
+
+points_tv<-function(sim, j, m){
+	tv <- sapply(sim, function(x) total_va(x,j=j,m=m))
+	s_means<-rowMeans(tv)
+	s_ses<-apply(tv,1,function(x) sd(x)/sqrt(length(x)) )
+	list(means=s_means,ses=s_ses)
+}
+
+# points_tv(s1_hs,j=c(1,2,4,5),m=3)
+
+mg_out<-sapply(c(s1_hs,s1_fs,s2_hs,s2_fs,s3_hs,s3_fs,s4_hs,s4_fs),function(x) total_va(x[1:4,],j=c(1,2,4),m=3) )
+mg_out2<-array(mg_out,dim=c(4,100,8))
+
+s_means<-apply(mg_out2,c(1,3),mean)
+s_ses<-apply(mg_out2,c(1,3),function(x) sd(x)/sqrt(length(x)) ) 
+
+plot(NA, ylim=c(0,1), xlim=c(1,ncol(s_means)+1))
+# apply(s_means, 1, points)
+
+for(i in 1:nrow(s_means)){
+	points((1:8)+i/5,s_means[i,], pch=19, col=i)
+}
+abline(v=2:8, col="grey")
+```

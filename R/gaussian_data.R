@@ -1,15 +1,17 @@
 
 rm(list=ls())
 
-source("/Users/joelpick/github/pedigree_simulations/R/simulate_pedigree.R")
-# devtools::load_all("~/github/squidSim/R")
 
 library(asreml)
 library(parallel)
 
-wd <- 
+wd <- "/Users/joelpick/github/maternal_effects/"
 
+data_wd <- paste0(wd,"Data/Intermediate/")
+
+source(paste0(wd,"R/00_functions.R"))
 source("/Users/joelpick/github/pedigree_simulations/R/simulate_pedigree.R")
+# devtools::load_all("~/github/squidSim/R")
 
  
 n_sims <-100
@@ -76,56 +78,35 @@ scenarios <- rbind(
 
 fs_data <- lapply(fs_peds, function(i){
 	list(
-		# A) Direct genetic effects only
-		a=mge_sim(i[,1:3], Va=0.2, Vmg=0, r_amg=0, Vme=0),
-		# B) Maternal environment only
-		b=mge_sim(i[,1:3], Va=0, Vmg=0, r_amg=0, Vme=0.4),
-		# C) Maternal genetic only
-		c=mge_sim(i[,1:3], Va=0, Vmg=0.4, r_amg=0, Vme=0),
-		# D) Direct genetic and maternal environment
-		d=mge_sim(i[,1:3], Va=0.2, Vmg=0, r_amg=0, Vme=0.4),
-		# E) Maternal genetic and maternal environment
-		e=mge_sim(i[,1:3], Va=0, Vmg=0.4, r_amg=0, Vme=0.2),#####
-		# F) Direct and maternal genetic, no covariance
-		f=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0, Vme=0),
-		# G) Direct and maternal genetic, positive covariance
-		g=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0.5, Vme=0),
-		# H) Direct and maternal genetic, negative covariance
-		h=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=-0.5, Vme=0),
-		# I) Direct and maternal genetic, no covariance and maternal environment
-		i=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0, Vme=0.2),
-		# J) Direct and maternal genetic, positive covariance and maternal environment
-		j=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0.5, Vme=0.2),
-		# K) Direct and maternal genetic, negative covariance and maternal environment
-		k=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=-0.5, Vme=0.2)
+	
+		a=mge_sim(i[,1:3], param=scenarios["a",]),
+		b=mge_sim(i[,1:3], param=scenarios["b",]),
+		c=mge_sim(i[,1:3], param=scenarios["c",]),
+		d=mge_sim(i[,1:3], param=scenarios["d",]),
+		e=mge_sim(i[,1:3], param=scenarios["e",]),
+		f=mge_sim(i[,1:3], param=scenarios["f",]),
+		g=mge_sim(i[,1:3], param=scenarios["g",]),
+		h=mge_sim(i[,1:3], param=scenarios["h",]),
+		i=mge_sim(i[,1:3], param=scenarios["i",]),
+		j=mge_sim(i[,1:3], param=scenarios["j",]),
+		k=mge_sim(i[,1:3], param=scenarios["k",])
 	)
 })
 
 hs_data <- lapply(hs_peds, function(i){
 	list(
-		# A) Direct genetic effects only
-		a=mge_sim(i[,1:3], Va=0.2, Vmg=0, r_amg=0, Vme=0),
-		# B) Maternal environment only
-		b=mge_sim(i[,1:3], Va=0, Vmg=0, r_amg=0, Vme=0.4),
-		# C) Maternal genetic only
-		c=mge_sim(i[,1:3], Va=0, Vmg=0.4, r_amg=0, Vme=0),
-		# D) Direct genetic and maternal environment
-		d=mge_sim(i[,1:3], Va=0.2, Vmg=0, r_amg=0, Vme=0.4),
-		# E) Maternal genetic and maternal environment
-		e=mge_sim(i[,1:3], Va=0, Vmg=0.4, r_amg=0, Vme=0.2),#####
-		# F) Direct and maternal genetic, no covariance
-		f=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0, Vme=0),
-		# G) Direct and maternal genetic, positive covariance
-		g=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0.5, Vme=0),
-		# H) Direct and maternal genetic, negative covariance
-		h=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=-0.5, Vme=0),
-		# I) Direct and maternal genetic, no covariance and maternal environment
-		i=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0, Vme=0.2),
-		# J) Direct and maternal genetic, positive covariance and maternal environment
-		j=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=0.5, Vme=0.2),
-		# K) Direct and maternal genetic, negative covariance and maternal environment
-		k=mge_sim(i[,1:3], Va=0.1, Vmg=0.2, r_amg=-0.5, Vme=0.2)
+		a=mge_sim(i[,1:3], param=scenarios["a",]),
+		b=mge_sim(i[,1:3], param=scenarios["b",]),
+		c=mge_sim(i[,1:3], param=scenarios["c",]),
+		d=mge_sim(i[,1:3], param=scenarios["d",]),
+		e=mge_sim(i[,1:3], param=scenarios["e",]),
+		f=mge_sim(i[,1:3], param=scenarios["f",]),
+		g=mge_sim(i[,1:3], param=scenarios["g",]),
+		h=mge_sim(i[,1:3], param=scenarios["h",]),
+		i=mge_sim(i[,1:3], param=scenarios["i",]),
+		j=mge_sim(i[,1:3], param=scenarios["j",]),
+		k=mge_sim(i[,1:3], param=scenarios["k",])
 	)
 })
 
-save(scenarios,fs_peds,hs_peds,fs_data,hs_data, file="/Users/joelpick/Dropbox/0_fitness/fitness_timing/Data/Intermediate/gaussian_data.Rdata")
+save(scenarios,fs_peds,hs_peds,fs_data,hs_data, file=paste0(data_wd,"gaussian_data.Rdata"))

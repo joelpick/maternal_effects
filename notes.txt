@@ -44,16 +44,15 @@ modelling maternal environment and not maternal genetic will inflate h2
 (clement et al, kruuk and hadfield)
 
 
-to do - sort out asreml
+to do 
+- sort out asreml
+- does thiese half-sib results hold in deer/blue tits
+- what does paternal genetic effects do
+	- does it go into Va and Vme?
 
-
+Questions
 - whata happens to Va
 - whats the bias in the total Va
 - are tehir biases in the direct genetic maternal covarainces, depending on what is fitted
 - how things are changed when treating as a trait of the mother. 
 
-
-- what does paternal genetic effects do
-	- does it go into Va and Vme?
-
-- does thiese half-sib results hold in deer/blue tits

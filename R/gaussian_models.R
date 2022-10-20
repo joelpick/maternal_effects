@@ -27,9 +27,17 @@ model7_hs <- model_func(m7_func,hs_peds,hs_data)
 model8_fs <- model_func(m8_func,fs_peds,fs_data)
 model8_hs <- model_func(m8_func,hs_peds,hs_data)
 
+model1_fhs <- model_func(m1_func,fhs_peds,fhs_data)
+model2_fhs <- model_func(m2_func,fhs_peds,fhs_data)
+
+model1_fhs10 <- model_func(m1_func,fhs_peds10,fhs_data10)
+model2_fhs10 <- model_func(m2_func,fhs_peds10,fhs_data10)
+
+
 save(
-	model1_hs,model1_fs,
-	model2_hs,model2_fs,
+	scenarios,
+	model1_hs,model1_fs,model1_fhs,model1_fhs10,
+	model2_hs,model2_fs,model2_fhs,model2_fhs10,
 	model3_hs,model3_fs,
 	model4_hs,model4_fs, 
 	model5_hs, model5_fs,

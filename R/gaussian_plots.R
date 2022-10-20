@@ -6,8 +6,10 @@ wd <- "/Users/joelpick/github/maternal_effects/"
 data_wd <- paste0(wd,"Data/Intermediate/")
 
 source(paste0(wd,"R/00_functions.R"))
-load(paste0(data_wd,"gaussian_data.Rdata"))
+# load(paste0(data_wd,"gaussian_data.Rdata"))
 load(paste0(data_wd,"gaussian_sims.Rdata"))
+
+
 
 comp_names <- c("A","Me","Mg","cov_AMg","E")
 model_names <- c(
@@ -47,6 +49,21 @@ for(i in 1:8){
 	}
 }
 
+for(i in 1:2){
+	for(j in c("fhs","fhs10")){
+		dat <- get(paste0("model",i,"_",j))
+		assign(paste0("m",i,"_",j),apply(list2array(dat), c(1,2), mean, na.rm=TRUE))
+	}
+}
+
+load(paste0(data_wd,"real_sims.Rdata"))
+
+for(i in 1:2){
+	for(j in c("bt_socialD","bt_social","bt","rd","ss")){
+		dat <- get(paste0("model",i,"_",j))
+		assign(paste0("m",i,"_",j),apply(list2array(dat), c(1,2), mean, na.rm=TRUE))
+	}
+}
 
 {
 par(mfrow=c(2,1), mar=c(0,4,4,0))
@@ -84,7 +101,64 @@ par( mar=c(4,4,0,0))
 }
 
 
-### stacked barplots
+### stacked barplots real
+
+{
+
+cols <- inferno(6)[2:6]
+order <- c(4,1,3,2,5)
+	all_mod<-lapply(c(1,2,4,3,5,6,9,7,8,10,11), function(i){
+		rbind(
+			scenarios2[i,order],
+			m1_fs[i,order],m1_hs[i,order],m1_bt_socialD[i,order],m1_bt_social[i,order],m1_bt[i,order],m1_rd[i,order],m1_ss[i,order],
+			m2_fs[i,order],m2_hs[i,order],m2_bt_socialD[i,order],m2_bt_social[i,order],m2_bt[i,order],m2_rd[i,order],m2_ss[i,order]
+		)	
+	})
+
+	layout(matrix(c(1,2,3,12,4:11),byrow=TRUE,ncol=4))
+	par(mar=c(3,4,1,1))
+	for(i in 1:11){
+		bp<-barplot(t(change2zero(all_mod[[i]])),space=c(0,1,0,0.3,0,0,0,0,0.5,0,0.3,0,0,0,0), col=cols, ylim=c(-0.1,1.2))
+		axis(1,bp[c(1,1:8*2)] +c(0,rep(0.5,8)),c("sim",1:8))
+	}
+	
+
+	plot(NULL,xaxt="n",yaxt="n",ylim=c(-1,1),xlim=c(-1,1), bty="n", ylab="", xlab="")
+	legend("left", comp_names[order], pch=19, col=cols, bty="n")
+	legend("right", model_names, pch=as.character(1:8), bty="n")
+}
+
+
+
+
+{
+
+cols <- inferno(6)[2:6]
+order <- c(4,1,3,2,5)
+	all_mod<-lapply(c(1,2,4,3,5,6,9,7,8,10,11), function(i){
+		rbind(
+			scenarios2[i,order],
+			m1_fs[i,order],m1_hs[i,order],m1_fhs[i,order],m1_fhs10[i,order],
+			m2_fs[i,order],m2_hs[i,order],m2_fhs[i,order],m2_fhs10[i,order]
+		)	
+	})
+
+	layout(matrix(c(1,2,3,12,4:11),byrow=TRUE,ncol=4))
+	par(mar=c(3,4,1,1))
+	for(i in 1:11){
+		bp<-barplot(t(change2zero(all_mod[[i]])),space=c(0,1,0,0,0,0.3,0,0,0), col=cols, ylim=c(-0.1,1.2))
+		axis(1,bp,c("sim",rep(c())))
+	}
+	
+
+	plot(NULL,xaxt="n",yaxt="n",ylim=c(-1,1),xlim=c(-1,1), bty="n", ylab="", xlab="")
+	legend("left", comp_names[order], pch=19, col=cols, bty="n")
+	legend("right", model_names, pch=as.character(1:8), bty="n")
+}
+
+
+
+
 
 {
 
@@ -101,8 +175,8 @@ order <- c(4,1,3,2,5)
 	layout(matrix(c(1,2,3,12,4:11),byrow=TRUE,ncol=4))
 	par(mar=c(3,4,1,1))
 	for(i in 1:11){
-		bp<-barplot(t(change2zero(all_mod[[i]])),space=c(0,1,0,rep(c(0.3,0),(nrow(all_mod[[i]])-3)/2)), col=cols, ylim=c(-0.1,1.2))
-		axis(1,bp[c(1,1:8*2)] +c(0,rep(0.5,8)),c("sim",1:8))
+		bp<-barplot(t(change2zero(all_mod[[i]])),space=c(0,1,0,0.3,0), col=cols, ylim=c(-0.1,1.2))
+		axis(1,bp,c("sim",rep(c("fs","hs"),2)))
 	}
 	
 
@@ -110,6 +184,12 @@ order <- c(4,1,3,2,5)
 	legend("left", comp_names[order], pch=19, col=cols, bty="n")
 	legend("right", model_names, pch=as.character(1:8), bty="n")
 }
+
+
+
+
+
+
 
 ### stacked barplots
 

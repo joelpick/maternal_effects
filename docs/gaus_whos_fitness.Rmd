@@ -5,23 +5,66 @@ output: html_document
 ---
 
 # Introduction
-Maternal effects are common, especially in traits expressed in juveniles (Moore et al 2019).
- When the traits underlying the maternal effects have a genetic basis (i.e. maternal genetic effects), then the response to selection of these traits is no longer predicted by $V_A$ alone, with the 'total' $V_A$ being calculated as 
+
+Mothers (and more generally parents) can have strong effects on the phenotype of their offspring, above the effect of their shared genes. These effects of the maternal provided environment are known as maternal effects. In quantitative genetics, maternal has a specific definition, being the consistent effect of a mother across all her offspring, representing the summation of maternal care 
+
+Maternal effects are ubiquitous (Moore et al 2019),  especially in traits expressed in juveniles and occur in a wide range of taxa being mediated by maternal expenditure in seeds, eggs and postnatal care.
+
+From an evolutionary perspective maternal effects can impact the evolutionary potential of traits. 
+Generally we think of the response of a trait to selection ($R$) to be dependent on the additive genetic variation ($V_A$) in that trait and the strength of selection, summarised by the breeders equation () or gradient equation ().
+Maternal effects have often been seen as a nuisance parameter in the estimation of selection response, as not accounting for these shared effects across siblings can dramatically inflate estimates of $V_a$, and so lead to the overestimation of the evolutionary potential of a trait. 
+
+However, when the traits underlying the maternal effects have a genetic basis (i.e. maternal *genetic* effects), then the response to selection of these traits is no longer predicted by additive genetic variance ($V_A$) alone, with the 'total' $V_A$ being calculated as 
 $$
 V_A + 3/2 COV_{A,Mg} + 1/2 V_{Mg}
 $$
 (Willham, 1963;1972).
-<!-- look at willham, kirkpatrick and lande etc - does that equation work with selection gradient to predict phenotypic change -->
+<!-- assuming no selection on parental performance (cheveraud/hadfield) -->
 
-Previous work has shown that not accounting for these maternal effects can bias estimates of $V_A$ (Clements et al 2001), including in empirical estimates of wild populations (e.g. Wilson et al 2005 Soay Sheep, Kruuk and Hadfield 2007 Red Deer
+ From the few studies that have estimated maternal genetic effects, it is common for this maternal variation to have a considerable genetic component (check), which is consistent with studies demonstrating genetic variation in parental care behaviours (REFS). Although the evidence from wild populations if limited (REFS), studies from domestic mammals shows that direct and maternal genetic effects likely covary (Wilson and Reale), although the size of this correlation is probably low. 
+Not accounting for these maternal genetic effects, and the potential covariance between direct and maternal genetic effects can there for underestimate the evolutionary potential of a trait.
+
+Although many studies have estimated maternal effects (moore et al 2019 collated 770 estimates from 116 studies), by far the majority of these have not modelled maternal genetic effects (only 2.2% of moore et als estimates). Typically maternal effects are estimated by including maternal ID as random term in an animal model. This disparity is likely due to two causes: first  due to data constraints - estimating maternal genetic effects requires more data, over more generations xxx
+Second, we believe there is a common assumption that any maternal genetic variation is captured by these maternal ID effects, in the same way that modelling individual ID captures permanent environment and additive genetic effects.
+
+However, previous a simulation studies (Clements et al 2001) have shown that not accounting for these maternal genetic effects can upwardly bias estimates of $V_A$, which has been corroborated in empirical studies from wild populations (e.g. Wilson et al 2005 Soay Sheep, Kruuk and Hadfield 2007 Red Deer
 <!-- mcfarlane? -->
-), and so in turn the total evolutionary potential of a trait. We do not know the systematically to what extent estimates of $V_A$ are affected, or how pedigree structure influences this (need to look more at Clements et al 2001).
+).
+
+
+We do not know the systematically to what extent estimates of $V_A$ are affected, or how pedigree structure influences this (need to look more at Clements et al 2001).
+The previous simulation work that looked at this is very animal breeding based, and focusses on breeding designs that are not very realistic to natural populations.
+
+Given this, it is important to understand to what extent the maternal genetic effects are captured by maternal environment, or whether they bias the estimation of Va. can also be correlated which will affect this.  furthermore if maternal genetic effects are not detected then total Va will be underestimated. 
+
+
+As we don't have a good grasp on what factors influence this bias, and so how prevalent it would be in pedigrees from wild populations, it is difficult to assess how problematic it is for estimates of Va and evolutionary potential. 
+
+For example moore et al estaimte the mean Va as ... and mean Vm as ... 
+Models kruuk and wilson showed that the inflation of Va and underestaimtion of total Vm, but equally the underesitmation of total h2 (wilson)
+
+
+
+
+An added twist is that no study has quantified at how these differences affect quantifying evolutionary potential. When assuming Vm is all environmental, may substantially underestimate evolutionary potential by considering Va alone.
+On the other hand, any upward bias in Va may compensate this underestimation.
+<!-- Several consequences for estimating evolutionary potential - overesimating Va, not including Vmg,  -->
+
+ and so in turn the total evolutionary potential of a trait. 
+
+
+kruuk and hadfield - massive effect of pedigree depth and immigration of how much this affects how well common environment effects will be disentangled
+
+relatedness structure - meyer
+
+look at two very different 'representative systems' - deer and tits. Low immigration, high polygamy, low number of offspring versus  high immigration, low polgamy and large number of offspring. 
+
 
 <!-- has anyone looked specifically at how it cahnges te evolutionary potential -->
 
 <!-- separating out between direct and maternal genetic effects important because maternal effects can cause time-lags etc, as crosses generations -->
 
-<!-- Many studies have shown the presence maternal effects (N from moore et al) but by far the majority of which have not modelled maternal genetic effects. This is likely because of data constraints, and the assumption is maybe that this maternal genetic variation is captured by the maternal environment effect. From the few studies that have estimated maternal genetic effects, it is common for this maternal variation to have a considerable genetic component (check), which is corroborated by studies demonstrating genetic variation in parental care behaviours. Given this, it is important to understand to what extent the maternal genetic effects are captured by maternal environment, or whether they bias the estimation of Va. can also be correlated which will affect this.  furthermore if maternal genetic effects are not detected then total Va will be underestimated.   -->
+
 
 Sometimes juvenile traits (e.g. body size or survival) are considered to be a trait of the mother (e.g. Morrissey et al 2012 - Red Deer - survival). The consequences of estimating $V_A$ in this manner, and so the impact on estimating total $V_A$ and selection response, have not been explored.
 

@@ -1,4 +1,51 @@
 
+#####
+#--- relatedness functions
+####
+
+maternal_relatedness_ped <- function(ped){ 
+	ped<-na.omit(ped) ## might depend on whether unknown males paternity likely means unknown male - in which case excluding will increase full-sib
+	c(sapply(split(ped,ped$dam), function(x){
+		if(nrow(x)==1){
+		 NULL
+		}else{
+			fs <- NULL
+			for(i in 1:(nrow(x)-1)){
+				fs <- c(fs, x$sire[i] == x$sire[(i+1):nrow(x)])
+			}
+			mean(0.25 + fs*0.25)
+		}
+	}), recursive=TRUE)
+}
+
+## if pedigree is big, will take a long time/crash
+maternal_relatedness_ainv <- function(ainv,dat){ 
+	# ped<-na.omit(ped) ## might depend on whether unknown males paternity likely means unknown male - in which case excluding will increase full-sib
+	A <- Matrix::solve(ainv)
+	# A <- chol2inv(chol(ainv))
+	colnames(A) <- rownames(A) <- rownames(ainv)
+	c(sapply(split(dat,dat$dam), function(x){
+		if(nrow(x)==1){
+		 NULL
+		}else{
+			mean(A[as.character(x$id),as.character(x$id)][lower.tri(A[x$id,x$id])])
+		}
+	}), recursive=TRUE)
+}
+
+maternal_relatedness_A <- function(A,dat){ 
+	c(parallel::mclapply(split(dat,dat$dam), function(x){
+		if(nrow(x)==1){
+		 NULL
+		}else{
+			sub_A <-A[as.character(x$id),as.character(x$id)]
+			mean(sub_A[which(lower.tri(sub_A))])
+		}
+	},mc.cores=8), recursive=TRUE)
+}
+
+
+
 rbv0 <- function(pedigree, G){
 	X <- matrix(0, nrow=nrow(pedigree), ncol=nrow(G))
 	index <- which(diag(G)!=0)
@@ -12,7 +59,7 @@ rbv0 <- function(pedigree, G){
 
  mge_sim <- function(ped,param, Vp=1){
  	
- 	names(ped) <- c("animal","dam","sire")
+ 	colnames(ped) <- c("animal","dam","sire")
 
  	Va <- param["Va"]
  	Vmg <- param["Vmg"]
@@ -197,14 +244,14 @@ m8_func <- function(data){
 		E = m8["units!R",1])
 }	
 
-
 model_func <- function(FUN,peds,data){
 	lapply(1:length(data), function(i){
-		if(is.list(peds)) { 
+		if(is.list(peds)&!is.data.frame(peds)) { 
 			ped <- peds[[i]] 
 		}else{
 			ped <- peds
 		}
+		colnames(ped) <- c("animal","dam","sire")
 		assign("ped.ainv", asreml::ainverse(ped), envir = .GlobalEnv) 
 		out <- do.call(rbind,parallel::mclapply(data[[i]], FUN, mc.cores=6))
 		rm("ped.ainv", envir = .GlobalEnv)

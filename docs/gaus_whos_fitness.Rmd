@@ -20,13 +20,14 @@ $$
 <!-- assuming no selection on parental performance (cheveraud/hadfield) -->
  From the few studies that have estimated maternal genetic effects, it is common for this maternal variation to have a considerable genetic component (Table 1), which is consistent with studies demonstrating genetic variation in parental care behaviours (REFS). Studies from livestock also show that direct and maternal genetic effects likely negatively covary (Wilson and Reale), although this correlation is probably small. Consistent with this, although estimated with considerable uncertainty, the point estimates these covariances in the wild are, with one exception, all negative. Not incorporating maternal genetic effects and any direct-maternal genetic covariance will therefore further bias the estimation of the evolutionary potential of a trait.
 
-Although many studies have estimated maternal effects (moore et al 2019 collated 770 estimates from 116 studies), by far the majority of these have not modelled maternal *genetic* effects (only 2.2% of moore et als estimates). Typically maternal effects are estimated by including maternal ID as random term in an animal model (maternal environment effect). This disparity is likely due to two causes: first due to data constraints - estimating maternal genetic effects requires substantially more data, over more generations. Second, we believe there is a common assumption that any maternal genetic variation is captured by these maternal environment effects, in the same way that modelling individual ID captures permanent environment and additive genetic effects (for example Moore et al 2019 pool $V_Me$ and $V_Mg$ to get a total measure of maternal variance to compare with models that modelled only $V_Me$). However, a previous simulation study (Clements et al 2001) showed that not accounting for these maternal genetic effects can upwardly bias estimates of $V_A$ even when $V_Me$ is modelled, which has been corroborated in empirical studies from wild populations (e.g. Wilson et al 2005 Soay Sheep, Kruuk and Hadfield 2007 Red Deer
-<!-- mcfarlane? -->
-).
+Although many studies have estimated maternal effects (moore et al 2019 collated 770 estimates from 116 studies), by far the majority of these have not modelled maternal *genetic* effects (only 2.2% of moore et als estimates). Typically maternal effects are estimated by including maternal ID as random term in an animal model (maternal environment effect). This disparity is likely due to three causes: 
+first due to data constraints - estimating maternal genetic effects requires substantially more data, over more generations. 
+Second, in taxa with biparental care, maternal variance per se if often not partitioned out, rather a brood variance, which included maternal and paternal contributions. 
+Third, we believe there is a common assumption that any maternal genetic variation is captured by these maternal environment effects, in the same way that modelling individual ID captures permanent environment and additive genetic effects (for example Moore et al 2019 pool $V_Me$ and $V_Mg$ to get a total measure of maternal variance to compare with models that modelled only $V_Me$). 
+However, a previous simulation study (Clements et al 2001) showed that not accounting for these maternal genetic effects can upwardly bias estimates of $V_A$ even when $V_Me$ is modelled, which has been corroborated in empirical studies from wild populations (table 1).
 
-
-We do not know the systematically to what extent estimates of $V_A$ are affected, or how pedigree structure influences this (need to look more at Clements et al 2001).
-The previous simulation work that looked at this is very animal breeding based, and focusses on breeding designs that are not very realistic to natural populations.
+Although this effect has been noted before, we do not know systematically to what extent estimates of $V_A$ are affected, or how pedigree structure influences this.
+The previous simulation work (Clements et al) is very animal breeding based, and focusses on breeding designs that are not very realistic to natural populations.
 
 Given this, it is important to understand to what extent the maternal genetic effects are captured by maternal environment, or whether they bias the estimation of Va. can also be correlated which will affect this.  furthermore if maternal genetic effects are not detected then total Va will be underestimated. 
 
@@ -34,7 +35,7 @@ Given this, it is important to understand to what extent the maternal genetic ef
 As we don't have a good grasp on what factors influence this bias, and so how prevalent it would be in pedigrees from wild populations, it is difficult to assess how problematic it is for estimates of Va and evolutionary potential. 
 
 For example moore et al estaimte the mean Va as ... and mean Vm as ... 
-Models kruuk and wilson showed that the inflation of Va and underestaimtion of total Vm, but equally the underesitmation of total h2 (wilson)
+Models kruuk and wilson showed that the inflation of Va and underestimation of total Vm, but equally the underestimation of total h2 (wilson)
 
 
 
@@ -50,7 +51,7 @@ kruuk and hadfield - massive effect of pedigree depth and immigration of how muc
 
 relatedness structure - meyer
 
-look at two very different 'representative systems' - deer and tits. Low immigration, high polygamy, low number of offspring versus  high immigration, low polgamy and large number of offspring. 
+look at two very different 'representative systems' - deer and tits. Low immigration (male baised?), high polygamy, low number of offspring versus  high female biased immigration, low polygamy and large number of offspring. 
 
 
 <!-- has anyone looked specifically at how it cahnges te evolutionary potential -->
@@ -76,6 +77,18 @@ Here we investigate 3 questions:
 - social versus genetic pedigree - don't think anything has been done (strangely) on how this affects estimation of h2/ maternal effects. In an animal model i would think that this causes maternal effects to be underestimated and h2 to be overestimated, as siblings sharing a mother would be assumed to be genetically similar.
 
  -->
+
+One reason that exclusively maternal genetic  mammal and plants  is that in many bird species the father also provides post-natal care. 
+Captured often as nest effects
+What impact to paternal effects have
+Less confounding between father and genetic effects in genetic pedigrees
+
+
+Previous work on the impact of social versus genetic pedigrees has focussed on the estimation of of h2 alone (but see garant paper of common environment). Social versus genetic pedigrees will have a clear impact on the estimation of parental effects, as genetic and social relationships become confounded, specifically the social and genetic father. 
+more full sibs, so resemblence between sibs seems genetic not maternal (think this is right)
+but also resemble their mother more than their father?
+maybe it depends on the mate switching between broods? within a brood they will 
+maybe it depnds on whther the info is coming from parent offspring or sibs - if parent offspring, then it might inflate maternal effects as the resemblance to their father decreases, but resemblence within a mother increases?? If info from sibs, then increases Va??
 
 
 # Methods

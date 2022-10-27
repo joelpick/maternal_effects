@@ -10,7 +10,7 @@ wd <- "/Users/joelpick/github/maternal_effects/"
 data_wd <- paste0(wd,"Data/Intermediate/")
 
 source(paste0(wd,"R/00_functions.R"))
-source("/Users/joelpick/github/pedigree_simulations/R/simulate_pedigree.R")
+source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 # devtools::load_all("~/github/squidSim/R")
 
 #  ped <-	simulate_pedigree(

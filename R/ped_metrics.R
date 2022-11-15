@@ -1,14 +1,51 @@
 rm(list=ls())
 wd <- "/Users/joelpick/github/maternal_effects/"
 
+source(paste0(wd,"R/extract_cousins.R"))
 # devtools::install_github("cran/pedantics")
 library(pedantics)
 
 # Difference between blue tit and red deer pedigree
 
 ped_bt <-  MasterBayes::insertPed(read.csv(paste0(wd,"Data/Raw/ped_BT.csv"))[,1:3])
+ped_RD<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv"))
+ped_SSH<-read.csv(paste0(wd,"Data/Raw/ped_SSH.csv"))
+ped_SFW<-read.csv(paste0(wd,"Data/Raw/ped_SFW.csv"))
+ped_SV<-read.csv(paste0(wd,"Data/Raw/ped_SV.csv"))
+
+
+
+bt_prop <- prop_stat(ped_bt)
+rd_prop <- prop_stat(ped_RD)
+ssh_prop <- prop_stat(ped_SSH)
+sfw_prop <- prop_stat(ped_SFW)
+sv_prop <- prop_stat(ped_SV)
+
+sum(bt_prop)
+sum(rd_prop)
+sum(ssh_prop)
+sum(sfw_prop)
+sum(sv_prop)
+
+
+cbind(cousins(ped_bt),
+cousins(ped_RD),
+cousins(ped_SFW),
+cousins(ped_SV))
+
+round(cbind(bt_prop,
+rd_prop,
+sfw_prop,
+sv_prop),4)
+
+barplot(rbind(bt_prop,
+rd_prop,
+sfw_prop,
+sv_prop), beside=TRUE)
+
 
 bt<-pedigreeStats(ped_bt, includeA=FALSE,lowMem=TRUE,graphicalReport=FALSE)
+
 
 pedStatSummary(bt)
 # maternities is mother-offspring links, but not unique mothers

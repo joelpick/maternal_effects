@@ -113,10 +113,10 @@ sapply(1:19, function(i){
 
 
 ## compare maternal relatedness pedigree to ainv 
-ped_RD<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv")
-ped_SSH<-read.csv(paste0(wd,"Data/Raw/ped_SSH.csv")
-ped_SFW<-read.csv(paste0(wd,"Data/Raw/ped_SFW.csv")
-ped_SV<-read.csv(paste0(wd,"Data/Raw/ped_SV.csv")
+ped_RD<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv"))
+ped_SSH<-read.csv(paste0(wd,"Data/Raw/ped_SSH.csv"))
+ped_SFW<-read.csv(paste0(wd,"Data/Raw/ped_SFW.csv"))
+ped_SV<-read.csv(paste0(wd,"Data/Raw/ped_SV.csv"))
 
 
 {

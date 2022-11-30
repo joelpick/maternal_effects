@@ -143,50 +143,76 @@ cousins <- function(ped, phenotyped=NULL){
 }
 
 
-cousins2 <- function(ped){	ped$MGM <- ped[match(ped[,2],ped[,1]),2]
+
+rbind_notAnnoying <- function(..., names=NULL){
+  x <- list(...)
+  y <- lapply(x, function(y){
+    names(y) <- if(is.null(names)) names(x[[1]]) else names
+    return(y)  
+  } )
+  do.call(rbind,y)
+}
+
+## function to make products of all combinations and sum them 
+combo_prod <- function(x) if(length(x)>1){sum( combn(x, m =2)[1, ] * combn(x, m =2)[2, ])}else{0}
+
+n_cousin <- function(p,gp,ped){
+  f1 <- formula(paste("animal~",p,"+",gp))
+  f2 <- formula(paste("animal~",gp))
+  d1 <- aggregate(f1, ped,length)
+	sum(aggregate(f2,d1,combo_prod)$animal)
+}
+
+cousins2 <- function(ped, phenotyped){	
+	colnames(ped) <- c("animal","dam","sire")
+
+	## if dont specify phenotyped, then assume all phenotyped
+	if(is.null(phenotyped)) phenotyped <- ped[,1]
+
+  ## grandparents
+	ped$MGM <- ped[match(ped[,2],ped[,1]),2]
 	ped$MGF <- ped[match(ped[,2],ped[,1]),3]
 	ped$PGM <- ped[match(ped[,3],ped[,1]),2]
 	ped$PGF <- ped[match(ped[,3],ped[,1]),3]
 
+	## grandparent pairs
 	ped$MGP <- paste(ped$MGM,ped$MGF)
 	ped$MGP<-ifelse(ped$MGP== "NA NA", NA, ped$MGP)
 	ped$PGP <- paste(ped$PGM,ped$PGF)
 	ped$PGP<-ifelse(ped$PGP== "NA NA", NA, ped$PGP)
 
+	ped2 <- subset(ped,animal %in% phenotyped)	
 
-cousin_FS_FF <- n_cousin(p="dam", gp="MGP", ped=ped)
-cousin_FS_MM <- n_cousin(p="sire", gp="PGP", ped=ped)
+	## stack maternal and paternal grandparents, to get allows for all cousins relationships, not just through mothers or father
+	GM <- rbind_notAnnoying(ped2[,c("animal","dam","MGM","MGF","MGP")], ped2[,c("animal","sire","PGM","PGF","PGP")])
 
-# cousin_MS_FF <- n_cousin(p="dam", gp="MGM", ped=ped)
-# cousin_MHS_FF <- cousin_MS_FF - cousin_FS_FF
+	## group by maternal grandparents
+	mat <- aggregate(animal~dam+MGM+MGF+MGP, ped2,length)
+	cousin_FS_FF <- sum(aggregate(animal~MGP,mat,combo_prod)$animal)
+	cousin_MS_FF <- sum(aggregate(animal~MGM,mat,combo_prod)$animal)
+	cousin_PS_FF <- sum(aggregate(animal~MGF,mat,combo_prod)$animal)
+  cousin_MHS_FF <- cousin_MS_FF - cousin_FS_FF
+  cousin_PHS_FF <- cousin_PS_FF - cousin_FS_FF
 
-# cousin_PS_FF <- n_cousin(p="dam", gp="MGF", ped=ped)
-# cousin_PHS_FF <- cousin_PS_FF - cousin_FS_FF
-# cousin_MS_MM <- n_cousin(p="sire", gp="PGM", ped=ped)
-# cousin_MHS_MM <- cousin_MS_MM - cousin_FS_MM
+	## group by paternal grandparents
+  pat <- aggregate(animal~sire+PGM+PGF+PGP, ped2,length)
+	cousin_FS_MM <- sum(aggregate(animal~PGP,pat,combo_prod)$animal)
+	cousin_MS_MM <- sum(aggregate(animal~PGM,pat,combo_prod)$animal)
+	cousin_PS_MM <- sum(aggregate(animal~PGF,pat,combo_prod)$animal)
+  cousin_MHS_MM <- cousin_MS_MM - cousin_FS_MM
+  cousin_PHS_MM <- cousin_PS_MM - cousin_FS_MM
 
-# cousin_PS_MM <- n_cousin(p="sire", gp="PGF", ped=ped)
-# cousin_PHS_MM <- cousin_PS_MM - cousin_FS_MM
+  ## group by all grandparents
+  mp <- aggregate(animal~dam+MGM+MGF+MGP, GM,length)
+	cousin_FS <- sum(aggregate(animal~MGP,mp,combo_prod)$animal)
+	cousin_MS <- sum(aggregate(animal~MGM,mp,combo_prod)$animal)
+	cousin_PS <- sum(aggregate(animal~MGF,mp,combo_prod)$animal)
 
-cousin_MHS_FF <- n_cousin(p="dam", gp="MGM", ped=ped) - cousin_FS_FF
-cousin_PHS_FF <- n_cousin(p="dam", gp="MGF", ped=ped) - cousin_FS_FF
-cousin_MHS_MM <- n_cousin(p="sire", gp="PGM", ped=ped) - cousin_FS_MM
-cousin_PHS_MM <- n_cousin(p="sire", gp="PGF", ped=ped) - cousin_FS_MM
+	cousin_FS_FM <- cousin_FS-cousin_FS_FF-cousin_FS_MM
+	cousin_MHS_FM <- cousin_MS-cousin_FS-cousin_MHS_FF-cousin_MHS_MM
+	cousin_PHS_FM <- cousin_PS-cousin_FS-cousin_PHS_FF-cousin_PHS_MM
 
-
-GM <- rbind_notAnnoying(ped[,c("animal","dam","MGM","MGF","MGP")], ped[,c("animal","sire","PGM","PGF","PGP")])
-
-cousin_FS <- n_cousin(p="dam", gp="MGP", ped=GM)
-cousin_FS_FM <- cousin_FS-cousin_FS_FF-cousin_FS_MM
-
-cousin_MS <- n_cousin(p="dam", gp="MGM", ped=GM)
-cousin_MHS_FM <- cousin_MS-cousin_FS-cousin_MHS_FF-cousin_MHS_MM
-
-cousin_PS <- n_cousin(p="dam", gp="MGF", ped=GM)
-cousin_PHS_FM <- cousin_PS-cousin_FS-cousin_PHS_FF-cousin_PHS_MM
-
-
-c(cousin_FS_FF=cousin_FS_FF,cousin_FS_FM=cousin_FS_FM,cousin_FS_MM=cousin_FS_MM,cousin_MHS_FF=cousin_MHS_FF,cousin_MHS_FM=cousin_MHS_FM,cousin_MHS_MM=cousin_MHS_MM,cousin_PHS_FF=cousin_PHS_FF,cousin_PHS_FM=cousin_PHS_FM,cousin_PHS_MM=cousin_PHS_MM)
+	c(cousin_FS_FF=cousin_FS_FF,cousin_FS_FM=cousin_FS_FM,cousin_FS_MM=cousin_FS_MM,cousin_MHS_FF=cousin_MHS_FF,cousin_MHS_FM=cousin_MHS_FM,cousin_MHS_MM=cousin_MHS_MM,cousin_PHS_FF=cousin_PHS_FF,cousin_PHS_FM=cousin_PHS_FM,cousin_PHS_MM=cousin_PHS_MM)
 }
 
 
@@ -313,9 +339,9 @@ au <- function(ped, phenotyped=NULL){
 
 gp <- function(ped, phenotyped=NULL){
 	#ped=ped_bt
+	colnames(ped) <- c("animal","dam","sire")
 
 ## more efficient to just work out everyones maternal and paternal grand parents and then sum the non-NAs?
-## need to do something with phenotyped
 
 	if(is.null(phenotyped)) phenotyped <- ped[,1]
 
@@ -325,77 +351,8 @@ gp <- function(ped, phenotyped=NULL){
 	ped$PGF <- ped[match(ped[,3],ped[,1]),3]
 
 	apply(ped[ped[,1] %in% phenotyped,c("dam","sire","MGM","MGF","PGM","PGF")],2,function(x) sum(x%in% phenotyped) )
-
-
-# ped[match(ped[,2],ped[,1]),2]
-
-	# colnames(ped) <- c("animal","dam","sire")
-
-	# ## if dont specify phenotyped, then assume all phenotyped
-	# if(is.null(phenotyped)) phenotyped <- ped[,1]
-
-	# # x
-
-	# ## all dam and sire	families
-	# d_s<-split(ped,ped$dam)
-	# s_s<-split(ped,ped$sire)
-
-	# d_s_P<- d_s[names(d_s) %in% phenotyped] 
-	# s_s_P<- s_s[names(s_s) %in% phenotyped] 
-
-	# # x<-d_s[[17]]
-	# out_d<-do.call(rbind,lapply(d_s_P, function(x){
-	# 		## work out which offspring are themselves parents
-	# 	daughters <- x$animal[x$animal %in% ped$dam]
-	# 	sons <- x$animal[x$animal %in% ped$sire]
-	
-	# 			## number of offspring they have
-	# 	rbind(
-	# 		if(length(daughters>0)){
-	# 			data.frame(type= "MGM", n = sum(sapply( daughters, function(i) sum(d_s[[i]]$animal %in% phenotyped) )))}, 
-	# 		if(length(sons>0)){
-	# 			data.frame(type= "PGM", n = sum(sapply(sons, function(i) sum(s_s[[i]]$animal %in% phenotyped)  )))}
-	# 	)
-
-	# }))
-
-	# out_s<-do.call(rbind,lapply(s_s_P, function(x){
-	# 		## work out which offspring are themselves parents
-	# 			## work out which offspring are themselves parents
-	# 	daughters <- x$animal[x$animal %in% ped$dam]
-	# 	sons <- x$animal[x$animal %in% ped$sire]
-	
-	# 			## number of offspring they have
-	# 	rbind(
-	# 		if(length(daughters>0)){
-	# 			data.frame(type= "MGF", n = sum(sapply(daughters, function(i) sum(d_s[[i]]$animal %in% phenotyped) )))},
-	# 		if(length(sons>0)){
-	# 			data.frame(type= "PGF", n = sum(sapply(sons, function(i) sum(s_s[[i]]$animal %in% phenotyped) )))}
-	# 	)
-
-	# }))
-
-	# out <- rbind(out_d,out_s)
-	# c_sum <- aggregate(n~type,out,sum)
-	# c_sum2 <- c_sum[,2]
-	# names(c_sum2) <- c_sum[,1]
-	# c_sum2
 }
 
-# po <- function(ped, phenotyped=NULL){
-# 	colnames(ped) <- c("animal","dam","sire")
-
-# 	## if dont specify phenotyped, then assume all phenotyped
-# 	if(is.null(phenotyped)) phenotyped <- ped[,1]
-
-# 	ped_d <- subset(ped, animal %in% phenotyped & dam %in% phenotyped)
-# 	d_o <- sum(!is.na(ped_d$dam))
-
-# 	ped_s <- subset(ped, animal %in% phenotyped & sire %in% phenotyped)
-# 	s_o <- sum(!is.na(ped_s$sire))
-
-# 	c(dam=d_o,sire=s_o)
-# }
 
 
 
@@ -413,36 +370,6 @@ sibs <- function(ped, phenotyped=NULL){
 	n_pair <-table(ped2$pair[!grepl("NA",ped2$pair)])
 	FS <- sum(n_pair * (n_pair-1)/2)
 	c(FS=FS, MHS=mat_sib-FS, PHS=pat_sib-FS)
-
-	# ## all dam and sire	families
-	# d_s<-split(ped,ped$dam)
-	# s_s<-split(ped,ped$sire)
-
-	# 		## think of the comparisons across sires as a matrix - full sibs would be - n*(n - 1)/2 links for each sire, then the hs are n*(n - 1)/2 for all sibs - FS
-			
-	# out_d<-rowSums(sapply(d_s, function(x){
-	# 		## sires of phenotyped sibs
-	# 		all_sires <- x$sire[x$animal %in% phenotyped]
-	
-	# 		FS <- sum(table(all_sires) * (table(all_sires)-1)/2)
-	# 		MHS <- length(all_sires) * (length(all_sires)-1)/2 - FS
-	
-	# 		c(FS=FS,MHS=MHS)
-
-	# 	}))
-
-	# out_s<-sum(sapply(s_s, function(x){
-	
-	# 		## dams of phenotyped sibs
-	# 		all_dams <- x$dam[x$animal %in% phenotyped]
-	
-	# 		FS <- sum(table(all_dams) * (table(all_dams)-1)/2)
-	# 		# paternal half sibs
-	# 		length(all_dams) * (length(all_dams)-1)/2 - FS
-
-	# 	}))
-
-	# c(out_d,PHS=out_s)
 
 }
 

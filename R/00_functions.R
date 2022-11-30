@@ -244,8 +244,8 @@ m8_func <- function(data){
 		E = m8["units!R",1])
 }	
 
-model_func <- function(FUN,peds,data){
-	lapply(1:length(data), function(i){
+model_func <- function(FUN,peds,data,mc.cores=8){
+	mclapply(1:length(data), function(i){
 		if(is.list(peds)&!is.data.frame(peds)) { 
 			ped <- peds[[i]] 
 		}else{
@@ -257,7 +257,7 @@ model_func <- function(FUN,peds,data){
 		rm("ped.ainv", envir = .GlobalEnv)
 		cat(i," ")
 		out
-	})
+	}, mc.cores=mc.cores)
 }
 
 

@@ -11,7 +11,7 @@ rbind_notAnnoying <- function(..., names=NULL){
 }
 
 ## function to make products of all combinations and sum them 
-combo_prod <- function(x) if(length(x)>1){sum( combn(x, m =2)[1, ] * combn(x, m =2)[2, ])}else{0}
+combo_prod <- function(x) if(length(x)>1){sum( utils::combn(x, m =2)[1, ] * utils::combn(x, m =2)[2, ])}else{0}
 
 
 combo_au <- function(x) if(length(x)>1){sum(x * (length(x)-1))}else{0}
@@ -23,6 +23,7 @@ n_cousin <- function(p,gp,ped){
   d1 <- aggregate(f1, ped,length)
 	sum(aggregate(f2,d1,combo_prod)$animal)
 }
+
 
 n_au <- function(link,ped){
 	
@@ -40,7 +41,6 @@ non_zero_links <- function(ped){
 	pedA<-nadiv::makeA(ped[,1:3])
 	sum(pedA[lower.tri(pedA)]>0)
 }
-
 
 
 

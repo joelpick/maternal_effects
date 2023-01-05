@@ -102,12 +102,12 @@ if(run){
 
 load(paste0(data_wd,"mge_sims.Rdata"))
 
-for(k in ped_names){
-	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
-		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(r=k,scenario=i,comp=c("A","Me"),estimate=x[i,c("A","Me")])))
-	}))
-	assign(paste0("mod2_",k),mod2)
-}
+# for(k in ped_names){
+# 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
+# 		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(r=k,scenario=i,comp=c("A","Me"),estimate=x[i,c("A","Me")])))
+# 	}))
+# 	assign(paste0("mod2_",k),mod2)
+# }
 
 total_Va<-do.call(rbind,lapply(ped_names,function(k) {
 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
@@ -118,14 +118,17 @@ total_Va<-do.call(rbind,lapply(ped_names,function(k) {
 total_Va$coverage <- total_Va$max>0.2 & total_Va$min<0.2
 aggregate(coverage~ r+scenario, total_Va, mean)
 
-for(k in ped_names){
+mod2<-do.call(rbind,lapply(ped_names,function(k) {
 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
-		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(r=k,scenario=i,estimate=sum(x[i,c("A","Me")]))))
+		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(r=k,scenario=i,Va_est = x[i,"A"],Vm_est = x[i,"Me"],Va_sim=scenarios[i,"Va"],Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),Vmg_sim=scenarios[i,"Vmg"])))
 	}))
 	# assign(paste0("mod2_",k),mod2)
-}
+}))
+#,sum(x[i,c("Mg","Me")])
+head(mod2,20)
+mod2$Va_bias <- mod2$Va_est - mod2$Va_sim
 
-# mod2<-rbind(mod2_fs,mod2_hs,mod2_fhs,mod2_fhs_highF,mod2_fs_highF,mod2_fs_I,mod2_fs_IF,mod2_fhs_IF)
+ # mod2<-rbind(mod2_fs,mod2_hs,mod2_fhs,mod2_fhs_highF,mod2_fs_highF,mod2_fs_I,mod2_fs_IF,mod2_fhs_IF)
 
 cols <- viridis::inferno(6)[c(2,3,5,4,6)]
 
@@ -157,7 +160,19 @@ for(i in 1:4){#nrow(scenarios)
 	
 }
 
+par(mfrow=c(2,2),mar=c(4,4,1,1))
+for(i in 1:4){#nrow(scenarios)
+	beeswarm(Va_bias~ r, mod2, subset=scenario==i,pch=19, cex=0.2, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap",  xlim=c(1,12), ylim=c(-0.1,0.35))
 
+	means<-aggregate(Va_bias~ r, mod2,mean, subset=scenario==i)$Va_bias
+
+	arrows((1:(ped_n*2))-0.25,means,(1:(ped_n*2))+0.25, code=0, col="blue")
+
+	# text(1,0.4,paste(paste(colnames(scenarios),"=",scenarios[i,]),collapse=", "),pos=4)	
+}
+
+va<-aggregate(cbind(Va_bias,Vmg_sim)~ scenario+r, mod2,mean)
+va$Va_bias/va$Vmg_sim
 
 ## correlate means with ratio of maternal link 
 

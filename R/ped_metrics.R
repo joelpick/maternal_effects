@@ -54,11 +54,15 @@ biases <- function(ped,cov){
 	
 	stat<-ped_stat(ped)
 
+	# c(Vmg = sum(stat[non_me] * cov[non_me,"Vmg"]) / sum(stat[non_me]),
+		# COVam = sum(stat[non_me] * cov[non_me,"COVam"]) / sum(stat[non_me]))
 	c(Vmg = sum(stat[non_me] * cov[non_me,"Vmg"]) / sum(stat[non_me]),
 		COVam = sum(stat[non_me] * cov[non_me,"COVam"]) / sum(stat[non_me]))
 
+
 }
 ## or is it to do with how much Va is as well - so need to multiply by 1/Va cov
+# * 1/cov[non_me,"Va"]
 
 biases(ped_bt,cov)
 biases(ped_RD,cov)

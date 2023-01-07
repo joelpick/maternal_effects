@@ -128,6 +128,8 @@ mod2<-do.call(rbind,lapply(ped_names,function(k) {
 head(mod2,20)
 mod2$Va_bias <- mod2$Va_est - mod2$Va_sim
 
+
+
  # mod2<-rbind(mod2_fs,mod2_hs,mod2_fhs,mod2_fhs_highF,mod2_fs_highF,mod2_fs_I,mod2_fs_IF,mod2_fhs_IF)
 
 cols <- viridis::inferno(6)[c(2,3,5,4,6)]
@@ -172,7 +174,13 @@ for(i in 1:4){#nrow(scenarios)
 }
 
 va<-aggregate(cbind(Va_bias,Vmg_sim)~ scenario+r, mod2,mean)
-va$Va_bias/va$Vmg_sim
+va$bias_prop <- va$Va_bias/va$Vmg_sim
+
+beeswarm(bias_prop~ r, va,pch=19, cex=1, col= va$scenario,method = "compactswarm",corral="wrap")
+plot(bias_prop~ as.numeric(as.factor(r)), va,pch=19, cex=1,col= va$scenario)
+plot(Va_bias~ as.numeric(as.factor(r)), va,pch=19, cex=1,col= va$scenario)
+
+#scales::alpha(1,0.3)
 
 ## correlate means with ratio of maternal link 
 

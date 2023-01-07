@@ -93,7 +93,20 @@ maybe it depnds on whther the info is coming from parent offspring or sibs - if 
 
 # Methods
 
+## Theory
+
+Many classic papers on estimating maternal effects look at the covariance between differently related individuals. Different individuals share different amount of direct genetic variance, maternal and maternal and genetic covariance (table 2). Only maternal siblings (full siblings and maternal half-siblings) share maternal environmental effects, but many other individuals related through their mothers will share some level of maternal genetic effects. Take a two cousins related through their mothers being full siblings - as their mothers are related, they will experience 
+meaning that the covariance of two individual related in this way will contain some maternal genetic variance.
+Direct additive genetic variance is estimated through these comparisons, and in a model with only maternal environment  effects, is separated from maternal effects through comparison of maternal siblings with other individuals. As some of these other individuals will share maternal genetic and direct-maternal covariance, the estimates of Va will include 
+In this way we can see that the extend to which Va is biased will depend on the structure of the pedigree, and the degree to which the non-maternal sibling relationships are dominated by other maternal relationships which share Vmg
+
+
+
 ## Simulations
+
+### pedigrees
+
+
 Individual based simulations using squidPed R package. 
 
 Assumptions:

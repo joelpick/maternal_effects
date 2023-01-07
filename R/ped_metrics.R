@@ -56,8 +56,8 @@ biases <- function(ped,cov){
 
 	# c(Vmg = sum(stat[non_me] * cov[non_me,"Vmg"]) / sum(stat[non_me]),
 		# COVam = sum(stat[non_me] * cov[non_me,"COVam"]) / sum(stat[non_me]))
-	c(Vmg = sum(stat[non_me] * cov[non_me,"Vmg"]) / sum(stat[non_me]),
-		COVam = sum(stat[non_me] * cov[non_me,"COVam"]) / sum(stat[non_me]))
+	c(Vmg = sum(stat[non_me] * cov[non_me,"Vmg"]* 1/cov[non_me,"Va"]) / sum(stat[non_me]),
+		COVam = sum(stat[non_me] * cov[non_me,"COVam"]* 1/cov[non_me,"Va"]) / sum(stat[non_me]))
 
 
 }
@@ -65,6 +65,7 @@ biases <- function(ped,cov){
 # * 1/cov[non_me,"Va"]
 
 biases(ped_bt,cov)
+
 biases(ped_RD,cov)
 biases(ped_SSH,cov)
 biases(ped_SV,cov)

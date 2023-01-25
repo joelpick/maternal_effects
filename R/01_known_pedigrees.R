@@ -2,12 +2,26 @@ rm(list=ls())
 wd <- "/Users/joelpick/github/maternal_effects/"
 
 source(paste0(wd,"R/extract_cousins.R"))
+source(paste0(wd,"R/00_functions.R"))
 
-ped_bt <-  MasterBayes::insertPed(read.csv(paste0(wd,"Data/Raw/ped_BT.csv"))[,1:3])
+# ped_bt <-  MasterBayes::insertPed(read.csv(paste0(wd,"Data/Raw/ped_BT.csv"))[,1:3])
+
+dat_bt<-subset(read.csv("/Users/joelpick/Dropbox/0_blue_tits/skew/Data/Raw/tPED.csv"), ped_type=="DSCM")[,1:4]
+ped_bt<-pedantics::fixPedigree(dat_bt[,1:3])
+ped_bt[,"cohort"] <- dat_bt[match(ped_bt[,1],dat_bt[,1]),4]
+ped_bt[,4] <- as.numeric(substr(ped_bt[,4],1,2))
+names(ped_bt)[1] <- "animal"
 
 head(ped_bt)
 
-ped_rd<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv"))
+# ped_rd<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv"))
+ped_rd<-read.table("/Users/joelpick/github/pedigree_simulations/Data/red_deer/Pedigree_File.txt", header=TRUE)
+names(ped_rd) <- c("animal","sire","dam")
+dat_rd<-read.table("/Users/joelpick/github/pedigree_simulations/Data/red_deer/Individual_Data.txt", header=TRUE)
+
+ped_rd$cohort <- dat_rd[match(ped_rd[,"ID"],dat_rd[,"ID"]),"BirthYear"]
+
+
 
 par(mfrow=c(2,1))
 plot(table(table(ped_bt$dam)))
@@ -16,7 +30,7 @@ mean(table(ped_bt$dam))
 plot(table(table(ped_rd$dam)))
 mean(table(ped_rd$dam))
 
-ped<-ped_rd
+ped<-ped_bt
 immigration <- function(ped, sex_specific=TRUE){
 	founders <- ped$animal[is.na(ped$sire) & is.na(ped$sire)]
 	ped$dam_founder <- ped$dam%in%founders
@@ -27,8 +41,10 @@ immigration <- function(ped, sex_specific=TRUE){
 	year_s_F <- aggregate(cohort~sire,subset(ped,sire%in%founders),min)$cohort
 
 	year_d <- aggregate(cohort~dam+dam_founder,ped,min)
+	year_s <- aggregate(cohort~sire+sire_founder,ped,min)
 
 	all_d <- table(year_d$cohort,year_d$dam_founder)
+	all_s <- table(year_s$cohort,year_s$sire_founder)
 
 	all_s <- table(year_s)
 	all_d_F <- table(year_d_F)
@@ -44,7 +60,7 @@ immigration <- function(ped, sex_specific=TRUE){
 		)
 }
 
-immigration(ped_rd)
+immigration(ped_bt)
 
 plot(as.numeric(table(ped_rd$cohort)))
 

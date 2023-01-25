@@ -15,13 +15,14 @@ ped <-	simulate_pedigree(
 		years = generations,
 		n_females = n_females,
 		fecundity = fecundity,
-		p_sire = 1, 				# mating system (0-1, 1= one male per female, 0=complete random mating)
+		p_sire = 0.5, 				# mating system (0-1, 1= one male per female, 0=complete random mating)
 		juv_surv = juv_surv, # insures no population growth
 		adult_surv = adult_surv,					# discrete generations
 		immigration = immigration, 				# closed population
 		constant_pop = TRUE     # constant population size
 		)$pedigree
  ped_stat(ped)
+
  barplot(mat_links(ped))
  mat_links(ped)/sum(mat_links(ped))
 pedSum(ped[,1:3])
@@ -29,6 +30,24 @@ pedSum(ped[,1:3])
 ped[sample(1:nrow(ped),200),3]<-NA
 cousins(ped)- cousins2(ped)
 au(ped)- au2(ped)
+
+out<-parallel::mclapply(1:100,function(x){
+	ped <-	simulate_pedigree(
+		years = generations,
+		n_females = n_females,
+		fecundity = fecundity,
+		p_sire = 1, 				# mating system (0-1, 1= one male per female, 0=complete random mating)
+		juv_surv = juv_surv, # insures no population growth
+		adult_surv = adult_surv,					# discrete generations
+		immigration = immigration, 				# closed population
+		constant_pop = TRUE     # constant population size
+		)$pedigree
+	ped_stat(ped)	
+}, mc.cores=8)
+
+ 
+rowMeans(do.call(cbind,out))
+
 
 
 pedSum(ped[,1:3])
@@ -66,6 +85,14 @@ generations * fecundity * n_females # if constant pop - just how many offspring 
 # number of mothers  * (n_offspring*(n_offspring-1)/2)
 n_mothers * LRS*(LRS-1)/2
 
+## full sibs
+prop_FS<-0.5
+n_mothers * (LRS*prop_FS) *((LRS*prop_FS)-1)/2
+
+
+
+## half sibs
+## paternal half sibs == number of sibs??
 
 n_recruits <- fecundity * juv_surv
 ## grandoffspring
@@ -81,9 +108,12 @@ n_recruits <- fecundity * juv_surv
 
 # aunts/uncles
 
-
 n_recruits * fecundity * (fecundity-1) * (generations-1) * n_females /2
 ## divide by two for realted through mother or fathers siblings
+
+## yes for FS designs
+## also AU through phs?
+
 
 # cousins
 

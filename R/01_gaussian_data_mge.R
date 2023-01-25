@@ -62,6 +62,9 @@ scenarios <- rbind(
 
 if(run){
 
+	set.seed(20230119)
+
+	## make pedigrees
 	for(j in 1:nrow(peds_param)){
 		peds <- mclapply(1:n_sims,	function(i){
 			simulate_pedigree(
@@ -78,10 +81,10 @@ if(run){
 		assign(paste0(ped_names[j] ,"_peds"),peds)	
 	}
 
-
+	## simulate data
 	for(k in ped_names){
 		dat<-mclapply(get(paste0(k,"_peds")), function(i){
-			x<-list()
+			x<-vector("list", nrow(scenarios))
 			for(j in 1:nrow(scenarios)){
 				x[[j]]<- mge_sim(i[,1:3], param=scenarios[j,])
 			}
@@ -90,11 +93,13 @@ if(run){
 		assign(paste0(k,"_data"),dat)
 	}
 
+	## run models
 	for(k in ped_names){
+		# model1 <- model_func(m1_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
+		# assign(paste0("model1_",k),model1)
 		model2 <- model_func(m2_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
 		assign(paste0("model2_",k),model2)
 	}
-
 
 	save(list=(c(paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims.Rdata"))
 

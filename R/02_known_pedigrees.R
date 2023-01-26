@@ -111,6 +111,27 @@ plot(aggregate(sire~cohort,ped_rd,function(x) length(unique(x)))$sire)
 
 
 
+## range offf offspring per mother from bonnet et al 2022
+
+main_dir <- "/Users/joelpick/github/maternal_effects/Data/Raw/Bonnet/"
+mean_offspring<-	sapply(dir(main_dir), function(i){
+	dat<-read.csv(paste0(main_dir,i,"/data_",i,".csv"))
+	#table(table(dat$dam))
+	mean(table(dat$dam))
+})
+mean(mean_offspring)
+
+
+
+
+
+
+
+
+
+
+
+
 
 rm(list=ls())
 

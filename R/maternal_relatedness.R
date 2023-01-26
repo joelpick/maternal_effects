@@ -12,13 +12,39 @@ data_dir <- paste0(wd,"Data/Intermediate/")
 ### when using A - what happens to unknown fathers - what is relatedness between siblings?
 
 
+	
+	for(i in pops[c(1:5,8:19)]){
+		pop_dir <- paste0(main_dir,i)
+		load(paste0(pop_dir,"/Ainv_",i))
+		A <- Matrix::solve(ainv)
+		colnames(A) <- rownames(A) <- rownames(ainv)
+		rm(ainv)
+		dat<-read.csv(paste0(pop_dir,"/data_",i,".csv"))
+		mr<-maternal_relatedness_A(A,dat)
+		save(mr, file=paste0(data_dir,"/mr_",i,".Rdat"))
+		rm(A,dat,mr)
+		cat(i," ")
+	}
+
 
 #####
 # - Extract data from Ainv in Bonnet et al supp mat
 ####
 if(extract){
 	## run export R_MAX_VSIZE=32000000000 in terminal before running this 
-	pops <- dir(main_dir)
+		# 5:7
+	for(i in pops[c(1:5,8:19)]){
+		pop_dir <- paste0(main_dir,i)
+		load(paste0(pop_dir,"/Ainv_",i))
+		A <- Matrix::solve(ainv)
+		colnames(A) <- rownames(A) <- rownames(ainv)
+		rm(ainv)
+		dat<-read.csv(paste0(pop_dir,"/data_",i,".csv"))
+		mr<-maternal_relatedness_A(A,dat)
+		save(mr, file=paste0(data_dir,"/mr_",i,".Rdat"))
+		rm(A,dat,mr)
+		cat(i," ")
+	}
 
 	# 5:7
 	for(i in pops[c(1:5,8:19)]){

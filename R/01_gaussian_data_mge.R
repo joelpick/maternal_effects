@@ -14,13 +14,27 @@ source(paste0(wd,"R/00_functions.R"))
 source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 # devtools::load_all("~/github/squidSim/R")
 
-run=FALSE
+run=TRUE
 
 n_sims <-100
 generations=5
 n_females=100
-fecundity=4
 
+## Range from bonnet et al 
+m_fecundity = 6 # mean is 6.9
+h_fecundity = 12 #highest is 13.3
+l_fecundity = 3 #lowest is 1.5
+## these numbers are easier to maintain total number of phenotuypes indidivuals
+
+## first number is female, then male immigration rate
+no_immigration = c(0,0)
+f_immigration=c(0.5,0)
+m_immigration=c(0,0.5)
+b_immigration=c(0.25,0.25) # same overall immigration but no sex bias
+
+fhs = 0.75
+fs = 1
+hs = 0
 
 #### are number of maternal links the same in the two pedigrees?
 #### number of maternal half sibs will differ presumably
@@ -29,42 +43,53 @@ fecundity=4
 ## create 100 full sib pedigrees 
 
 peds_param <- rbind(
-fs=c(n_females=n_females,fecundity=fecundity,p_sire = 1,juv_surv = rep(2/fecundity,2),immigration = c(0,0)),
-hs=c(n_females=n_females,fecundity=fecundity,p_sire = 0,juv_surv = rep(2/fecundity,2),immigration = c(0,0)),
-fhs=c(n_females=n_females,fecundity=fecundity,p_sire = 0.75,juv_surv = rep(2/fecundity,2),immigration = c(0,0)),
+	##
+baseline = c(n_females=n_females,fecundity=m_fecundity,p_sire = fhs,immigration = no_immigration),
 
-fs_hF=c(n_females = n_females/2,fecundity = fecundity*2,p_sire = 1,juv_surv = rep(1/fecundity,2),immigration = c(0,0)),
-hs_hF=c(n_females = n_females/2,fecundity = fecundity*2,p_sire = 0,juv_surv = rep(1/fecundity,2),immigration = c(0,0)),
-fhs_hF=c(n_females = n_females/2,fecundity = fecundity*2,p_sire = 0.75,juv_surv = rep(1/fecundity,2),immigration = c(0,0)),
+fs=c(n_females=n_females,fecundity=m_fecundity,p_sire = fs,immigration = no_immigration),
+hs=c(n_females=n_females,fecundity=m_fecundity,p_sire = hs,immigration = no_immigration),
 
-fs_IF=c(n_females = n_females, fecundity = fecundity, p_sire = 1, juv_surv = c(1.5/fecundity,2/fecundity), immigration = c(0.25,0)),
-hs_IF=c(n_females = n_females, fecundity = fecundity, p_sire = 0, juv_surv = c(1.5/fecundity,2/fecundity), immigration = c(0.25,0)),
-fhs_IF=c(n_females = n_females, fecundity = fecundity, p_sire = 0.75, juv_surv = c(1.5/fecundity,2/fecundity), immigration = c(0.25,0)),
+hF=c(n_females = n_females/2,fecundity = h_fecundity,p_sire = fhs,immigration = no_immigration),
+lF=c(n_females = n_females*2,fecundity = l_fecundity,p_sire = fhs,immigration = no_immigration),
 
-fs_IM=c(n_females = n_females, fecundity = fecundity, p_sire = 1, juv_surv = c(2/fecundity,1.5/fecundity), immigration = c(0,0.25)),
-hs_IM=c(n_females = n_females, fecundity = fecundity, p_sire = 0, juv_surv = c(2/fecundity,1.5/fecundity), immigration = c(0,0.25)),
-fhs_IM=c(n_females = n_females, fecundity = fecundity, p_sire = 0.75, juv_surv = c(2/fecundity,1.5/fecundity), immigration = c(0,0.25))
+IF=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = f_immigration),
+IM=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = m_immigration),
+IB=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = b_immigration)
 )
+
+# 1=(juv_surv_f * fecundity)/2 + immigration_f
+# juv_surv_f = 2*(1 - immigration_f)/fecundity
+
+peds_param <- cbind(peds_param, 
+	juv_surv1=2*(1 - peds_param[,"immigration1"])/peds_param[,"fecundity"],
+	juv_surv2=2*(1 - peds_param[,"immigration2"])/peds_param[,"fecundity"]
+)
+
+# peds_param[,"n_females"]*peds_param[,"juv_surv1"]*peds_param[,"fecundity"]
+# peds_param[,"n_females"]*peds_param[,"juv_surv2"]*peds_param[,"fecundity"]
 
 ped_names <- rownames(peds_param)
 
 
 scenarios <- rbind(	
 	# C) Maternal genetic only
-	c=c(Va=0, Vmg=0.4, r_amg=0, Vme=0),
+	c=c(Va=0, Vmg=0.25, r_amg=0, Vme=0),
 	# D) Direct genetic and maternal environment
-	e=c(Va=0, Vmg=0.4, r_amg=0, Vme=0.2),#####
+	e=c(Va=0, Vmg=0.25, r_amg=0, Vme=0.25),#####
 	# F) Direct and maternal genetic, no covariance
-	f=c(Va=0.1, Vmg=0.2, r_amg=0, Vme=0),
+	f=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0),
 	# I) Direct and maternal genetic, no covariance and maternal environment
-	i=c(Va=0.1, Vmg=0.2, r_amg=0, Vme=0.2)
+	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25)
 )
 
 if(run){
 
-	set.seed(20230119)
+	set.seed(20230126)
+
+	ped_str <- vector("list",length=nrow(peds_param))
 
 	## make pedigrees
+	cat("Simulating Pedigrees:\n")
 	for(j in 1:nrow(peds_param)){
 		peds <- mclapply(1:n_sims,	function(i){
 			simulate_pedigree(
@@ -72,6 +97,7 @@ if(run){
 				n_females = peds_param[j,"n_females"],
 				fecundity = peds_param[j,"fecundity"],
 				p_sire = peds_param[j,"p_sire"],
+				p_polyandry=1,
 				juv_surv = c(peds_param[j,"juv_surv1"],peds_param[j,"juv_surv2"]),
 				adult_surv = 0,					# discrete generations
 				immigration = c(peds_param[j,"immigration1"],peds_param[j,"immigration2"]), 				# closed population
@@ -79,8 +105,14 @@ if(run){
 				)$pedigree
 		}, mc.cores=8)
 		assign(paste0(ped_names[j] ,"_peds"),peds)	
+		ped_str[[ped_names[j]]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
+		cat(j, " ")
 	}
 
+
+lapply(ped_str,colMeans)
+
+	cat("\nSimulating Data: \n")
 	## simulate data
 	for(k in ped_names){
 		dat<-mclapply(get(paste0(k,"_peds")), function(i){
@@ -91,17 +123,20 @@ if(run){
 			x
 		}, mc.cores=8)
 		assign(paste0(k,"_data"),dat)
+		cat(k, " ")
 	}
 
 	## run models
+	cat("\nRunning models: \n")
 	for(k in ped_names){
-		# model1 <- model_func(m1_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
-		# assign(paste0("model1_",k),model1)
+		model1 <- model_func(m1_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
+		assign(paste0("model1_",k),model1)
 		model2 <- model_func(m2_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
 		assign(paste0("model2_",k),model2)
+		cat(k, " ")
 	}
 
-	save(list=(c(paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims.Rdata"))
+	save(list=(c(ped_str,paste0("model1_",ped_names),paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims.Rdata"))
 
 }
 

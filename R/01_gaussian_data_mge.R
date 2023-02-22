@@ -47,7 +47,7 @@ peds_param <- rbind(
 baseline = c(n_females=n_females,fecundity=m_fecundity,p_sire = fhs,immigration = no_immigration),
 
 fs=c(n_females=n_females,fecundity=m_fecundity,p_sire = fs,immigration = no_immigration),
-hs=c(n_females=n_females,fecundity=m_fecundity,p_sire = hs,immigration = no_immigration),
+# hs=c(n_females=n_females,fecundity=m_fecundity,p_sire = hs,immigration = no_immigration),
 
 hF=c(n_females = n_females/2,fecundity = h_fecundity,p_sire = fhs,immigration = no_immigration),
 lF=c(n_females = n_females*2,fecundity = l_fecundity,p_sire = fhs,immigration = no_immigration),
@@ -86,11 +86,10 @@ if(run){
 
 	set.seed(20230126)
 
-	ped_str <- vector("list",length=nrow(peds_param))
-
+ped_str <- vector("list",length=nrow(peds_param))
 	## make pedigrees
 	cat("Simulating Pedigrees:\n")
-	for(j in 1:nrow(peds_param)){
+	for(j in ped_names){
 		peds <- mclapply(1:n_sims,	function(i){
 			simulate_pedigree(
 				years = generations,
@@ -104,15 +103,13 @@ if(run){
 				constant_pop = TRUE     # constant population size
 				)$pedigree
 		}, mc.cores=8)
-		assign(paste0(ped_names[j] ,"_peds"),peds)	
-		ped_str[[ped_names[j]]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
+		assign(paste0(j ,"_peds"),peds)	
+		ped_str <- vector("list",length=nrow(peds_param))
+		ped_str[[j]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
 		cat(j, " ")
 	}
 
-
-lapply(ped_str,colMeans)
-
-	cat("\nSimulating Data: \n")
+	cat("\n\nSimulating Data: \n")
 	## simulate data
 	for(k in ped_names){
 		dat<-mclapply(get(paste0(k,"_peds")), function(i){
@@ -127,16 +124,25 @@ lapply(ped_str,colMeans)
 	}
 
 	## run models
-	cat("\nRunning models: \n")
+	cat("\n\nRunning models: \n")
 	for(k in ped_names){
+		cat(k, "\n")
+		cat("Model 1\n")
 		model1 <- model_func(m1_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
 		assign(paste0("model1_",k),model1)
+		cat("Model 2\n")
 		model2 <- model_func(m2_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
 		assign(paste0("model2_",k),model2)
-		cat(k, " ")
+		cat("\n")
 	}
 
-	save(list=(c(ped_str,paste0("model1_",ped_names),paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims.Rdata"))
+# ped_str <- vector("list",length=nrow(peds_param))
+#		ped_str[[ped_names[j]]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
+#lapply(ped_str,colMeans)
+
+
+
+	save(list=(c("ped_str",paste0("model1_",ped_names),paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims.Rdata"))
 
 }
 

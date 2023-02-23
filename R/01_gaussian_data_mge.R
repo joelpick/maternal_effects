@@ -14,7 +14,7 @@ source(paste0(wd,"R/00_functions.R"))
 source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 # devtools::load_all("~/github/squidSim/R")
 
-run=TRUE
+run=FALSE
 
 n_sims <-100
 generations=5
@@ -155,12 +155,15 @@ ped_sum2 <- rbind(mat_sibs=colSums(ped_sum[c("FS","MHS"),]), mat_links=colSums(p
 ps <- t(t(ped_sum2)/colSums(ped_sum2))
 ps <- t(t(ped_sum2[-3,])/colSums(ped_sum2[-3,]))
 barplot(ps)
-barplot(ps[,c(3,1,2)])
-barplot(ps[,c(4,1,5)])
-barplot(ps[,c(6,1,7,8)])
+par(mfrow=c(1,3))
+barplot(ps[,c(5,1,4)], names=c("Low", "Mid", "High"), xlab="Fecundity")
+barplot(ps[,c(1,7,6,8)], names=c("None", "Both sexes", "Female", "Male"), xlab="Dispersal", ylab="Proportion of relationships")
+barplot(ps[,c(3,1,2)], names=c("Half-sibs", "Mixed", "Full- sibs"), xlab="Mating system")
+
 ps
 
 mat_ratio<-ped_sum2[2,]/ped_sum2[1,]
+# mat_ratio2<-ped_sum2[2,]/colSums(ped_sum2)
 
 # for(k in ped_names){
 # 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
@@ -186,12 +189,17 @@ mod1<-do.call(rbind,lapply(ped_names,function(k) {
 	# assign(paste0("mod2_",k),mod2)
 }))
 mod1$Va_bias <- mod1$Va_est - mod1$Va_sim
-va1<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod1,mean)
+mod1$ln_Va_bias <- log(mod1$Va_bias)
+# va1<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod1,median)
+va1<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim,ln_Va_bias)~ scenario+r, mod1,mean)
 # which(va1$r)
 
 r_order<- sapply(va1$r, function(x) which(rownames(peds_param)==x))
 
 plot(Va_bias~ log(mat_ratio[r_order]), va1,pch=19, cex=1,col= va1$scenario)
+# plot(Va_bias~ log(mat_ratio2[r_order]), va1,pch=19, cex=1,col= va1$scenario)
+
+plot(ln_Va_bias~ log(mat_ratio[r_order]), va1,pch=19, cex=1,col= va1$scenario)
 
 plot(Va_bias~ r_order, va1,pch=19, cex=1,col= va1$scenario, xaxt="n")
 axis(1,1:8,rownames(peds_param))

@@ -44,17 +44,17 @@ hs = 0
 
 peds_param <- rbind(
 	##
-baseline = c(n_females=n_females,fecundity=m_fecundity,p_sire = fhs,immigration = no_immigration),
+	baseline = c(n_females=n_females,fecundity=m_fecundity,p_sire = fhs,immigration = no_immigration),
 
-fs=c(n_females=n_females,fecundity=m_fecundity,p_sire = fs,immigration = no_immigration),
-# hs=c(n_females=n_females,fecundity=m_fecundity,p_sire = hs,immigration = no_immigration),
+	fs=c(n_females=n_females,fecundity=m_fecundity,p_sire = fs,immigration = no_immigration),
+	hs=c(n_females=n_females,fecundity=m_fecundity,p_sire = hs,immigration = no_immigration),
 
-hF=c(n_females = n_females/2,fecundity = h_fecundity,p_sire = fhs,immigration = no_immigration),
-lF=c(n_females = n_females*2,fecundity = l_fecundity,p_sire = fhs,immigration = no_immigration),
+	hF=c(n_females = n_females/2,fecundity = h_fecundity,p_sire = fhs,immigration = no_immigration),
+	lF=c(n_females = n_females*2,fecundity = l_fecundity,p_sire = fhs,immigration = no_immigration),
 
-IF=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = f_immigration),
-IM=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = m_immigration),
-IB=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = b_immigration)
+	IF=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = f_immigration),
+	IM=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = m_immigration),
+	IB=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = b_immigration)
 )
 
 # 1=(juv_surv_f * fecundity)/2 + immigration_f
@@ -86,7 +86,8 @@ if(run){
 
 	set.seed(20230126)
 
-ped_str <- vector("list",length=nrow(peds_param))
+	ped_str <- vector("list",length=nrow(peds_param))
+	names(ped_str) <- ped_names
 	## make pedigrees
 	cat("Simulating Pedigrees:\n")
 	for(j in ped_names){
@@ -104,7 +105,6 @@ ped_str <- vector("list",length=nrow(peds_param))
 				)$pedigree
 		}, mc.cores=8)
 		assign(paste0(j ,"_peds"),peds)	
-		ped_str <- vector("list",length=nrow(peds_param))
 		ped_str[[j]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
 		cat(j, " ")
 	}
@@ -130,7 +130,7 @@ ped_str <- vector("list",length=nrow(peds_param))
 		cat("Model 1\n")
 		model1 <- model_func(m1_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
 		assign(paste0("model1_",k),model1)
-		cat("Model 2\n")
+		cat("\nModel 2\n")
 		model2 <- model_func(m2_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
 		assign(paste0("model2_",k),model2)
 		cat("\n")
@@ -148,6 +148,20 @@ ped_str <- vector("list",length=nrow(peds_param))
 
 load(paste0(data_wd,"mge_sims.Rdata"))
 
+ped_sum<-sapply(ped_str,colMeans)
+
+ped_sum2 <- rbind(mat_sibs=colSums(ped_sum[c("FS","MHS"),]), mat_links=colSums(ped_sum[c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]), other=colSums(ped_sum[!rownames(ped_sum)%in%c( "individuals" ,"links" ,"FS","MHS","dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]) )
+
+ps <- t(t(ped_sum2)/colSums(ped_sum2))
+ps <- t(t(ped_sum2[-3,])/colSums(ped_sum2[-3,]))
+barplot(ps)
+barplot(ps[,c(3,1,2)])
+barplot(ps[,c(4,1,5)])
+barplot(ps[,c(6,1,7,8)])
+ps
+
+mat_ratio<-ped_sum2[2,]/ped_sum2[1,]
+
 # for(k in ped_names){
 # 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
 # 		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(r=k,scenario=i,comp=c("A","Me"),estimate=x[i,c("A","Me")])))
@@ -161,8 +175,32 @@ total_Va<-do.call(rbind,lapply(ped_names,function(k) {
 		))
 	}))}
 	))
-total_Va$coverage <- total_Va$max>0.2 & total_Va$min<0.2
-aggregate(coverage~ r+scenario, total_Va, mean)
+# total_Va$coverage <- total_Va$max>0.2 & total_Va$min<0.2
+# aggregate(coverage~ r+scenario, total_Va, mean)
+
+
+mod1<-do.call(rbind,lapply(ped_names,function(k) {
+	mod1 <- do.call(rbind,lapply(get(paste0("model1_",k)), function(x) {
+		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(r=k,scenario=i,Va_est = x[i,"A"],Va_sim=scenarios[i,"Va"],Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),Vmg_sim=scenarios[i,"Vmg"])))
+	}))
+	# assign(paste0("mod2_",k),mod2)
+}))
+mod1$Va_bias <- mod1$Va_est - mod1$Va_sim
+va1<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod1,mean)
+# which(va1$r)
+
+r_order<- sapply(va1$r, function(x) which(rownames(peds_param)==x))
+
+plot(Va_bias~ log(mat_ratio[r_order]), va1,pch=19, cex=1,col= va1$scenario)
+
+plot(Va_bias~ r_order, va1,pch=19, cex=1,col= va1$scenario, xaxt="n")
+axis(1,1:8,rownames(peds_param))
+
+
+
+cov <- read.csv(paste0(wd,"Data/Raw/covariances.csv"))
+sum((ped_sum[cov$relationship,1]*cov[,"Va"]*scenarios[1,"Va"] + ped_sum[cov$relationship,1]*cov[,"Vmg"]*scenarios[1,"Vmg"] + ped_sum[cov$relationship,1]*cov[,"Vme"]*scenarios[1,"Vme"])/sum(ped_sum[cov$relationship,1])*1/cov[,"Va"])
+
 
 mod2<-do.call(rbind,lapply(ped_names,function(k) {
 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
@@ -210,14 +248,29 @@ for(i in 1:4){#nrow(scenarios)
 
 par(mfrow=c(2,2),mar=c(4,4,1,1))
 for(i in 1:4){#nrow(scenarios)
-	beeswarm(Va_bias~ r, mod2, subset=scenario==i,pch=19, cex=0.2, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap",  xlim=c(1,12), ylim=c(-0.1,0.35))
+	beeswarm(Va_bias~ r, mod2, subset=scenario==i,pch=19, cex=0.2, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap",  xlim=c(1,8), ylim=c(-0.1,0.35))
 
 	means<-aggregate(Va_bias~ r, mod2,mean, subset=scenario==i)$Va_bias
 
-	arrows((1:(ped_n*2))-0.25,means,(1:(ped_n*2))+0.25, code=0, col="blue")
+	arrows((1:(ped_n))-0.25,means,(1:(ped_n))+0.25, code=0, col="blue")
 
 	# text(1,0.4,paste(paste(colnames(scenarios),"=",scenarios[i,]),collapse=", "),pos=4)	
 }
+
+
+par(mfrow=c(2,2),mar=c(4,4,1,1))
+for(i in 1:4){#nrow(scenarios)
+	beeswarm(Vm_est~ r, mod2, subset=scenario==i,pch=19, cex=0.2, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap",  xlim=c(1,8), ylim=c(0,0.7))
+
+	means<-aggregate(Vm_sim~ r, mod2,mean, subset=scenario==i)$Vm_sim
+	means<-aggregate(Vm_sim~ r, mod2,mean, subset=scenario==i)$Vm_sim
+
+	arrows((1:(ped_n))-0.25,means,(1:(ped_n))+0.25, code=0, col="blue")
+
+	# text(1,0.4,paste(paste(colnames(scenarios),"=",scenarios[i,]),collapse=", "),pos=4)	
+}
+
+
 
 va<-aggregate(cbind(Va_bias,Vmg_sim)~ scenario+r, mod2,mean)
 va$bias_prop <- va$Va_bias/va$Vmg_sim

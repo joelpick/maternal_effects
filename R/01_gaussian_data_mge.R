@@ -72,14 +72,15 @@ ped_names <- rownames(peds_param)
 
 
 scenarios <- rbind(	
-	# C) Maternal genetic only
+	C) Maternal genetic only
 	c=c(Va=0, Vmg=0.25, r_amg=0, Vme=0),
 	# D) Direct genetic and maternal environment
 	e=c(Va=0, Vmg=0.25, r_amg=0, Vme=0.25),#####
 	# F) Direct and maternal genetic, no covariance
 	f=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0),
 	# I) Direct and maternal genetic, no covariance and maternal environment
-	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25)
+	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25),
+	rd=c(Va=0.05, Vmg=0.4, r_amg=0, Vme=0.05)
 )
 
 if(run){
@@ -155,15 +156,21 @@ ped_sum2 <- rbind(mat_sibs=colSums(ped_sum[c("FS","MHS"),]), mat_links=colSums(p
 ps <- t(t(ped_sum2)/colSums(ped_sum2))
 ps <- t(t(ped_sum2[-3,])/colSums(ped_sum2[-3,]))
 barplot(ps)
-par(mfrow=c(1,3))
-barplot(ps[,c(5,1,4)], names=c("Low", "Mid", "High"), xlab="Fecundity")
-barplot(ps[,c(1,7,6,8)], names=c("None", "Both sexes", "Female", "Male"), xlab="Dispersal", ylab="Proportion of relationships")
-barplot(ps[,c(3,1,2)], names=c("Half-sibs", "Mixed", "Full- sibs"), xlab="Mating system")
+par(mfrow=c(3,1), mar=c(4,4,1,1), cex.lab=1.4,mgp=c(2,0.5,0))
+barplot(ps[,c(5,1,4)], names=c("Low", "Mid", "High"), xlab="Fecundity", col=c("lightblue","orange","white"))
+barplot(ps[,c(1,8,6,7)], names=c("None", "Both sexes", "Female", "Male"), xlab="Dispersal", ylab="Prop. relationships",col=c("lightblue","orange","white"))
+barplot(ps[,c(3,1,2)], names=c("Half-sibs", "Mixed", "Full- sibs"), xlab="Mating system",col=c("lightblue","orange","white"))
 
 ps
 
 mat_ratio<-ped_sum2[2,]/ped_sum2[1,]
-# mat_ratio2<-ped_sum2[2,]/colSums(ped_sum2)
+mat_ratio2<-ped_sum2[2,]/colSums(ped_sum2)
+mat_ratio3<-ped_sum2[1,]/colSums(ped_sum2)
+mat_ratio4<-ped_sum2[1,]/ped_sum2[3,]
+mat_ratio5<-ped_sum2[2,]/ped_sum2[3,]
+mat_ratio6<-ped_sum2[3,]/colSums(ped_sum2)
+
+
 
 # for(k in ped_names){
 # 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
@@ -219,6 +226,27 @@ mod2<-do.call(rbind,lapply(ped_names,function(k) {
 #,sum(x[i,c("Mg","Me")])
 head(mod2,20)
 mod2$Va_bias <- mod2$Va_est - mod2$Va_sim
+# mod2$ln_Va_bias <- log(mod2$Va_bias)
+va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod2,mean)
+# which(va1$r)
+
+va2$mat_ratio <- mat_ratio2[r_order]
+par(mrow=c(1,1), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
+plot(Va_bias~ mat_ratio, va2, subset=scenario==1,  pch=19, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2))
+
+
+plot(Va_bias~ mat_ratio2[r_order], va2,pch=19, cex=1,col= va2$scenario, xlab="Proportion non-sibling maternal links", ylab="Bias in Va")
+legend("topleft",apply(scenarios[,c(2,1,4)],1,function(x) paste(colnames(scenarios[,c(2,1,4)]),x,collapse=", ", sep="=") ), pch=19, col=1:4)
+
+
+# plot(Va_bias~ log(mat_ratio2[r_order]), va1,pch=19, cex=1,col= va1$scenario)
+
+plot(ln_Va_bias~ log(mat_ratio[r_order]), va1,pch=19, cex=1,col= va1$scenario)
+
+plot(Va_bias~ r_order, va1,pch=19, cex=1,col= va1$scenario, xaxt="n")
+axis(1,1:8,rownames(peds_param))
+
+
 
 
 

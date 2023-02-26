@@ -9,6 +9,9 @@ str(dd)
 hist(dd$r_2, breaks=20)
 
 hist(dd$h2_diff, breaks=5000, xlim=c(-1,2))
+mean(dd$h2_diff, na.rm=TRUE)
+
+dd$h2_1/dd$h2_2 -1 
 ## massive one (dd[32,]) might be a typo? Otherwise two on the <0 ones have a negative covariance, and many of the 0s have no maternal variance
 
 plot(dd$h2_1-dd$h2_2 ~ dd$m2_2)

@@ -1,6 +1,6 @@
 rm(list=ls())
 wd <- "/Users/joelpick/github/maternal_effects/"
-
+data_wd <- paste0(wd,"Data/Intermediate/")
 source(paste0(wd,"R/extract_cousins.R"))
 source(paste0(wd,"R/00_functions.R"))
 
@@ -44,6 +44,14 @@ mean(table(ped_bt$dam))
 
 plot(table(table(ped_rd$dam)))
 mean(table(ped_rd$dam))
+
+
+
+
+mat_ratio2<-
+ped_sum2[2,]/colSums(ped_sum2)
+
+ped_sum2[2,]/ped_sum2[3,]
 
 ## blue tit pedigree - there will be a lot of unknown females that abandon on eggs, but will be in ped through x-fostering
 
@@ -176,3 +184,70 @@ ped <- simulate_pedigree(
 )$pedigree
 
 
+
+
+
+
+
+############
+
+scenarios <- rbind(	
+	# C) Maternal genetic only
+	c=c(Va=0, Vmg=0.25, r_amg=0, Vme=0),
+	# D) Direct genetic and maternal environment
+	e=c(Va=0, Vmg=0.25, r_amg=0, Vme=0.25),#####
+	# F) Direct and maternal genetic, no covariance
+	f=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0),
+	# I) Direct and maternal genetic, no covariance and maternal environment
+	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25)
+)
+ped_names <- c("rd","bt")
+ped_rd <- pedantics::fixPedigree(ped_rd)
+
+ped_str_known <- cbind(rd=ped_stat(ped_rd),bt=ped_stat(ped_bt))
+
+	cat("\n\nSimulating Data: \n")
+	## simulate data
+	for(k in ped_names){
+		dat<-mclapply(1:100, function(i){
+			x<-vector("list", nrow(scenarios))
+			for(j in 1:nrow(scenarios)){
+				x[[j]]<- mge_sim(get(paste0("ped_",k))[,1:3], param=scenarios[j,])
+			}
+			x
+		}, mc.cores=8)
+		assign(paste0(k,"_data"),dat)
+		cat(k, " ")
+	}
+
+	## run models
+	cat("\n\nRunning models: \n")
+	for(k in ped_names){
+		cat(k, "\n")
+		cat("Model 1\n")
+		model1 <- model_func(m1_func,get(paste0("ped_",k)),get(paste0(k,"_data")),mc.cores=8)
+		assign(paste0("model1_",k),model1)
+		cat("\nModel 2\n")
+		model2 <- model_func(m2_func,get(paste0("ped_",k)),get(paste0(k,"_data")),mc.cores=8)
+		assign(paste0("model2_",k),model2)
+		cat("\n")
+	}
+
+	save(list=(c("ped_str_known",paste0("model1_",ped_names),paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims_known_rd.Rdata"))
+
+
+
+
+
+
+mod2<-do.call(rbind,lapply(ped_names,function(k) {
+	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
+		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(r=k,scenario=i,Va_est = x[i,"A"],Vm_est = x[i,"Me"],Va_sim=scenarios[i,"Va"],Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),Vmg_sim=scenarios[i,"Vmg"])))
+	}))
+	# assign(paste0("mod2_",k),mod2)
+}))
+#,sum(x[i,c("Mg","Me")])
+head(mod2,20)
+mod2$Va_bias <- mod2$Va_est - mod2$Va_sim
+# mod2$ln_Va_bias <- log(mod2$Va_bias)
+va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod2,mean)

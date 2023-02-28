@@ -30,11 +30,15 @@ names(ped_bt)[1] <- "animal"
 head(ped_bt)
 
 # ped_rd<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv"))
-ped_rd<-read.table("/Users/joelpick/github/pedigree_simulations/Data/Raw/red_deer/Pedigree_File.txt", header=TRUE)
+ped_rd<-pedantics::fixPedigree(read.table("/Users/joelpick/github/pedigree_simulations/Data/Raw/red_deer/Pedigree_File.txt", header=TRUE))
 names(ped_rd) <- c("animal","sire","dam")
 dat_rd<-read.table("/Users/joelpick/github/pedigree_simulations/Data/Raw/red_deer/Individual_Data.txt", header=TRUE)
 
 ped_rd$cohort <- dat_rd[match(ped_rd[,"animal"],dat_rd[,"ID"]),"BirthYear"]
+table(ped_rd$cohort)
+
+ped_rd_short <- pedantics::fixPedigree(subset(ped_rd,cohort<2005))
+
 
 
 
@@ -192,19 +196,26 @@ ped <- simulate_pedigree(
 ############
 
 scenarios <- rbind(	
-	# C) Maternal genetic only
-	c=c(Va=0, Vmg=0.25, r_amg=0, Vme=0),
-	# D) Direct genetic and maternal environment
-	e=c(Va=0, Vmg=0.25, r_amg=0, Vme=0.25),#####
-	# F) Direct and maternal genetic, no covariance
-	f=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0),
-	# I) Direct and maternal genetic, no covariance and maternal environment
-	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25)
+	# # C) Maternal genetic only
+	# c=c(Va=0, Vmg=0.25, r_amg=0, Vme=0),
+	# # D) Direct genetic and maternal environment
+	# e=c(Va=0, Vmg=0.25, r_amg=0, Vme=0.25),#####
+	# # F) Direct and maternal genetic, no covariance
+	# f=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0),
+	# # I) Direct and maternal genetic, no covariance and maternal environment
+	# i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25),
+	rd=c(Va=0.05, Vmg=0.4, r_amg=0, Vme=0.05)
 )
-ped_names <- c("rd","bt")
-ped_rd <- pedantics::fixPedigree(ped_rd)
+ped_names <- c("rd","rd_short","bt")
 
-ped_str_known <- cbind(rd=ped_stat(ped_rd),bt=ped_stat(ped_bt))
+ped_str_known <- cbind(
+	rd=ped_stat(ped_rd),
+	rd_short=ped_stat(ped_rd_short),
+	bt=ped_stat(ped_bt))
+
+ped_sum2 <- rbind(mat_sibs=colSums(ped_str_known[c("FS","MHS"),]), mat_links=colSums(ped_str_known[c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]), other=colSums(ped_str_known[!rownames(ped_str_known)%in%c( "individuals" ,"links" ,"FS","MHS","dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]) )
+ped_sum2[2,]/colSums(ped_sum2)
+
 
 	cat("\n\nSimulating Data: \n")
 	## simulate data

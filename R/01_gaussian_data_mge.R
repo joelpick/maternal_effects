@@ -109,6 +109,7 @@ if(run){
 		ped_str[[j]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
 		cat(j, " ")
 	}
+### need to do ped metrics for individuals with data!
 
 	cat("\n\nSimulating Data: \n")
 	## simulate data

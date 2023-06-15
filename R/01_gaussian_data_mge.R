@@ -72,7 +72,7 @@ ped_names <- rownames(peds_param)
 
 
 scenarios <- rbind(	
-	C) Maternal genetic only
+	# C) Maternal genetic only
 	c=c(Va=0, Vmg=0.25, r_amg=0, Vme=0),
 	# D) Direct genetic and maternal environment
 	e=c(Va=0, Vmg=0.25, r_amg=0, Vme=0.25),#####

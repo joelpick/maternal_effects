@@ -45,6 +45,12 @@ maternal_relatedness_A <- function(A,dat){
 }
 
 
+matriline <- function(ped){
+	matriline <- vector(mode="character",length=nrow(ped))
+	for(i in 1:nrow(ped)){
+		matriline[i] <- ifelse(is.na(ped[i,"dam"]), ped[i,"animal"],matriline[match(ped[i,"dam"],ped[,"animal"])])
+	}
+}
 
 rbv0 <- function(pedigree, G){
 	X <- matrix(0, nrow=nrow(pedigree), ncol=nrow(G))

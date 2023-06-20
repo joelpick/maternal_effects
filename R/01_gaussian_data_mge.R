@@ -79,8 +79,8 @@ scenarios <- rbind(
 	# F) Direct and maternal genetic, no covariance
 	f=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0),
 	# I) Direct and maternal genetic, no covariance and maternal environment
-	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25),
-	rd=c(Va=0.05, Vmg=0.4, r_amg=0, Vme=0.05)
+	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25)
+	# , rd=c(Va=0.05, Vmg=0.4, r_amg=0, Vme=0.05)
 )
 
 if(run){
@@ -109,7 +109,22 @@ if(run){
 		ped_str[[j]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
 		cat(j, " ")
 	}
+
+		ped_str
 ### need to do ped metrics for individuals with data!
+
+ped_cors <-  vector("list",length=nrow(peds_param))
+names(ped_cors) <- ped_names
+
+for(k in ped_names){
+		ped_cors[[k]]<- do.call(rbind,mclapply(get(paste0(k,"_peds")), function(i){
+			x<-pedCor(i)
+			x[lower.tri(x)]
+		}, mc.cores=8))
+		cat(k, " ")
+	}
+# ped_cors<-ped_cors[ped_names]
+
 
 	cat("\n\nSimulating Data: \n")
 	## simulate data
@@ -151,11 +166,17 @@ if(run){
 load(paste0(data_wd,"mge_sims.Rdata"))
 
 ped_sum<-sapply(ped_str,colMeans)
+pedC_sum<-sapply(ped_cors,colMeans)
+rownames(pedC_sum) <- c("A-Mg","A-Me","Mg-Me")
 
 ped_sum2 <- rbind(mat_sibs=colSums(ped_sum[c("FS","MHS"),]), mat_links=colSums(ped_sum[c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]), other=colSums(ped_sum[!rownames(ped_sum)%in%c( "individuals" ,"links" ,"FS","MHS","dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]) )
 
 ps <- t(t(ped_sum2)/colSums(ped_sum2))
-ps <- t(t(ped_sum2[-3,])/colSums(ped_sum2[-3,]))
+
+plot(ps[2,],pedC_sum[1,])
+plot(ps[2,],pedC_sum[3,])
+
+# ps <- t(t(ped_sum2[-3,])/colSums(ped_sum2[-3,]))
 barplot(ps)
 par(mfrow=c(3,1), mar=c(4,4,1,1), cex.lab=1.4,mgp=c(2,0.5,0))
 barplot(ps[,c(5,1,4)], names=c("Low", "Mid", "High"), xlab="Fecundity", col=c("lightblue","orange","white"))
@@ -236,8 +257,11 @@ par(mrow=c(1,1), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
 plot(Va_bias~ mat_ratio, va2, subset=scenario==1,  pch=19, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2))
 
 
-plot(Va_bias~ mat_ratio2[r_order], va2,pch=19, cex=1,col= va2$scenario, xlab="Proportion non-sibling maternal links", ylab="Bias in Va")
+plot(Va_bias~ mat_ratio, va2,pch=19, cex=1,col= va2$scenario, xlab="Proportion non-sibling maternal links", ylab="Bias in Va")
 legend("topleft",apply(scenarios[,c(2,1,4)],1,function(x) paste(colnames(scenarios[,c(2,1,4)]),x,collapse=", ", sep="=") ), pch=19, col=1:4)
+
+# plot(Va_bias~ pedC_sum[3,][r_order], va2,pch=19, cex=1,col= va2$scenario, xlab="Proportion non-sibling maternal links", ylab="Bias in Va")
+
 
 
 # plot(Va_bias~ log(mat_ratio2[r_order]), va1,pch=19, cex=1,col= va1$scenario)

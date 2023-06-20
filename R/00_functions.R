@@ -52,6 +52,24 @@ matriline <- function(ped){
 	}
 }
 
+
+pedCor <- function(ped){
+	dat <- subset(ped,!is.na(dam))
+	A <- nadiv::makeA(ped[,1:3])
+	A_dam<-A[as.character(dat$dam),as.character(dat$dam)]
+	A_damE<-matrix(as.numeric(A_dam>=1),nrow(A_dam))
+	damDM<-model.matrix(~dam-1,dat)
+	colnames(damDM) <- gsub("dam","",colnames(damDM))
+	rownames(damDM) <- as.character(dat$dam)
+	A_damE <- damDM[,as.character(dat$dam)]
+	A_id<-A[as.character(dat$animal),as.character(dat$animal)]
+	E <- diag(nrow(dat))
+	A_cov<-A[as.character(dat$animal),as.character(dat$dam)]
+
+	cor(cbind(A_id[lower.tri(A_id)],A_dam[lower.tri(A_dam)],A_damE[lower.tri(A_damE)]))
+}
+
+
 rbv0 <- function(pedigree, G){
 	X <- matrix(0, nrow=nrow(pedigree), ncol=nrow(G))
 	index <- which(diag(G)!=0)

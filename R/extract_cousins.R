@@ -16,34 +16,42 @@ combo_prod <- function(x) if(length(x)>1){sum( utils::combn(x, m =2)[1, ] * util
 
 combo_au <- function(x) if(length(x)>1){sum(x * (length(x)-1))}else{0}
 
-
 n_cousin <- function(p,gp,ped){
-  f1 <- formula(paste("animal~",p,"+",gp))
-  f2 <- formula(paste("animal~",gp))
-  d1 <- aggregate(f1, ped,length)
-	sum(aggregate(f2,d1,combo_prod)$animal)
+	if(all(is.na(ped[,gp]))){ ## stops working when there no links through a certain grandparent type
+		0
+	}else{
+		f1 <- formula(paste("animal~",p,"+",gp))
+	  f2 <- formula(paste("animal~",gp))
+	  d1 <- aggregate(f1, ped,length)
+		sum(aggregate(f2,d1,combo_prod)$animal)	
+	}
 }
 
 
 n_au <- function(link,ped){
-	
-	p <- if(substr(link,1,1)=="M"){"dam"}else{"sire"}
-	gp <- if(substr(link,3,3)=="M"){"dam"}else if(substr(link,3,3)=="F"){"sire"} else{"pair"}
-  f1 <- formula(paste("animal~",p,"+",link))
-  f2 <- formula(paste("animal~",gp))
-  d1 <- aggregate(f1, ped,length)
-  d2 <- aggregate(f2, ped,length)
-	sum(d1$animal * (d2[match(d1[,link],d2[,gp]),"animal"]-1), na.rm=TRUE)
+	if(all(is.na(ped[,link]))){
+		0
+	}else{	
+		p <- if(substr(link,1,1)=="M"){"dam"}else{"sire"}
+		gp <- if(substr(link,3,3)=="M"){"dam"}else if(substr(link,3,3)=="F"){"sire"} else{"pair"}
+	  f1 <- formula(paste("animal~",p,"+",link))
+	  f2 <- formula(paste("animal~",gp))
+	  d1 <- aggregate(f1, ped,length)
+	  d2 <- aggregate(f2, ped,length)
+		sum(d1$animal * (d2[match(d1[,link],d2[,gp]),"animal"]-1), na.rm=TRUE)
+	}
 }
+
 total_links <- function(ped) nrow(ped) * (nrow(ped) - 1) / 2
 
 non_zero_links <- function(ped){
-	pedA<-nadiv::makeA(ped[,1:3])
-	sum(pedA[lower.tri(pedA)]>0)
+	# pedA<-nadiv::makeA(ped[,1:3])
+	# sum(pedA[lower.tri(pedA)]>0)
+nrow(Matrix::summary(nadiv::makeA(ped[,1:3])))
 }
 
 
-
+# ped<-ped_sub_full
 
 ped_stat <- function(ped, phenotyped=NULL){	
 	colnames(ped) <- c("animal","dam","sire")

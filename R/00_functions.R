@@ -1,4 +1,7 @@
 
+se <- function(x) sd(x)/sqrt(length(x))
+
+
 #####
 #--- relatedness functions
 ####
@@ -50,6 +53,7 @@ matriline <- function(ped){
 	for(i in 1:nrow(ped)){
 		matriline[i] <- ifelse(is.na(ped[i,"dam"]), ped[i,"animal"],matriline[match(ped[i,"dam"],ped[,"animal"])])
 	}
+	matriline
 }
 
 
@@ -57,16 +61,32 @@ pedCor <- function(ped){
 	dat <- subset(ped,!is.na(dam))
 	A <- nadiv::makeA(ped[,1:3])
 	A_dam<-A[as.character(dat$dam),as.character(dat$dam)]
-	A_damE<-matrix(as.numeric(A_dam>=1),nrow(A_dam))
-	damDM<-model.matrix(~dam-1,dat)
-	colnames(damDM) <- gsub("dam","",colnames(damDM))
-	rownames(damDM) <- as.character(dat$dam)
-	A_damE <- damDM[,as.character(dat$dam)]
+	# A_damE<-matrix(as.numeric(A_dam>=1),nrow(A_dam))
+	damDM<-	Matrix::fac2sparse(dat$dam)
+	# colnames(damDM) <- gsub("dam","",colnames(damDM))
+	colnames(damDM) <- as.character(dat$dam)
+	A_damE <- as(damDM[as.character(dat$dam),], "symmetricMatrix")
 	A_id<-A[as.character(dat$animal),as.character(dat$animal)]
 	E <- diag(nrow(dat))
 	A_cov<-A[as.character(dat$animal),as.character(dat$dam)]
 
 	cor(cbind(A_id[lower.tri(A_id)],A_dam[lower.tri(A_dam)],A_damE[lower.tri(A_damE)]))
+}
+
+	# nrow(Matrix::summary(A_damE))-nrow(dat)
+
+ped_stat2 <- function(ped){
+	colnames(ped)[1]<-"animal"
+	dat <- ped[!is.na(ped$dam),]
+	A <- nadiv::makeA(ped[,1:3])
+	A_dam<-A[as.character(dat$dam),as.character(dat$dam)]
+	A_id<-A[as.character(dat$animal),as.character(dat$animal)]
+	dam_sum<-Matrix::summary(A_dam)
+	id_sum<-Matrix::summary(A_id)
+	mat_sibs<- table(ped$dam)
+	c(mat_sib = sum(mat_sibs * (mat_sibs-1)/2),
+		mat_links = nrow(dam_sum)-nrow(dat),
+		total_links = nrow(id_sum)-nrow(dat))
 }
 
 
@@ -150,6 +170,19 @@ m1_func <- function(data){
 	m1 <- summary(mod_1)$varcomp
 	c(A= m1["vm(animal, ped.ainv)",1], 
 		Me=NA, 
+		Mg=NA,
+		cov_AMg =NA,
+		E = m1["units!R",1])
+}
+
+m1a_func <- function(data){
+	mod_1 <- asreml(
+		fixed= p~1
+		, random= ~mother_PE
+	  , data= data, trace=FALSE)
+	m1 <- summary(mod_1)$varcomp
+	c(A= NA, 
+		Me=m1["mother_PE",1], 
 		Mg=NA,
 		cov_AMg =NA,
 		E = m1["units!R",1])
@@ -277,7 +310,7 @@ model_func <- function(FUN,peds,data,mc.cores=8){
 		}
 		colnames(ped) <- c("animal","dam","sire")
 		assign("ped.ainv", asreml::ainverse(ped), envir = .GlobalEnv) 
-		out <- do.call(rbind,parallel::mclapply(data[[i]], FUN, mc.cores=6))
+		out <- do.call(rbind,lapply(data[[i]], FUN))
 		rm("ped.ainv", envir = .GlobalEnv)
 		cat(i," ")
 		out

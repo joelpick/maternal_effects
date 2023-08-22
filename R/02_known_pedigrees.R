@@ -262,3 +262,29 @@ head(mod2,20)
 mod2$Va_bias <- mod2$Va_est - mod2$Va_sim
 # mod2$ln_Va_bias <- log(mod2$Va_bias)
 va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod2,mean)
+
+
+
+
+
+
+ped_BT<-nadiv::prepPed(read.csv(paste0(wd,"Data/Raw/ped_BT.csv"))[,1:3])
+ped_RD<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv"))[,1:3]
+ped_SFW<-read.csv(paste0(wd,"Data/Raw/ped_SFW.csv"))[,1:3]
+ped_SSH<-read.csv(paste0(wd,"Data/Raw/ped_SSH.csv"))[,1:3]
+ped_SV<-read.csv(paste0(wd,"Data/Raw/ped_SV.csv"))[,1:3]
+
+stat2<-rbind(RD=ped_stat2(ped_RD),
+SFW=ped_stat2(ped_SFW),
+SSH=ped_stat2(ped_SSH),
+SV=ped_stat2(ped_SV))
+
+(stat2[,2]-stat2[,1])/stat2[,3]
+
+
+stat1<-rbind(RD=ped_stat(ped_RD),
+SFW=ped_stat(ped_SFW),
+SSH=ped_stat(ped_SSH),
+SV=ped_stat(ped_SV))
+
+rowSums(stat1[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(stat1[,-(1:2)])

@@ -14,73 +14,86 @@ source(paste0(wd,"R/00_functions.R"))
 source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 # devtools::load_all("~/github/squidSim/R")
 
-run=FALSE
+run=TRUE
 
 n_sims <-100
+
+##------------------------
+## Pedigree parameters
+##------------------------
+
 generations=5
-n_females=100
+n_offspring=600
 
 ## Range from bonnet et al 
 m_fecundity = 6 # mean is 6.9
 h_fecundity = 12 #highest is 13.3
 l_fecundity = 3 #lowest is 1.5
-## these numbers are easier to maintain total number of phenotuypes indidivuals
+## these numbers are easier to maintain total number of phenotypes individuals
 
 ## first number is female, then male immigration rate
 no_immigration = c(0,0)
-f_immigration=c(0.5,0)
-m_immigration=c(0,0.5)
+f_immigration=c(0.4,0.1)
+m_immigration=c(0.1,0.4)
 b_immigration=c(0.25,0.25) # same overall immigration but no sex bias
 
 fhs = 0.75
 fs = 1
 hs = 0
 
-#### are number of maternal links the same in the two pedigrees?
-#### number of maternal half sibs will differ presumably
-#### moore et al meta-analysis mentions taking into account pedigree links in the supp matt
+fecundity <- c(m_fecundity,h_fecundity,l_fecundity)
+immigration <- rbind(no_immigration,f_immigration,m_immigration,b_immigration)
+p_sire <- c(fhs,hs,fs)
 
-## create 100 full sib pedigrees 
+f_names <- c("mF","hF","lF")
+i_names <- c("nI","fI","mI","bI")
+ms_names <- c("fhs","hs","fs")
 
-peds_param <- rbind(
-	##
-	baseline = c(n_females=n_females,fecundity=m_fecundity,p_sire = fhs,immigration = no_immigration),
+## make all combos 
+combos<-expand.grid(p_sire=1:3,immigration=1:4,fecundity=1:3)
 
-	fs=c(n_females=n_females,fecundity=m_fecundity,p_sire = fs,immigration = no_immigration),
-	hs=c(n_females=n_females,fecundity=m_fecundity,p_sire = hs,immigration = no_immigration),
+peds_param <- cbind(
+	n_females=n_offspring / fecundity[combos[,"fecundity"]],
+	fecundity=fecundity[combos[,"fecundity"]],
+	p_sire = p_sire[combos[,"p_sire"]],
+	immigration_f = immigration[combos[,"immigration"],1],
+	immigration_m = immigration[combos[,"immigration"],2])
 
-	hF=c(n_females = n_females/2,fecundity = h_fecundity,p_sire = fhs,immigration = no_immigration),
-	lF=c(n_females = n_females*2,fecundity = l_fecundity,p_sire = fhs,immigration = no_immigration),
-
-	IF=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = f_immigration),
-	IM=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = m_immigration),
-	IB=c(n_females = n_females, fecundity = m_fecundity, p_sire = fhs, immigration = b_immigration)
-)
-
-# 1=(juv_surv_f * fecundity)/2 + immigration_f
-# juv_surv_f = 2*(1 - immigration_f)/fecundity
-
+## work out juvenile survival, so that populations are stationary
 peds_param <- cbind(peds_param, 
-	juv_surv1=2*(1 - peds_param[,"immigration1"])/peds_param[,"fecundity"],
-	juv_surv2=2*(1 - peds_param[,"immigration2"])/peds_param[,"fecundity"]
+	juv_surv_f=2*(1 - peds_param[,"immigration_f"])/peds_param[,"fecundity"],
+	juv_surv_m=2*(1 - peds_param[,"immigration_m"])/peds_param[,"fecundity"]
 )
 
-# peds_param[,"n_females"]*peds_param[,"juv_surv1"]*peds_param[,"fecundity"]
-# peds_param[,"n_females"]*peds_param[,"juv_surv2"]*peds_param[,"fecundity"]
+## generate pedigree names
+ped_names <- rownames(peds_param) <- paste(
+	ms_names[combos[,"p_sire"]],
+	f_names[combos[,"fecundity"]],
+	i_names[combos[,"immigration"]], sep="_")
 
-ped_names <- rownames(peds_param)
 
+##
 
 scenarios <- rbind(	
-	# C) Maternal genetic only
-	c=c(Va=0, Vmg=0.25, r_amg=0, Vme=0),
-	# D) Direct genetic and maternal environment
-	e=c(Va=0, Vmg=0.25, r_amg=0, Vme=0.25),#####
-	# F) Direct and maternal genetic, no covariance
-	f=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0),
-	# I) Direct and maternal genetic, no covariance and maternal environment
-	i=c(Va=0.25, Vmg=0.25, r_amg=0, Vme=0.25)
-	# , rd=c(Va=0.05, Vmg=0.4, r_amg=0, Vme=0.05)
+	# A) Maternal genetic only
+	a=c(Va=0, Vmg=0.25, Vme=0, r_amg=0),
+	# B) Direct genetic and maternal environment
+	b=c(Va=0, Vmg=0.25, Vme=0.25, r_amg=0),
+	# C) high Maternal genetic only
+	c=c(Va=0, Vmg=0.5, Vme=0, r_amg=0),
+	# D) high Maternal environment only
+	d=c(Va=0, Vmg=0, Vme=0.5, r_amg=0),
+	# E) Direct and maternal genetic, no covariance
+	e=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0),
+	# F) Direct and maternal environment, no covariance
+	f=c(Va=0.25, Vmg=0, Vme=0.25, r_amg=0),
+	# G) Direct and maternal genetic, no covariance and maternal environment
+	g=c(Va=0.25, Vmg=0.25, Vme=0.25, r_amg=0),
+	# H) Direct and maternal genetic, + covariance and maternal environment
+	h=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0.5),
+	# I) Direct and maternal genetic, - covariance and maternal environment
+	i=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=-0.5)
+		
 )
 
 if(run){
@@ -89,87 +102,85 @@ if(run){
 
 	ped_str <- vector("list",length=nrow(peds_param))
 	names(ped_str) <- ped_names
+	ped_str_mat <- vector("list",length=nrow(peds_param))
+	names(ped_str_mat) <- ped_names
+
+# k=ped_names[6]
 	## make pedigrees
-	cat("Simulating Pedigrees:\n")
-	for(j in ped_names){
+	
+	for(k in ped_names){
+		cat(k, "\n")
+		cat("Simulating Pedigrees\n")
 		peds <- mclapply(1:n_sims,	function(i){
 			simulate_pedigree(
 				years = generations,
-				n_females = peds_param[j,"n_females"],
-				fecundity = peds_param[j,"fecundity"],
-				p_sire = peds_param[j,"p_sire"],
+				n_females = peds_param[k,"n_females"],
+				fecundity = peds_param[k,"fecundity"],
+				p_sire = peds_param[k,"p_sire"],
 				p_polyandry=1,
-				juv_surv = c(peds_param[j,"juv_surv1"],peds_param[j,"juv_surv2"]),
+				juv_surv = c(peds_param[k,"juv_surv_f"],peds_param[k,"juv_surv_m"]),
 				adult_surv = 0,					# discrete generations
-				immigration = c(peds_param[j,"immigration1"],peds_param[j,"immigration2"]), 				# closed population
+				immigration = c(peds_param[k,"immigration_f"],peds_param[k,"immigration_m"]), 				# closed population
 				constant_pop = TRUE     # constant population size
 				)$pedigree
 		}, mc.cores=8)
-		assign(paste0(j ,"_peds"),peds)	
-		ped_str[[j]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
-		cat(j, " ")
-	}
+		# assign(paste0(k ,"_peds"),peds)	
 
-		ped_str
-### need to do ped metrics for individuals with data!
+		cat("Generating Pedigree Metrics\n")
+		ped_str[[k]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
+		ped_str_mat[[k]]<- do.call(rbind,mclapply(peds,ped_stat2, mc.cores=8))
+		
+	
 
-ped_cors <-  vector("list",length=nrow(peds_param))
-names(ped_cors) <- ped_names
-
-for(k in ped_names){
-		ped_cors[[k]]<- do.call(rbind,mclapply(get(paste0(k,"_peds")), function(i){
-			x<-pedCor(i)
-			x[lower.tri(x)]
-		}, mc.cores=8))
-		cat(k, " ")
-	}
-# ped_cors<-ped_cors[ped_names]
-
-
-	cat("\n\nSimulating Data: \n")
-	## simulate data
-	for(k in ped_names){
-		dat<-mclapply(get(paste0(k,"_peds")), function(i){
+		cat("Simulating Data\n")
+		## simulate data
+	
+		dat<-mclapply(peds, function(i){
 			x<-vector("list", nrow(scenarios))
 			for(j in 1:nrow(scenarios)){
 				x[[j]]<- mge_sim(i[,1:3], param=scenarios[j,])
 			}
 			x
 		}, mc.cores=8)
-		assign(paste0(k,"_data"),dat)
-		cat(k, " ")
-	}
+		# assign(paste0(k,"_data"),dat)
 
 	## run models
-	cat("\n\nRunning models: \n")
-	for(k in ped_names){
-		cat(k, "\n")
-		cat("Model 1\n")
-		model1 <- model_func(m1_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
+		cat("Running models: \n")
+	
+		cat("Model 1: ")
+		model1 <- model_func(m1a_func,peds,dat,mc.cores=8)
 		assign(paste0("model1_",k),model1)
-		cat("\nModel 2\n")
-		model2 <- model_func(m2_func,get(paste0(k,"_peds")),get(paste0(k,"_data")),mc.cores=8)
+		cat("\nModel 2: ")
+		model2 <- model_func(m2_func,peds,dat,mc.cores=8)
 		assign(paste0("model2_",k),model2)
 		cat("\n")
+		rm(peds,dat)
 	}
 
-# ped_str <- vector("list",length=nrow(peds_param))
-#		ped_str[[ped_names[j]]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=8))
-#lapply(ped_str,colMeans)
-
-
-
-	save(list=(c("ped_str",paste0("model1_",ped_names),paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims.Rdata"))
-
+	save(list=(c("ped_names","scenarios","ped_str","ped_str_mat",paste0("model1_",ped_names),paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims3.Rdata"))
 }
 
-load(paste0(data_wd,"mge_sims.Rdata"))
+load(paste0(data_wd,"mge_sims2.Rdata"))
+
+
 
 ped_sum<-sapply(ped_str,colMeans)
+ped_sum_mat<-sapply(ped_str_mat,colMeans)
+
+ped_sum_se<-sapply(ped_str,function(x) apply(x,2,se))
+ped_sum_mat_se<-sapply(ped_str_mat,function(x) apply(x,2,se))
+
+
 pedC_sum<-sapply(ped_cors,colMeans)
 rownames(pedC_sum) <- c("A-Mg","A-Me","Mg-Me")
 
 ped_sum2 <- rbind(mat_sibs=colSums(ped_sum[c("FS","MHS"),]), mat_links=colSums(ped_sum[c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]), other=colSums(ped_sum[!rownames(ped_sum)%in%c( "individuals" ,"links" ,"FS","MHS","dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS"),]) )
+
+plot(ped_sum_mat["mat_links",],colSums(ped_sum2[c("mat_sibs","mat_links"),]))
+
+plot(ped_sum_mat["total_links",],ped_sum2[c("other"),])
+
+plot((ped_sum_mat["mat_links",] - ped_sum_mat["mat_sib",])/ped_sum_mat["total_links",],ped_sum2[2,]/colSums(ped_sum2)); abline(0,1)
 
 ps <- t(t(ped_sum2)/colSums(ped_sum2))
 
@@ -192,7 +203,14 @@ mat_ratio4<-ped_sum2[1,]/ped_sum2[3,]
 mat_ratio5<-ped_sum2[2,]/ped_sum2[3,]
 mat_ratio6<-ped_sum2[3,]/colSums(ped_sum2)
 
+mat_ratio2<-ped_sum2[2,]/colSums(ped_sum2)
 
+matM_ratio <- (ped_sum_mat["mat_links",] - ped_sum_mat["mat_sib",])/ped_sum_mat["total_links",]
+
+matM_ratio2 <- ped_sum_mat["maternal",]/ped_sum_mat["total",]
+matM_ratio3 <- ped_sum2["mat_sibs",]/ped_sum_mat["maternal",]
+plot(matM_ratio,mat_ratio2)
+plot(matM_ratio2,mat_ratio3)
 
 # for(k in ped_names){
 # 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
@@ -245,16 +263,49 @@ mod2<-do.call(rbind,lapply(ped_names,function(k) {
 	}))
 	# assign(paste0("mod2_",k),mod2)
 }))
+r_order<- sapply(va2$r, function(x) which(rownames(peds_param)==x))
+
+
 #,sum(x[i,c("Mg","Me")])
 head(mod2,20)
 mod2$Va_bias <- mod2$Va_est - mod2$Va_sim
 # mod2$ln_Va_bias <- log(mod2$Va_bias)
 va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod2,mean)
+va2_se<-aggregate(Va_bias~ scenario+r, mod2,se)
+
+
 # which(va1$r)
 
 va2$mat_ratio <- mat_ratio2[r_order]
-par(mrow=c(1,1), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
-plot(Va_bias~ mat_ratio, va2, subset=scenario==1,  pch=19, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2))
+va2$matM_ratio<- matM_ratio[r_order]
+va2[,c("ms","fec","imm")] <- do.call(rbind,strsplit(va2$r,"_"))
+# va2$matM_ratio2<- matM_ratio2[r_order]
+par(mfrow=c(1,2), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
+plot(Va_bias~ mat_ratio, va2, subset=scenario==1, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2), col=(1:4)[as.factor(va2$imm)], pch=c(15:17)[as.factor(va2$ms)])
+arrows(va2$mat_ratio,va2$Va_bias+va2_se$Va_bias,va2$mat_ratio,va2$Va_bias-va2_se$Va_bias,code=3,angle=90,length=0.1)
+plot(Va_bias~ matM_ratio, va2, subset=scenario==1, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2), col=(1:4)[as.factor(va2$imm)], pch=c(15:17)[as.factor(va2$ms)])
+arrows(va2$matM_ratio,va2$Va_bias+va2_se$Va_bias,va2$matM_ratio,va2$Va_bias-va2_se$Va_bias,code=3,angle=90,length=0.1)
+# plot(Va_bias~ matM_ratio2, va2, subset=scenario==1,  pch=19, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2))
+
+
+mod2_1 <- subset(mod2,scenario==1)
+
+mat_propM<- do.call(rbind,ped_str_mat)
+mod2_1$mat_propM <- mat_propM[,1]/mat_propM[,2]
+
+mat_prop<- do.call(rbind,ped_str)
+mod2_1$mat_sibs <- rowSums(mat_prop[,c("FS","MHS")])
+
+mat_prop2 <- cbind(mat_sibs=rowSums(mat_prop[,c("FS","MHS")]), mat_links=rowSums(mat_prop[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")]), other=rowSums(mat_prop[,!colnames(mat_prop)%in%c( "individuals" ,"links" ,"FS","MHS","dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")]) )
+
+
+plot(Va_bias~ mat_propM,mod2_1, pch=19, col=c(1:7)[as.factor(mod2_1$r)])
+cor(mod2_1$Va_bias, mod2_1$mat_propM)
+
+sapply(ped_names,function(i){
+	x<-subset(mod2_1, r==i)
+	cor(x$Va_bias, x$mat_propM)
+})
 
 
 plot(Va_bias~ mat_ratio, va2,pch=19, cex=1,col= va2$scenario, xlab="Proportion non-sibling maternal links", ylab="Bias in Va")
@@ -262,6 +313,15 @@ legend("topleft",apply(scenarios[,c(2,1,4)],1,function(x) paste(colnames(scenari
 
 # plot(Va_bias~ pedC_sum[3,][r_order], va2,pch=19, cex=1,col= va2$scenario, xlab="Proportion non-sibling maternal links", ylab="Bias in Va")
 
+
+# mod2<-sapply(ped_names,function(k) {
+# 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
+# 		do.call(rbind,lapply(1:nrow(scenarios), function(i) 
+
+# 			c(r=k,scenario=i,Va_est = x[i,"A"],Vm_est = x[i,"Me"],Va_sim=scenarios[i,"Va"],Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),Vmg_sim=scenarios[i,"Vmg"])))
+# 	}))
+# 	# assign(paste0("mod2_",k),mod2)
+# })
 
 
 # plot(Va_bias~ log(mat_ratio2[r_order]), va1,pch=19, cex=1,col= va1$scenario)
@@ -294,11 +354,11 @@ library(beeswarm)
 par(mfrow=c(2,2),mar=c(4,4,1,1))
 # layout(matrix(c(1:3,0,4:11),nrow=3, byrow=TRUE))
 for(i in 1:4){#nrow(scenarios)
-	beeswarm(estimate~ r, mod2, subset=scenario==i&comp=="A",pch=19, cex=0.2, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap",  ylim=c(0,0.8),xlim=c(-1,12))#, xlim=c(-1,8)
+	beeswarm(Va_est~ r, mod2, subset=scenario==i,pch=19, cex=0.2, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap",  ylim=c(0,0.8),xlim=c(-1,12))#, xlim=c(-1,8)
 	for(j in 1:5){
 		polygon(x=c(-1,0,0,-1),y=c(s4[i,j],s4[i,j],s4[i,j+1],s4[i,j+1]), col=cols[j])	
 	}
-	means<-aggregate(estimate~ r, mod2,mean, subset=scenario==i&comp=="A")$estimate
+	means<-aggregate(Va_est~ r, mod2,mean, subset=scenario==i)$Va_est
 
 	arrows((1:(ped_n*2))-0.25,means,(1:(ped_n*2))+0.25, code=0, col="blue")
 	arrows((1:(ped_n*2))-0.25,rep(c(scenarios2[i,1],sum(scenarios2[i,2:3])),each=ped_n),(1:(ped_n*2))+0.25, code=0, col="red")

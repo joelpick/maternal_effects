@@ -1,6 +1,12 @@
+rm(list=ls())
+
+
+wd <- "/Users/joelpick/github/maternal_effects/"
+
+data_wd <- paste0(wd,"Data/Intermediate/")
+
 load(paste0(data_wd,"mge_sims_rd.Rdata"))
 load(paste0(data_wd,"mge_sims_known_rd.Rdata"))
-
 
 
 ped_sum<-cbind(sapply(ped_str,colMeans), ped_str_known)
@@ -37,7 +43,7 @@ mod2<-do.call(rbind,lapply(ped_names,function(k) {
 }))
 #,sum(x[i,c("Mg","Me")])
 head(mod2,20)
-mod2$Va_bias <- (mod2$Va_est - mod2$Va_sim) /mod2$Va_sim * 100
+mod2$Va_bias <- (mod2$Va_est - mod2$Va_sim) 
 # mod2$ln_Va_bias <- log(mod2$Va_bias)
 va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod2,mean)
 # which(va1$r)

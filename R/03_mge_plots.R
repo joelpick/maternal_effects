@@ -1,9 +1,6 @@
 
 rm(list=ls())
 
-
-scenarios[,"Va"] + 0.5*scenarios[,"Vmg"]+ 1.5*scenarios[,"r_amg"]*sqrt(scenarios[,"Va"] * scenarios[,"Vmg"])
-
 library(asreml)
 library(parallel)
 
@@ -32,8 +29,16 @@ mat_ratio_all<-sapply(ped_str,function(x){
 	rowSums(x[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(x[,-(1:2)]) 
 })
 
+cov_ratio_all<-sapply(ped_str,function(x){
+	rowSums(x[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS",
+		"sire","PG","au_S_FS","au_S_MHS","au_D_PHS","cousin_DS_FS","cousin_DS_HS"
+		)])/rowSums(x[,-(1:2)]) 
+})
+
 mat_ratio <- colMeans(mat_ratio_all)
 mat_ratio_se <- apply(mat_ratio_all,2,se)
+
+cov_ratio <- colMeans(cov_ratio_all)
 
 
 matM_ratio_all<-sapply(ped_str_mat,function(x){
@@ -79,10 +84,10 @@ mod2<-do.call(rbind,lapply(ped_names,function(k) {
 	# assign(paste0("mod2_",k),mod2)
 }))
 
-sapply(ped_names,function(k) {
-	sum(sapply(get(paste0("model2_",k)),is.matrix))
+# sapply(ped_names,function(k) {
+# 	sum(sapply(get(paste0("model2_",k)),is.matrix))
 	
-})
+# })
 
 
 #,sum(x[i,c("Mg","Me")])
@@ -107,13 +112,6 @@ va2_se$matM_ratio <- matM_ratio_se[r_order]
 va2[,c("ms","fec","imm")] <- do.call(rbind,strsplit(va2$r,"_"))
 # va2$matM_ratio2<- matM_ratio2[r_order]
 scenarios
-s <- c(1,3)
-s <- c(1,2,5,7)
-s <- c(2:4)
-s <- c(4,6)
-s <- c(5,8,9)
-s<-1:9
-
 
 plot_func <-function(s){
 	dd<-subset(va2, scenario %in% s)
@@ -144,18 +142,23 @@ legend("center",apply(scenarios[s,],1, function(x) paste(colnames(scenarios[s,])
 }
 
 scenarios
+
+setEPS()
+pdf(paste0(wd,"Figures/cov_mge.pdf"), height=5, width=5)
+par(mar=c(6,6,1,1))
+plot(cov_ratio~mat_ratio, pch=19, xlab="Proportion non-sibling maternal links (Vmg)", ylab="Proportion non-sibling links \nthrough single mother (COVa,mg)")
+dev.off()
+
+
 setEPS()
 pdf(paste0(wd,"Figures/fig1.pdf"), height=10, width=10)
 plot_func(1:9)
 dev.off()
 
 
-plot_func(c(1,3))
-plot_func(c(1,2,5:7))
-plot_func(c(2:4))
-plot_func(c(4,6))
-plot_func(c(5,8,9))
-
+plot_func(c(1:4))
+plot_func(c(2,5,6))
+plot_func(c(3,7:10))
 
 
 

@@ -143,16 +143,30 @@ legend("center",apply(scenarios[s,],1, function(x) paste(colnames(scenarios[s,])
 
 scenarios
 setEPS()
-pdf(paste0(wd,"Figures/fig1.pdf"), height=10, width=10)
+pdf(paste0(wd,"Figures/mge_fig1.pdf"), height=10, width=10)
 plot_func(1:9)
+dev.off()
+
+setEPS()
+pdf(paste0(wd,"Figures/mge_fig2.pdf"), height=10, width=10)
+plot_func(c(1,2,5:7))
+dev.off()
+
+setEPS()
+pdf(paste0(wd,"Figures/mge_fig3.pdf"), height=10, width=10)
+plot_func(c(2:4))
+dev.off()
+
+setEPS()
+pdf(paste0(wd,"Figures/mge_fig4.pdf"), height=10, width=10)
+plot_func(c(5,8,9))
 dev.off()
 
 
 plot_func(c(1,3))
 plot_func(c(1,2,5:7))
-plot_func(c(2:4))
 plot_func(c(4,6))
-plot_func(c(5,8,9))
+
 
 
 
@@ -212,6 +226,16 @@ r_order<- sapply(tVa_means$r, function(x) which(ped_names2==x))
 tVa_means$mat_ratio <- mat_ratio[r_order]
 tVa_means$matM_ratio<- matM_ratio[r_order]
 tVa_means[,c("ms","fec","imm")] <- do.call(rbind,strsplit(tVa_means$r,"_"))
+
+setEPS()
+pdf(paste0(wd,"Figures/mge_fig5.pdf"), height=6, width=6)
+	par(mfrow=c(1,1), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
+
+	cols<-viridis::viridis(9)
+	plot(bias~mat_ratio,tVa_means, pch=19, col=(cols)[as.factor(tVa_means$scenario)], ylab="Bias in Total Va", xlab="Proportion non-sibling maternal links");abline(h=0)
+
+dev.off()
+
 
 {
 	cols<-viridis::viridis(9)

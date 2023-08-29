@@ -16,6 +16,9 @@ dd$h2_1/dd$h2_2 -1
 
 plot(dd$h2_1-dd$h2_2 ~ dd$m2_2)
 
+hist(dd$m2_2, breaks=20, xlab="Mg^2", main="") 
+
+
 #3 proportion of variance due to Mge
-hist(dd$m2_2/(dd$m2_2+dd$c2_2), breaks=20) 
+hist((dd$m2_2/(dd$m2_2+dd$c2_2))[(dd$m2_2+dd$c2_2)>0.05], breaks=20, xlab="Vmg / Vmg+Vme", main="") 
 

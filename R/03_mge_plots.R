@@ -2,6 +2,8 @@
 rm(list=ls())
 
 
+scenarios[,"Va"] + 0.5*scenarios[,"Vmg"]+ 1.5*scenarios[,"r_amg"]*sqrt(scenarios[,"Va"] * scenarios[,"Vmg"])
+
 library(asreml)
 library(parallel)
 
@@ -18,10 +20,10 @@ source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 load(paste0(data_wd,"mge_sims3.Rdata"))
 
 
-ped_names2 <- ped_names[!grepl("fI",ped_names)]
+# ped_names2 <- ped_names[!grepl("fI",ped_names)]
 
-ped_str<-ped_str[ped_names2]
-ped_str_mat<-ped_str_mat[ped_names2]
+# ped_str<-ped_str[ped_names2]
+# ped_str_mat<-ped_str_mat[ped_names2]
 
 # ped_sum<-sapply(ped_str,colMeans)
 # ped_sum_mat<-sapply(ped_str_mat,colMeans)
@@ -42,27 +44,27 @@ matM_ratio <- colMeans(matM_ratio_all)
 matM_ratio_se <- apply(matM_ratio_all,2,se)
 
 
-mod1<-do.call(rbind,lapply(ped_names2,function(k) {
-	mod1 <- do.call(rbind,lapply(get(paste0("model1_",k)), function(x) {
-		do.call(rbind,lapply(1:nrow(scenarios), function(i) 
-			data.frame(
-				r=k,
-				scenario=i,
-				Va_est = x[i,"A"],
-				Vm_est = x[i,"Me"],
-				Va_sim=scenarios[i,"Va"],
-				Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),
-				Vmg_sim=scenarios[i,"Vmg"])))
-	}))
-	# assign(paste0("mod2_",k),mod2)
-}))
+# mod1<-do.call(rbind,lapply(ped_names,function(k) {
+# 	mod1 <- do.call(rbind,lapply(get(paste0("model1_",k)), function(x) {
+# 		do.call(rbind,lapply(1:nrow(scenarios), function(i) 
+# 			data.frame(
+# 				r=k,
+# 				scenario=i,
+# 				Va_est = x[i,"A"],
+# 				Vm_est = x[i,"Me"],
+# 				Va_sim=scenarios[i,"Va"],
+# 				Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),
+# 				Vmg_sim=scenarios[i,"Vmg"])))
+# 	}))
+# 	# assign(paste0("mod2_",k),mod2)
+# }))
 
-va1<-aggregate(cbind(Vm_sim,Vm_est,Vm_bias)~ scenario+r, mod2,mean)
+# va1<-aggregate(cbind(Vm_sim,Vm_est,Vm_bias)~ scenario+r, mod2,mean)
 
-plot(va1$Vm_bias,va2$Vm_bias,)
+# plot(va1$Vm_bias,va2$Vm_bias,)
 
 
-mod2<-do.call(rbind,lapply(ped_names2,function(k) {
+mod2<-do.call(rbind,lapply(ped_names,function(k) {
 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
 		do.call(rbind,lapply(1:nrow(scenarios), function(i) 
 			data.frame(
@@ -77,10 +79,10 @@ mod2<-do.call(rbind,lapply(ped_names2,function(k) {
 	# assign(paste0("mod2_",k),mod2)
 }))
 
-# sapply(ped_names,function(k) {
-# 	sum(sapply(get(paste0("model2_",k)),is.matrix))
+sapply(ped_names,function(k) {
+	sum(sapply(get(paste0("model2_",k)),is.matrix))
 	
-# })
+})
 
 
 #,sum(x[i,c("Mg","Me")])
@@ -91,7 +93,7 @@ mod2$Vm_bias <- mod2$Vm_est - mod2$Vm_sim
 # mod2$ln_Va_bias <- log(mod2$Va_bias)
 va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim,Vm_bias)~ scenario+r, mod2,mean)
 va2_se<-aggregate(cbind(Va_bias,Vm_bias)~ scenario+r, mod2,se)
-r_order<- sapply(va2$r, function(x) which(ped_names2==x))
+r_order<- sapply(va2$r, function(x) which(ped_names==x))
 
 # which(va1$r)
 
@@ -200,14 +202,14 @@ arrows(va2$matM_ratio,va2$Va_bias+va2_se$Va_bias,va2$matM_ratio,va2$Va_bias-va2_
 
 
 
-total_Va<-do.call(rbind,lapply(ped_names2,function(k) {
+total_Va<-do.call(rbind,lapply(ped_names,function(k) {
 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
 		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(
 			r=k,
 			scenario=i,
 			max=x[i,"A"] + 0.5*x[i,"Me"], 
 			min=x[i,"A"], 
-			sim=scenarios[i,"Va"] + 0.5*scenarios[i,"Vmg"]
+			sim=scenarios[i,"Va"] + 0.5*scenarios[i,"Vmg"]+ 1.5*scenarios[i,"r_amg"]*sqrt(scenarios[i,"Va"] * scenarios[i,"Vmg"])
 			)
 		))
 	}))}
@@ -222,7 +224,7 @@ total_Va$bias <- total_Va$min - total_Va$sim
 
 
 tVa_means <- aggregate(cbind(coverage,bias)~ r+scenario, total_Va, mean)
-r_order<- sapply(tVa_means$r, function(x) which(ped_names2==x))
+r_order<- sapply(tVa_means$r, function(x) which(ped_names==x))
 tVa_means$mat_ratio <- mat_ratio[r_order]
 tVa_means$matM_ratio<- matM_ratio[r_order]
 tVa_means[,c("ms","fec","imm")] <- do.call(rbind,strsplit(tVa_means$r,"_"))
@@ -248,3 +250,6 @@ dev.off()
 	plot(coverage~mat_ratio,tVa_means, pch=19, col=(cols)[as.factor(tVa_means$scenario)])
 }
 ## take home here is that an inference based on just Va where maternal genetic effects are likely is not very informative, as we are likely underestmating, but be overesitmaint g  
+
+
+hist(tVa_means$mat_ratio)

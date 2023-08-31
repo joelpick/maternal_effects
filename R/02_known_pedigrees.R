@@ -268,11 +268,43 @@ va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim)~ scenario+r, mod2,mean)
 
 
 
+
+load(paste0(data_wd,"mge_sims3.Rdata"))
+mat_ratio_all<-sapply(ped_str,function(x){
+	rowSums(x[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(x[,-(1:2)]) 
+})
+mat_ratio <- colMeans(mat_ratio_all)
+
+
 ped_BT<-nadiv::prepPed(read.csv(paste0(wd,"Data/Raw/ped_BT.csv"))[,1:3])
 ped_RD<-read.csv(paste0(wd,"Data/Raw/ped_RD.csv"))[,1:3]
 ped_SFW<-read.csv(paste0(wd,"Data/Raw/ped_SFW.csv"))[,1:3]
 ped_SSH<-read.csv(paste0(wd,"Data/Raw/ped_SSH.csv"))[,1:3]
 ped_SV<-read.csv(paste0(wd,"Data/Raw/ped_SV.csv"))[,1:3]
+
+chick_stat <- function(ped) ped_stat(ped, ped[!is.na(ped$dam),1])
+adult_stat <- function(ped) ped_stat(ped, unique(c(ped$dam,ped$sire)))
+
+stat1<-rbind(
+	BT_chick=chick_stat(ped_BT),
+	BT_adult=adult_stat(ped_BT),
+	RD_chick=chick_stat(ped_RD),
+	RD_adult=adult_stat(ped_RD),
+SFW_chick=chick_stat(ped_SFW),
+SFW_adult=adult_stat(ped_SFW),
+SSH_chick=chick_stat(ped_SSH),
+SSH_adult=adult_stat(ped_SSH),
+SV_chick=chick_stat(ped_SV),
+SV_adult=adult_stat(ped_SV))
+
+stat_mr<-rowSums(stat1[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(stat1[,-(1:2)])
+
+hist(mat_ratio, xlim=c(0.05,0.5), breaks=10)
+points(stat_mr,rep(0,10))
+text(stat_mr,rep(0,10),names(stat_mr))
+
+
+
 
 stat2<-rbind(RD=ped_stat2(ped_RD),
 SFW=ped_stat2(ped_SFW),
@@ -282,9 +314,13 @@ SV=ped_stat2(ped_SV))
 (stat2[,2]-stat2[,1])/stat2[,3]
 
 
-stat1<-rbind(RD=ped_stat(ped_RD),
+stat1<-rbind(BT=ped_stat(ped_BT),
+	RD=ped_stat(ped_RD),
 SFW=ped_stat(ped_SFW),
 SSH=ped_stat(ped_SSH),
 SV=ped_stat(ped_SV))
 
-rowSums(stat1[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(stat1[,-(1:2)])
+
+
+
+

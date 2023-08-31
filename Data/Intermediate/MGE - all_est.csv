@@ -1,47 +1,64 @@
-Study,Species,Population,Method,Trait,h2_1,c2_1,i2_1,h2_2,m2_2,c2_2,i2_2,r_2
-1,Soay Sheep,wild,animal model,Neonates Birthweight,0.091,0.201,,0.079,0.077,0.14,,
-1,Soay Sheep,wild,animal model,Lambs Foreleg,0.155,0.063,,0.14,0.033,0.039,,
-1,Soay Sheep,wild,animal model,Lambs Hindleg,0.196,0.068,,0.161,0.068,0.022,,
-1,Soay Sheep,wild,animal model,Lambs Weight,0.116,0.1,,0.066,0.095,0.032,,
-1,Soay Sheep,wild,animal model,Lambs Metacarpal length,0.509,0.081,,0.402,0.139,0,,
-1,Soay Sheep,wild,animal model,Lambs Jaw length,0.303,0.145,,0.203,0.141,0.048,,
-1,Soay Sheep,wild,animal model,Yearlings Foreleg,0.157,0.092,,0.108,0.078,0.029,,
-1,Soay Sheep,wild,animal model,Yearlings Hindleg,0.307,0.168,,0.271,0.094,0.093,,
-1,Soay Sheep,wild,animal model,Yearlings Weight,0.19,0.099,,0.156,0.062,0.055,,
-1,Soay Sheep,wild,animal model,Yearlings Metacarpal length,0.618,0,,0.618,0,0,,
-1,Soay Sheep,wild,animal model,Yearlings Jaw length,0.672,0.089,,0.672,0,0.09,,
-1,Soay Sheep,wild,animal model,Adults Foreleg,0.296,0.005,0.116,0.286,0.021,0,0.113,
-1,Soay Sheep,wild,animal model,Adults Hindleg,0.458,0.063,0.273,0.426,0.077,0.015,0.279,
-1,Soay Sheep,wild,animal model,Adults Weight,0.273,0.057,0.333,0.246,0.082,0,0.338,
-1,Soay Sheep,wild,animal model,Adults Metacarpal length,0.631,0.018,,0.61,0.032,0,,
-1,Soay Sheep,wild,animal model,Adults Jaw length,0.677,0.01,,0.677,0,0.01,,
-2,Soay Sheep,wild,animal model,Birth weight,0.116,0.214,,0.114,0.165,0.108,,-0.41
-2,Soay Sheep,wild,animal model,Birth date,0.127,0.316,,0.072,0.315,0.065,,-0.219
-2,Soay Sheep,wild,animal model,Natal litter size,0.077,0.252,,0.109,0.211,0.142,,-0.714
-3,Red Squirrels,wild,animal model,Female LRS,0.00068,0.08,,0.0005,0.02,0.03,,
-3,Red Squirrels,wild,animal model,lifespan,,,,0.00058,0.04,0.05,,
-3,Red Squirrels,wild,animal model,mean ARS,,,,0.00052,0.05,0.04,,
-3,Red Squirrels,wild,animal model,AFB,,,,0.0001,0.06,0.07,,
-4,Red Squirrels,wild,,Growth in body Mass,,,,,,,,
-4,Red Squirrels,wild,,Growth in body SIze,,,,,,,,
-5,Red Deer,wild,animal model,Birth Weight,,,,,,,,
-6,Red Deer,wild,animal model,Birth weight,0.221,0.353,,0.177,0.307,0.081,,-0.057
-6,Red Deer,wild,animal model,Birth leg length,0.38,0.169,,0.335,0.17,0.001,,-0.14
-6,Red Deer,wild,animal model,Neonatal survival,0.038,0,,0.022,0.021,0,,
-6,Red Deer,wild,animal model,Survival age 1,0.063,0.032,,0.051,0.026,0,,
-6,Red Deer,wild,animal model,Survival age 2,0.047,0.031,,0.052,0.026,0,,
-6,Red Deer,wild,animal model,AFR ♀,0.164,0.001,,0.001,0.001,0.001,,
-6,Red Deer,wild,animal model,♀ABS,0.04,0,0,0.04,0,0,0,
-6,Red Deer,wild,animal model,♂ ABS,0.014,0,0.036,0.018,0,0,0.029,
-6,Red Deer,wild,animal model,Adult longevity,0.188,0.001,,0.13,0.001,0.001,,
-6,Red Deer,wild,animal model,Jaw length,0.5,0,,0.447,0.001,0,,
-6,Red Deer,wild,animal model,Endocranial volume,0.776,0.001,,0.629,0.001,0,,
-6,Red Deer,wild,animal model,Leg length,0.583,0.001,,0.502,0.001,0.001,,
-7,Campanulastrum americanum,breeding design,animal model,Seed mass,,,,0.064,0,0.694,,
-7,Campanulastrum americanum,breeding design,animal model,Days to germination,,,,0.361,0.303,,,-0.793
-7,Campanulastrum americanum,breeding design,animal model,Rosette size,,,,0.243,0.26,,,-0.79
-7,Campanulastrum americanum,breeding design,animal model,Days to flower,,,,0.426,0.433,0.168,,-0.544
-7,Campanulastrum americanum,breeding design,animal model,Biomass,,,,0.368,0.133,,,-0.558
-8,Squirrel Monkeys,managed,animal model,female neonate mass,0.1901,0.3182,,0.0916,0.3441,0.0574,,-0.2503
-8,Squirrel Monkeys,managed,animal model,male neonate mass,0.1588,0.2562,,0.1208,0.2396,0.0762,,-0.3143
-9,Cuvier’s gazelle,managed,animal model,Juvenile Survival,0.067,0.247,,0.115,0.136,0.18,,-0.217
+Study,Species,Population,Method,Trait,juv_trait,h2_1,c2_1,i2_1,h2_2,m2_2,c2_2,i2_2,r_2
+1,Soay Sheep,wild,animal model,Neonates Birthweight,1,0.091,0.201,,0.079,0.077,0.14,,
+1,Soay Sheep,wild,animal model,Lambs Foreleg,1,0.155,0.063,,0.14,0.033,0.039,,
+1,Soay Sheep,wild,animal model,Lambs Hindleg,1,0.196,0.068,,0.161,0.068,0.022,,
+1,Soay Sheep,wild,animal model,Lambs Weight,1,0.116,0.1,,0.066,0.095,0.032,,
+1,Soay Sheep,wild,animal model,Lambs Metacarpal length,1,0.509,0.081,,0.402,0.139,0,,
+1,Soay Sheep,wild,animal model,Lambs Jaw length,1,0.303,0.145,,0.203,0.141,0.048,,
+1,Soay Sheep,wild,animal model,Yearlings Foreleg,0,0.157,0.092,,0.108,0.078,0.029,,
+1,Soay Sheep,wild,animal model,Yearlings Hindleg,0,0.307,0.168,,0.271,0.094,0.093,,
+1,Soay Sheep,wild,animal model,Yearlings Weight,0,0.19,0.099,,0.156,0.062,0.055,,
+1,Soay Sheep,wild,animal model,Yearlings Metacarpal length,0,0.618,0,,0.618,0,0,,
+1,Soay Sheep,wild,animal model,Yearlings Jaw length,0,0.672,0.089,,0.672,0,0.09,,
+1,Soay Sheep,wild,animal model,Adults Foreleg,0,0.296,0.005,0.116,0.286,0.021,0,0.113,
+1,Soay Sheep,wild,animal model,Adults Hindleg,0,0.458,0.063,0.273,0.426,0.077,0.015,0.279,
+1,Soay Sheep,wild,animal model,Adults Weight,0,0.273,0.057,0.333,0.246,0.082,0,0.338,
+1,Soay Sheep,wild,animal model,Adults Metacarpal length,0,0.631,0.018,,0.61,0.032,0,,
+1,Soay Sheep,wild,animal model,Adults Jaw length,0,0.677,0.01,,0.677,0,0.01,,
+2,Soay Sheep,wild,animal model,Birth date,1,,,,0.07,0.69,,,
+2,Soay Sheep,wild,animal model,Birth weight,1,,,,0.16,0.25,,,
+2,Soay Sheep,wild,animal model,Lamb Foreleg length,1,,,,,0.13,,0.66,
+2,Soay Sheep,wild,animal model,Lamb Hindleg length,1,,,,,0.14,,0.77,
+2,Soay Sheep,wild,animal model,Lamb Body weight,1,,,,,0.2,,0.59,
+3,Soay Sheep,wild,animal model,birth weight,1,,,,0.014,0.169,0.029,,−0.075
+3,Soay Sheep,wild,animal model,birth date,1,,,,0.032,0.255,0.138,,0.093
+3,Soay Sheep,wild,animal model,august weight,1,,,,0.036,0.135,0.004,,0.638
+4,Soay Sheep,wild,animal model,Birth weight,1,0.116,0.214,,0.114,0.165,0.108,,-0.41
+4,Soay Sheep,wild,animal model,Birth date,1,0.127,0.316,,0.072,0.315,0.065,,-0.219
+4,Soay Sheep,wild,animal model,Natal litter size,1,0.077,0.252,,0.109,0.211,0.142,,-0.714
+5,Red Squirrels,wild,animal model,Female LRS,0,0.00068,0.08,,0.0005,0.02,0.03,,
+5,Red Squirrels,wild,animal model,lifespan,0,,,,0.00058,0.04,0.05,,
+5,Red Squirrels,wild,animal model,mean ARS,0,,,,0.00052,0.05,0.04,,
+5,Red Squirrels,wild,animal model,AFB,0,,,,0.0001,0.06,0.07,,
+6,Red Squirrels,wild,other,Growth in body Mass,1,,,,,,,,
+6,Red Squirrels,wild,other,Growth in body SIze,1,,,,,,,,
+7,Red Deer,wild,animal model,Birth Weight,1,0.134,0.37,,0.041,0.429,0.035,,
+8,Red Deer,wild,animal model,Birth weight,1,0.221,0.353,,0.177,0.307,0.081,,-0.057
+8,Red Deer,wild,animal model,Birth leg length,1,0.38,0.169,,0.335,0.17,0.001,,-0.14
+8,Red Deer,wild,animal model,Neonatal survival,1,0.038,0,,0.022,0.021,0,,
+8,Red Deer,wild,animal model,Survival age 1,1,0.063,0.032,,0.051,0.026,0,,
+8,Red Deer,wild,animal model,Survival age 2,0,0.047,0.031,,0.052,0.026,0,,
+8,Red Deer,wild,animal model,AFR ♀,0,0.164,0.001,,0.001,0.001,0.001,,
+8,Red Deer,wild,animal model,♀ABS,0,0.04,0,0,0.04,0,0,0,
+8,Red Deer,wild,animal model,♂ ABS,0,0.014,0,0.036,0.018,0,0,0.029,
+8,Red Deer,wild,animal model,Adult longevity,0,0.188,0.001,,0.13,0.001,0.001,,
+8,Red Deer,wild,animal model,Jaw length,0,0.5,0,,0.447,0.001,0,,
+8,Red Deer,wild,animal model,Endocranial volume,0,0.776,0.001,,0.629,0.001,0,,
+8,Red Deer,wild,animal model,Leg length,0,0.583,0.001,,0.502,0.001,0.001,,
+9,Red Deer,wild,animal model,anti-Tc IgA,1,,,,0.0331,0.4199,0.1768,,
+9,Red Deer,wild,animal model,total IgA,1,,,,0.0423,0.3615,0.0769,,
+9,Red Deer,wild,animal model,anti-Tc IgM,1,,,,0.0588,0.3137,0.1569,,
+9,Red Deer,wild,animal model,total IgM,1,,,,0.0361,0.3144,0.1186,,
+9,Red Deer,wild,animal model,anti-Tc IgG,1,,,,0.0192,0.2692,0.2885,,
+9,Red Deer,wild,animal model,total IgG,1,,,,0.0000,0.0862,0.0000,,
+10,Bighorn Sheep,wild,animal model,June weight age 0,1,,,,0.000017,0.197,,,
+10,Bighorn Sheep,wild,animal model,June weight age 1,0,,,,0.447,0.135,,,
+11,Bighorn Sheep,wild,animal model,Boldness,0,,,,0.39,0,,,
+12,Campanulastrum americanum,breeding design,animal model,Seed mass,0,,,,0.064,0,0.694,,
+12,Campanulastrum americanum,breeding design,animal model,Days to germination,0,,,,0.361,0.303,,,-0.793
+12,Campanulastrum americanum,breeding design,animal model,Rosette size,0,,,,0.243,0.26,,,-0.79
+12,Campanulastrum americanum,breeding design,animal model,Days to flower,0,,,,0.426,0.433,0.168,,-0.544
+12,Campanulastrum americanum,breeding design,animal model,Biomass,0,,,,0.368,0.133,,,-0.558
+13,Squirrel Monkeys,managed,animal model,female neonate mass,1,0.1901,0.3182,,0.0916,0.3441,0.0574,,-0.2503
+13,Squirrel Monkeys,managed,animal model,male neonate mass,1,0.1588,0.2562,,0.1208,0.2396,0.0762,,-0.3143
+14,Cuvier’s gazelle,managed,animal model,Juvenile Survival,1,0.067,0.247,,0.115,0.136,0.18,,-0.217

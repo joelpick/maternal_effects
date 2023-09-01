@@ -7,6 +7,8 @@ wd <- "/Users/joelpick/github/maternal_effects/"
 
 data_wd <- paste0(wd,"Data/Intermediate/")
 
+source(paste0(wd,"R/extract_cousins.R"))
+source(paste0(wd,"R/00_functions.R"))
 source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 
 max_gen <- 10
@@ -38,29 +40,39 @@ peds_param <- cbind(peds_param,
 # 	i_names[combos[,"immigration"]], sep="_")
 
 
-	ped_str <- vector("list",length=max_gen)
+	ped_str <- vector("list",length=nrow(peds_param))
 	
-	for(k in 1:length(peds_param)){
-		cat(k, "\n")
+	for(k in 1:nrow(peds_param)){
+		cat(k, " ")
 		ped_str[[k]] <- do.call(rbind,mclapply(1:n_sims,	function(i){
 			ped <- simulate_pedigree(
-				years = k,
+				years = peds_param[k,"years"],
 				n_females = 100,
 				fecundity = fecundity,
 				p_sire = 0.75,
 				p_polyandry=1,
-				juv_surv = 0.25,
+				juv_surv = c(peds_param[k,"juv_surv_f"],peds_param[k,"juv_surv_m"]),
 				adult_surv = 0,					# discrete generations
-				immigration = 0, 				# closed population
+				immigration = c(peds_param[k,"immigration_f"],peds_param[k,"immigration_m"]), 				# closed population
 				constant_pop = TRUE     # constant population size
 				)$pedigree
 			ped_stat(ped)
 		}, mc.cores=cores))		
 	}
-x<-ped_str[[1]]
+# x<-ped_str[[1]]
 	mat_ratio_all<-sapply(ped_str,function(x){
 	rowSums(x[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(x[,-(1:2)]) 
 })
 	mat_ratio <- colMeans(mat_ratio_all)
 
-plot(mat_ratio, pch=19, ylim=c(0,0.3), xlab="Pedigree Depth (Generations)", ylab="Proportion of non-sibling maternal links")
+
+setEPS()
+pdf(paste0(wd,"Figures/ped_depth.pdf"), height=5, width=6)
+{
+	par(mar=c(4,4,1,1))
+plot(mat_ratio~rep(1:10,4), pch=19, col=rep(viridis::viridis(4),each=10),ylim=c(0,0.4), xlab="Pedigree Depth (Generations)", ylab="Proportion of non-sibling maternal links")
+for(i in 1:4) lines(mat_ratio[(1:10)+10*(i-1)]~c(1:10),col=viridis::viridis(4)[i])
+
+legend("bottomright",c("None","Female biased","Male biased","No bias"), col=viridis::viridis(4), pch=19, title="Immigration", bty="n")
+}
+dev.off()

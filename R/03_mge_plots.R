@@ -117,7 +117,8 @@ plot_func <-function(s){
 	dd<-subset(va2, scenario %in% s)
 dd_se<-subset(va2_se, scenario %in% s)
 cols<-viridis::viridis(length(s))
-par(mfrow=c(2,2), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
+layout(matrix(c(1,2,3,0,4,0),nrow=2, byrow=TRUE), height=c(5,1))
+par(mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
 plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2), col=(cols)[as.factor(dd$scenario)], pch=c(15:17)[as.factor(dd$ms)])
 arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
 # arrows(dd$mat_ratio+dd_se$mat_ratio,dd$Va_bias,dd$mat_ratio-dd_se$mat_ratio,dd$Va_bias,code=3,angle=90,length=0.01)
@@ -135,8 +136,21 @@ abline(0,-0.5)
 arrows(dd$Va_bias,dd$Vm_bias+dd_se$Vm_bias,dd$Va_bias,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
 arrows(dd$Va_bias+dd_se$Va_bias,dd$Vm_bias,dd$Va_bias-dd_se$Va_bias,dd$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
 
+par(mar=c(0,0,0,0))
+
+
+# scenarios2 <- formatC(scenarios,digits=2,format="f")
+# scenarios2[scenarios2!="0.00"] <- paste0("bold(",scenarios2[scenarios2!="0.00"],")")
+# s=1:2
+legend_text<-apply(scenarios[s,,drop=FALSE],1, function(x) paste(colnames(scenarios[s,,drop=FALSE]),"=",x, collapse=", "))
+# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
+
 plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-legend("center",apply(scenarios[s,],1, function(x) paste(colnames(scenarios[s,]),"=",formatC(x,digits=2,format="f"), collapse=", ")), pch=19, col=cols, bty="n")
+legend("center",
+legend_text
+
+	, pch=19, col=cols, bty="n")
+
 
 
 }
@@ -144,37 +158,31 @@ legend("center",apply(scenarios[s,],1, function(x) paste(colnames(scenarios[s,])
 scenarios
 
 setEPS()
-pdf(paste0(wd,"Figures/cov_mge.pdf"), height=5, width=5)
-par(mar=c(6,6,1,1))
-plot(cov_ratio~mat_ratio, pch=19, xlab="Proportion non-sibling maternal links (Vmg)", ylab="Proportion non-sibling links \nthrough single mother (COVa,mg)")
-dev.off()
-
-
-setEPS()
-pdf(paste0(wd,"Figures/mge_fig1.pdf"), height=10, width=10)
-plot_func(1:9)
+pdf(paste0(wd,"Figures/mge_fig1.pdf"), height=6, width=15)
+plot_func(1)
 dev.off()
 
 setEPS()
 pdf(paste0(wd,"Figures/mge_fig2.pdf"), height=10, width=10)
-plot_func(c(1,2,5:7))
+plot_func(c(1:4))
 dev.off()
 
 setEPS()
 pdf(paste0(wd,"Figures/mge_fig3.pdf"), height=10, width=10)
-plot_func(c(2:4))
+plot_func(c(2,5,6))
 dev.off()
 
 setEPS()
 pdf(paste0(wd,"Figures/mge_fig4.pdf"), height=10, width=10)
-plot_func(c(5,8,9))
+plot_func(c(3,7:10))
 dev.off()
 
 
-plot_func(c(1:4))
-plot_func(c(2,5,6))
-plot_func(c(3,7:10))
-
+setEPS()
+pdf(paste0(wd,"Figures/cov_mge.pdf"), height=5, width=5)
+par(mar=c(6,6,1,1))
+plot(cov_ratio~mat_ratio, pch=19, xlab="Proportion non-sibling maternal links (Vmg)", ylab="Proportion non-sibling links \nthrough single mother (COVa,mg)")
+dev.off()
 
 
 plot(Va_bias~ matM_ratio, va2, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2), col=(cols)[as.factor(va2$scenario)], pch=c(15:17)[as.factor(va2$ms)])
@@ -234,7 +242,7 @@ tVa_means$matM_ratio<- matM_ratio[r_order]
 tVa_means[,c("ms","fec","imm")] <- do.call(rbind,strsplit(tVa_means$r,"_"))
 
 setEPS()
-pdf(paste0(wd,"Figures/mge_fig5.pdf"), height=6, width=6)
+pdf(paste0(wd,"Figures/mge_fig5.pdf"), height=6, width=8)
 	par(mfrow=c(1,1), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
 
 	cols<-viridis::viridis(9)

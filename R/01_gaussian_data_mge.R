@@ -14,7 +14,7 @@ source(paste0(wd,"R/00_functions.R"))
 source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 # devtools::load_all("~/github/squidSim/R")
 
-run=TRUE
+run=FALSE
 
 n_sims <-100
 
@@ -160,10 +160,12 @@ if(run){
 	}
 
 #paste0("model1_",ped_names),
-	save(list=(c("ped_names","scenarios","ped_str","ped_str_mat",paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims3.Rdata"))
+	save(list=(c("ped_names","peds_param","scenarios","ped_str","ped_str_mat",paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims3.Rdata"))
+}else{
+	load(paste0(data_wd,"mge_sims3.Rdata"))	
 }
 
-load(paste0(data_wd,"mge_sims2.Rdata"))
+
 
 
 

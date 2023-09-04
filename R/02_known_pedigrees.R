@@ -299,10 +299,15 @@ SV_adult=adult_stat(ped_SV))
 
 stat_mr<-rowSums(stat1[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(stat1[,-(1:2)])
 
-hist(mat_ratio, xlim=c(0.05,0.5), breaks=10)
-points(stat_mr,rep(0,10))
-text(stat_mr,rep(0,10),names(stat_mr))
-
+order <- c(17,15,16,14,13)
+{
+par(mfrow=c(1,1), mar=c(5,1,1,1))
+hist(mat_ratio, xlim=c(0,0.5), breaks=10, ylim=c(0,20), yaxt="n", ylab=
+	"",main="")
+points(stat_mr, rep(order,each=2), pch=19, col=c("blue","red"))
+arrows(stat_mr[c(1,3,5,7,9)],order,stat_mr[c(2,4,6,8,10)],order)
+text(0.05,order,c("Blue tit","Red deer","Superb Fairy Wren","Soay Sheep","Snow Voles"))
+}
 
 
 

@@ -113,74 +113,74 @@ va2[,c("ms","fec","imm")] <- do.call(rbind,strsplit(va2$r,"_"))
 # va2$matM_ratio2<- matM_ratio2[r_order]
 scenarios
 
-plot_func <-function(s){
+plot_func <-function(s, legend_parts=1:4, legend_order=1:length(s), lines=TRUE){
 	dd<-subset(va2, scenario %in% s)
-dd_se<-subset(va2_se, scenario %in% s)
-cols<-viridis::viridis(length(s))
+	dd_se<-subset(va2_se, scenario %in% s)
+	cols<-viridis::viridis(length(s))
 
-layout(matrix(c(1,2,3,4,4,4),nrow=2, byrow=TRUE), height=c(5,2))
-par(mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
-plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2), col=(cols)[as.factor(dd$scenario)], pch=c(15:17)[as.factor(dd$ms)])
-arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
-# arrows(dd$mat_ratio+dd_se$mat_ratio,dd$Va_bias,dd$mat_ratio-dd_se$mat_ratio,dd$Va_bias,code=3,angle=90,length=0.01)
-abline(h=0)
+	layout(matrix(c(1,2,3,4,4,4),nrow=2, byrow=TRUE), height=c(5,2))
+	par(mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
+	plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~h^2), col=(cols)[as.factor(dd$scenario)], pch=c(15:17)[as.factor(dd$ms)])
+	arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
+	# arrows(dd$mat_ratio+dd_se$mat_ratio,dd$Va_bias,dd$mat_ratio-dd_se$mat_ratio,dd$Va_bias,code=3,angle=90,length=0.01)
+	abline(h=0)
 
-
-coefsA<-sapply(s,function(i)(coef(lm(Va_bias~mat_ratio,dd,subset=scenario==i))))
-sapply(1:length(s),function(x) abline(coefsA[1,x],coefsA[2,x],col=cols[x]))
-
-plot(Vm_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~m^2), col=(cols)[as.factor(dd$scenario)], pch=c(15:17)[as.factor(dd$fec)])
-# arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.1)
-arrows(dd$mat_ratio,dd$Vm_bias+dd_se$Vm_bias,dd$mat_ratio,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
-abline(h=0)
-
-coefsM<-sapply(s,function(i)(coef(lm(Vm_bias~mat_ratio,dd,subset=scenario==i))))
-sapply(1:length(s),function(x) abline(coefsM[1,x],coefsM[2,x],col=cols[x]))
+	if(lines){
+		coefsA<-sapply(s,function(i)(coef(lm(Va_bias~mat_ratio,dd,subset=scenario==i))))
+		sapply(1:length(s),function(x) abline(coefsA[1,x],coefsA[2,x],col=cols[x], lty=2))
+	}
 
 
-plot(Vm_bias~ Va_bias, dd, cex=1, xlab=expression(Bias~"in"~h^2), ylab=expression(Bias~"in"~m^2), col=(cols)[as.factor(dd$scenario)], pch=c(15:18)[as.factor(dd$imm)])
-abline(0,-0.5)
-arrows(dd$Va_bias,dd$Vm_bias+dd_se$Vm_bias,dd$Va_bias,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
-arrows(dd$Va_bias+dd_se$Va_bias,dd$Vm_bias,dd$Va_bias-dd_se$Va_bias,dd$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
+	plot(Vm_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~m^2), col=(cols)[as.factor(dd$scenario)], pch=c(15:17)[as.factor(dd$fec)])
+	# arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.1)
+	arrows(dd$mat_ratio,dd$Vm_bias+dd_se$Vm_bias,dd$mat_ratio,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
+	abline(h=0)
 
-par(mar=c(0,0,0,0))
-
-
-# scenarios2 <- formatC(scenarios,digits=2,format="f")
-# scenarios2[scenarios2!="0.00"] <- paste0("bold(",scenarios2[scenarios2!="0.00"],")")
-# s=1:2
-legend_text<-apply(scenarios[s,,drop=FALSE],1, function(x) paste(colnames(scenarios[s,,drop=FALSE]),"=",formatC(x,digits=2,format="f"), collapse=", "))
-# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
-
-plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-legend("center",
-legend_text
-	, pch=19, col=cols, bty="n", cex=2)
+	if(lines){
+		coefsM<-sapply(s,function(i)(coef(lm(Vm_bias~mat_ratio,dd,subset=scenario==i))))
+		sapply(1:length(s),function(x) abline(coefsM[1,x],coefsM[2,x],col=cols[x], lty=2))
+	}
 
 
+	plot(Vm_bias~ Va_bias, dd, cex=1, xlab=expression(Bias~"in"~h^2), ylab=expression(Bias~"in"~m^2), col=(cols)[as.factor(dd$scenario)], pch=c(15:18)[as.factor(dd$imm)])
+	abline(0,-0.5)
+	arrows(dd$Va_bias,dd$Vm_bias+dd_se$Vm_bias,dd$Va_bias,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
+	arrows(dd$Va_bias+dd_se$Va_bias,dd$Vm_bias,dd$Va_bias-dd_se$Va_bias,dd$Vm_bias,code=3,angle=90,length=0.01, col=(cols)[as.factor(dd$scenario)])
+	legend("topright","m2 = 0.5h^2",lty=1,bty="n")
 
+	par(mar=c(0,0,0,0))
+	# scenarios2 <- formatC(scenarios,digits=2,format="f")
+	# scenarios2[scenarios2!="0.00"] <- paste0("bold(",scenarios2[scenarios2!="0.00"],")")
+	# s=1:2
+	legend_text<-apply(scenarios[s,legend_parts,drop=FALSE],1, function(x) paste(colnames(scenarios[s,legend_parts,drop=FALSE]),"=",formatC(x,digits=2,format="f"), collapse=", "))
+	# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
+
+	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
+	legend("center",
+	legend_text[legend_order]
+		, pch=19, col=cols[legend_order], bty="n", cex=2)
 }
 
 scenarios
 
 setEPS()
 pdf(paste0(wd,"Figures/mge_fig1.pdf"), height=6, width=15)
-plot_func(1)
+plot_func(1, 2)
 dev.off()
 
 setEPS()
 pdf(paste0(wd,"Figures/mge_fig2.pdf"), height=6, width=15)
-plot_func(c(1:4))
+plot_func(c(1:2), 1:3)
 dev.off()
 
 setEPS()
 pdf(paste0(wd,"Figures/mge_fig3.pdf"), height=6, width=15)
-plot_func(c(2,5,6))
+plot_func(c(2,5,6),2:3,c(2,1,3))
 dev.off()
 
 setEPS()
 pdf(paste0(wd,"Figures/mge_fig4.pdf"), height=6, width=15)
-plot_func(c(3,7:10))
+plot_func(c(3,7:10),4,c(2:3,1,4:5))
 dev.off()
 
 

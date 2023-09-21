@@ -301,15 +301,17 @@ stat_mr<-rowSums(stat1[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_
 
 setEPS()
 pdf(paste0(wd,"Figures/known_ped.pdf"), height=6, width=8)
-order <- c(17,13,16,14,15)-3
+order <- c(17,13,16,14,15)-5
 {
 par(mfrow=c(1,1), mar=c(5,1,1,1), cex.lab=1.25)
-hist(mat_ratio, xlim=c(0,0.5), breaks=15, ylim=c(0,15), yaxt="n", xlab="Proportion non-sibling maternal links", ylab=
+hist(mat_ratio, xlim=c(0,0.5), breaks=15, ylim=c(0,14), yaxt="n", xlab="Proportion non-sibling maternal links", ylab=
 	"",main="")
 arrows(stat_mr[c(1,3,5,7,9)],order,stat_mr[c(2,4,6,8,10)],order,code=0)
 points(stat_mr, rep(order,each=2), pch=19, col=c("blue","red"))
 text(0.025,order,c("Blue tit","Red deer","Superb fairy wren","Soay sheep","Snow vole"))
-text(stat_mr[1:2],c(15,15),c("Chick","Adult"),col=c("blue","red"))
+# text(stat_mr[1:2],c(15,15),c("Juvenile","Adult"),col=c("blue","red"))
+
+legend("top",c("Juvenile","Adult"),pch=19,col=c("blue","red"),bty="n")
 }
 dev.off()
 

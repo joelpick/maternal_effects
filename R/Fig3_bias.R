@@ -205,3 +205,122 @@ par(mar=c(0,0,0,0))
 	legend("center", legend_text2[7:9], pch=pch2[7:9], col=col2[7:9],pt.bg=col2[7:9], bty="n", cex=1.5)
 }
 dev.off()
+
+
+
+
+
+
+
+
+
+plot_func2 <-function(s, legend_parts=1:4, legend_order=1:length(s), lines=TRUE, cols=viridis::viridis(10), pchs=rep(21:25,2), Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
+	dd<-subset(va2, scenario %in% s)
+	dd_se<-subset(va2_se, scenario %in% s)
+	# cols<-viridis::viridis(length(s))
+
+ 	pch<- pchs[dd$scenario] 
+	col<-cols[dd$scenario]
+		
+
+	# layout(matrix(c(1,2,3,4,4,4),nrow=2, byrow=TRUE), height=c(5,2))
+	par(mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
+	plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~V[A]), 
+		pch=pch, 
+		col=col,
+		bg=col,
+		ylim=Va_lim)
+	arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.01, col=col)
+	# arrows(dd$mat_ratio+dd_se$mat_ratio,dd$Va_bias,dd$mat_ratio-dd_se$mat_ratio,dd$Va_bias,code=3,angle=90,length=0.01)
+	abline(h=0)
+
+	if(lines){
+		coefsA<-sapply(s,function(i)(coef(lm(Va_bias~mat_ratio,dd,subset=scenario==i))))
+		sapply(1:length(s),function(x) abline(coefsA[1,x],coefsA[2,x],col=cols[s[x]], lty=2))
+	}
+
+
+	plot(Vm_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~V[M]), 
+		pch=pch, 
+		col=col,
+		bg=col,
+		ylim=Vm_lim)
+	# arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.1)
+	arrows(dd$mat_ratio,dd$Vm_bias+dd_se$Vm_bias,dd$mat_ratio,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=col)
+	abline(h=0)
+
+	if(lines){
+		coefsM<-sapply(s,function(i)(coef(lm(Vm_bias~mat_ratio,dd,subset=scenario==i))))
+		sapply(1:length(s),function(x) abline(coefsM[1,x],coefsM[2,x],col=cols[s[x]], lty=2))
+	}
+
+}
+
+{
+	# par(mfrow=c(1,2))
+	# par(mfrow=c(4,3))
+	cols <- viridis::viridis(11)[c(10,5,6, 1 ,2,9, 1,4,8,11)]
+	pchs <- rep(21:25,2)
+
+	legend_text<-apply(scenarios,1, function(x) paste(colnames(scenarios),"=",formatC(x,digits=2,format="f"), collapse=", "))
+	# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
+
+	legend_text2<-paste0(LETTERS[1:9], ": ", legend_text[c(5,2,6,1,3,7:10)])
+	col2 <- c(palette.colors(),palette.colors()[4])#cols[c(5,2,6,1,3,7:10)]
+	pch2 <- pchs[c(5,2,6,1,3,7:10)]
+
+	par(mfrow=c(3,2))
+
+	plot_func2(c(2,5,6), cols=col2)
+	plot_func2(c(1,2), cols=col2)
+	plot_func2(c(1,3), cols=col2)
+
+	par(mfrow=c(1,2))
+	plot_func2(c(3,7:10), cols=col2)
+par(mar=c(0,0,0,0))
+	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
+	legend("center", legend_text2[1:3], pch=pch2[1:3], col=col2[1:3],pt.bg=col2[1:3], bty="n", cex=1.5)
+
+	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
+	legend("center", legend_text2[4:6], pch=pch2[4:6], col=col2[4:6],pt.bg=col2[4:6], bty="n", cex=1.5)
+
+		plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
+	legend("center", legend_text2[7:9], pch=pch2[7:9], col=col2[7:9],pt.bg=col2[7:9], bty="n", cex=1.5)
+}
+
+
+
+
+
+
+
+
+
+plot_func3 <-function(s, legend_parts=1:4, legend_order=1:length(s), lines=TRUE, cols=viridis::viridis(10), pchs=rep(21:25,2), Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
+	dd<-subset(va2, scenario %in% s)
+	dd_se<-subset(va2_se, scenario %in% s)
+	# cols<-viridis::viridis(length(s))
+
+ 	pch<- pchs[dd$scenario] 
+	col<-cols[dd$scenario]
+		
+
+
+	plot(Vm_bias~ Va_bias, dd, cex=1, xlab=expression(Bias~"in"~V[A]), ylab=expression(Bias~"in"~V[M]), 
+		pch=pch, 
+		col=col,
+		bg=col,
+		ylim=Vm_lim,
+		xlim=Va_lim)
+	abline(0,-0.5)
+	arrows(dd$Va_bias,dd$Vm_bias+dd_se$Vm_bias,dd$Va_bias,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=col)
+	arrows(dd$Va_bias+dd_se$Va_bias,dd$Vm_bias,dd$Va_bias-dd_se$Va_bias,dd$Vm_bias,code=3,angle=90,length=0.01, col=col)
+	legend("topright",expression(m^2~"="~"-"*0.5*h^2),lty=1,bty="n")
+
+}
+
+	col2 <- c(palette.colors(),palette.colors()[4])#cols[c(5,2,6,1,3,7:10)]
+
+	par(mfrow=c(1,2))
+	plot_func3(c(1,2,3,5,6), cols=col2)
+	plot_func3(c(3,7:10), cols=col2)

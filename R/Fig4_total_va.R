@@ -68,9 +68,10 @@ pdf(paste0(wd,"Figures/fig4_totalVa.pdf"), height=6, width=12)
 
 	par( mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
 
-	cols<-viridis::viridis(10)
+	cols<-c(palette.colors(),1)#viridis::viridis(10)
+	bgs= c(palette.colors(),0)
 	pch=rep(21:25,2)
-	plot(bias~mat_ratio,tVa_means, pch=pch[as.factor(tVa_means$scenario)], col=(cols)[as.factor(tVa_means$scenario)],bg=(cols)[as.factor(tVa_means$scenario)], ylab="Bias in Total Va", xlab="Proportion non-sibling maternal links");abline(h=0)
+	plot(bias~mat_ratio,tVa_means, pch=pch[as.factor(tVa_means$scenario)], col=(cols)[as.factor(tVa_means$scenario)],bg=(bgs)[as.factor(tVa_means$scenario)], ylab="Bias in Total Va", xlab="Proportion non-sibling maternal links");abline(h=0)
 
 	par(mar=c(0,0,0,0))
 	# scenarios2 <- formatC(scenarios,digits=2,format="f")
@@ -84,7 +85,7 @@ pdf(paste0(wd,"Figures/fig4_totalVa.pdf"), height=6, width=12)
 	# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
 
 	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center",legend_text, pch=pch, pt.bg=cols, col=cols, bty="n", cex=1)
+	legend("center",legend_text, pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1)
 
 
 

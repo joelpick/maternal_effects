@@ -208,8 +208,21 @@ dev.off()
 
 
 
+	col2 <- c(palette.colors(),palette.colors()[5])#cols[c(5,2,6,1,3,7:10)]
+	pchs <- rep(21:25,2)
+	legend_text<-apply(scenarios[,1:3],1, function(x) paste(colnames(scenarios[,1:3]),"=",formatC(x,digits=2,format="f"), collapse=", "))
 
 
+	par(mfrow=c(1,3))
+	plot_func(c(2,5,6), cols=col2)
+	legend("bottomleft", legend_text[c(2,5,6)], pch=pchs[c(2,5,6)], col=col2[c(2,5,6)],pt.bg=col2[c(2,5,6)], bty="n", cex=1.25)
+
+	plot_func(c(1,4), cols=col2)
+		legend("bottomleft", legend_text[c(1,4)], pch=pchs[c(1,4)], col=col2[c(1,4)],pt.bg=col2[c(1,4)], bty="n", cex=1.25)
+
+	legend_text<-apply(scenarios[,c(1:2,4)],1, function(x) paste(colnames(scenarios[,c(1:2,4)]),"=",formatC(x,digits=2,format="f"), collapse=", "))
+	plot_func(c(3,7:10), cols=col2)
+	legend("bottomright", legend_text[c(3,7:10)], pch=pchs[c(3,7:10)], col=col2[c(3,7:10)],pt.bg=col2[c(3,7:10)], box.col="white", cex=1.25,bg="white")
 
 
 
@@ -272,7 +285,7 @@ plot_func2 <-function(s, legend_parts=1:4, legend_order=1:length(s), lines=TRUE,
 	par(mfrow=c(3,2))
 
 	plot_func2(c(2,5,6), cols=col2)
-	plot_func2(c(1,2), cols=col2)
+	plot_func2(c(1,4), cols=col2)
 	plot_func2(c(1,3), cols=col2)
 
 	par(mfrow=c(1,2))

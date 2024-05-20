@@ -1,17 +1,17 @@
 
 rm(list=ls())
 
-
 library(asreml)
 library(parallel)
+library(squidPed)
 
 wd <- "/Users/joelpick/github/maternal_effects/"
 
 data_wd <- paste0(wd,"Data/Intermediate/")
 
-source(paste0(wd,"R/extract_cousins.R"))
+# source(paste0(wd,"R/extract_cousins.R"))
 source(paste0(wd,"R/00_functions.R"))
-source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
+# source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 # devtools::load_all("~/github/squidSim/R")
 
 run=FALSE
@@ -72,31 +72,37 @@ ped_names <- rownames(peds_param) <- paste(
 	i_names[combos[,"immigration"]], sep="_")
 
 
-##
+##-------------------------------
+## Different simulation scenarios
+##-------------------------------
 
 scenarios <- rbind(	
-	# A) Maternal genetic only
-	a=c(Va=0, Vmg=0.25, Vme=0, r_amg=0),
+	# A) High Maternal genetic only
+	a=c(Va=0, Vmg=0.5, Vme=0, r_amg=0),
 	# B) Direct genetic and maternal environment
 	b=c(Va=0, Vmg=0.25, Vme=0.25, r_amg=0),
-	# C) Direct and maternal genetic, no covariance
-	c=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0),
-	# D) Direct and maternal genetic, no covariance and maternal environment
-	d=c(Va=0.25, Vmg=0.25, Vme=0.25, r_amg=0),
+	# C) High Maternal environment only
+	c=c(Va=0, Vmg=0, Vme=0.5, r_amg=0),
 
-	# E) high Maternal genetic only
-	e=c(Va=0, Vmg=0.5, Vme=0, r_amg=0),
-	# F) high Maternal environment only
-	f=c(Va=0, Vmg=0, Vme=0.5, r_amg=0),
+	# D) Maternal genetic only
+	d=c(Va=0, Vmg=0.25, Vme=0, r_amg=0),
+	# E) Direct, maternal genetic and maternal environment
+	e=c(Va=0.25, Vmg=0.25, Vme=0.25, r_amg=0),
 
-	# G+H) Direct and maternal genetic, + covariance and maternal environment
-	g=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0.6),
-	h=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0.3),
-	# I+J) Direct and maternal genetic, - covariance and maternal environment
+	# F) Direct and maternal genetic, no covariance
+	f=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0),
+	# G+H) Direct and maternal genetic, + covariance
+	g=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0.3),
+	h=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0.6),
+	# I+J) Direct and maternal genetic, - covariance
 	i=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=-0.3),
-	j=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=-0.6)
-		
+	j=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=-0.6)		
 )
+
+
+###------------------------
+### Pedigree and Phenotype Simulations, and Running Models
+###------------------------
 
 if(run){
 	cores<-4
@@ -129,10 +135,12 @@ if(run){
 		# assign(paste0(k ,"_peds"),peds)	
 
 		cat("Generating Pedigree Metrics\n")
-		ped_str[[k]]<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=cores))
-		ped_str_mat[[k]]<- do.call(rbind,mclapply(peds,ped_stat2, mc.cores=cores))
-		
-	
+		ped_str[[k]]<- do.call(rbind,mclapply(peds,FUN= function(x){
+			ped_stat(x,phenotyped=x[!is.na(x[,"dam"]),"animal"])}, mc.cores=cores))
+		# ped_str_mat[[k]]<- do.call(rbind,mclapply(peds,ped_stat2, mc.cores=cores))
+		}
+# 
+		sapply(ped_str,colMeans)[1,]8	
 
 		cat("Simulating Data\n")
 		## simulate data

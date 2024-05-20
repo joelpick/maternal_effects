@@ -1,4 +1,11 @@
-dd<-read.csv("~/github/maternal_effects/Data/Intermediate/MGE - all_est.csv")
+
+rm(list=ls())
+
+wd <- "/Users/joelpick/github/maternal_effects/"
+
+data_wd <- paste0(wd,"Data/Intermediate/")
+
+dd<-read.csv(paste0(data_wd,"MGE - all_est.csv"))
 
 setEPS()
 pdf("/Users/joelpick/github/maternal_effects/Figures/h2_diff.pdf", height=5, width=5)
@@ -66,8 +73,8 @@ dev.off()
 
 
 
-
-
+cbind(dd$m2_2,dd$c2_2,dd$m2_2+dd$c2_2)
+plot(dd$m2_2/(dd$m2_2+dd$c2_2),dd$m2_2+dd$c2_2)
 
 setEPS()
 pdf("/Users/joelpick/github/maternal_effects/Figures/fig1_lit.pdf", height=5, width=15)

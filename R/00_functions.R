@@ -1,79 +1,235 @@
 
+########################
+# generic functions
+######################## 
+
+
+####
+#--- function for standard error
+####
+
 se <- function(x) sd(x)/sqrt(length(x))
 
 
-#####
-#--- relatedness functions
+####
+#--- function to change NAs to 0s
 ####
 
-maternal_relatedness_ped <- function(ped){ 
-	ped<-na.omit(ped) ## might depend on whether unknown males paternity likely means unknown male - in which case excluding will increase full-sib
-	c(sapply(split(ped,ped$dam), function(x){
-		if(nrow(x)==1){
-		 NULL
-		}else{
-			fs <- NULL
-			for(i in 1:(nrow(x)-1)){
-				fs <- c(fs, x$sire[i] == x$sire[(i+1):nrow(x)])
-			}
-			mean(0.25 + fs*0.25)
-		}
-	}), recursive=TRUE)
-}
+change2zero <- function(x) ifelse(is.na(x), 0, x)
 
-## if pedigree is big, will take a long time/crash
-maternal_relatedness_ainv <- function(ainv,dat){ 
-	# ped<-na.omit(ped) ## might depend on whether unknown males paternity likely means unknown male - in which case excluding will increase full-sib
-	A <- Matrix::solve(ainv)
-	# A <- chol2inv(chol(ainv))
-	colnames(A) <- rownames(A) <- rownames(ainv)
-	c(sapply(split(dat,dat$dam), function(x){
-		if(nrow(x)==1){
-		 NULL
-		}else{
-			mean(A[as.character(x$id),as.character(x$id)][lower.tri(A[x$id,x$id])])
-		}
-	}), recursive=TRUE)
-}
 
-maternal_relatedness_A <- function(A,dat){ 
-	c(parallel::mclapply(split(dat,dat$dam), function(x){
-		if(nrow(x)==1){
-		 NULL
-		}else{
-			sub_A <-A[as.character(x$id),as.character(x$id)]
-			mean(sub_A[which(lower.tri(sub_A))])
-		}
-	},mc.cores=8), recursive=TRUE)
+####
+#--- rbind that doesnt mind abut names not matching, and takes the first set of names, or a given set of names
+####
+rbind_notAnnoying <- function(..., names=NULL){
+  x <- list(...)
+  y <- lapply(x, function(y){
+    names(y) <- if(is.null(names)) names(x[[1]]) else names
+    return(y)  
+  } )
+  do.call(rbind,y)
 }
 
 
-matriline <- function(ped){
-	matriline <- vector(mode="character",length=nrow(ped))
-	for(i in 1:nrow(ped)){
-		matriline[i] <- ifelse(is.na(ped[i,"dam"]), ped[i,"animal"],matriline[match(ped[i,"dam"],ped[,"animal"])])
+########################
+# RELATEDNESS FUNCTIONS
+######################## 
+
+#################################################
+
+## function to make products of all combinations and sum them 
+combo_prod <- function(x) if(length(x)>1){sum( utils::combn(x, m =2)[1, ] * utils::combn(x, m =2)[2, ])}else{0}
+
+
+combo_au <- function(x) if(length(x)>1){sum(x * (length(x)-1))}else{0}
+
+n_cousin <- function(p,gp,ped){
+	if(all(is.na(ped[,gp]))){ ## stops working when there no links through a certain grandparent type
+		0
+	}else{
+		f1 <- formula(paste("animal~",p,"+",gp))
+	  f2 <- formula(paste("animal~",gp))
+	  d1 <- aggregate(f1, ped,length)
+		sum(aggregate(f2,d1,combo_prod)$animal)	
 	}
-	matriline
 }
 
 
-pedCor <- function(ped){
-	dat <- subset(ped,!is.na(dam))
-	A <- nadiv::makeA(ped[,1:3])
-	A_dam<-A[as.character(dat$dam),as.character(dat$dam)]
-	# A_damE<-matrix(as.numeric(A_dam>=1),nrow(A_dam))
-	damDM<-	Matrix::fac2sparse(dat$dam)
-	# colnames(damDM) <- gsub("dam","",colnames(damDM))
-	colnames(damDM) <- as.character(dat$dam)
-	A_damE <- as(damDM[as.character(dat$dam),], "symmetricMatrix")
-	A_id<-A[as.character(dat$animal),as.character(dat$animal)]
-	E <- diag(nrow(dat))
-	A_cov<-A[as.character(dat$animal),as.character(dat$dam)]
-
-	cor(cbind(A_id[lower.tri(A_id)],A_dam[lower.tri(A_dam)],A_damE[lower.tri(A_damE)]))
+n_au <- function(link,ped){
+	if(all(is.na(ped[,link]))){
+		0
+	}else{	
+		p <- if(substr(link,1,1)=="M"){"dam"}else{"sire"}
+		gp <- if(substr(link,3,3)=="M"){"dam"}else if(substr(link,3,3)=="F"){"sire"} else{"pair"}
+	  f1 <- formula(paste("animal~",p,"+",link))
+	  f2 <- formula(paste("animal~",gp))
+	  d1 <- aggregate(f1, ped,length)
+	  d2 <- aggregate(f2, ped,length)
+		sum(d1$animal * (d2[match(d1[,link],d2[,gp]),"animal"]-1), na.rm=TRUE)
+	}
 }
 
-	# nrow(Matrix::summary(A_damE))-nrow(dat)
+total_links <- function(ped) nrow(ped) * (nrow(ped) - 1) / 2
+
+non_zero_links <- function(ped){
+	# pedA<-nadiv::makeA(ped[,1:3])
+	# sum(pedA[lower.tri(pedA)]>0)
+nrow(Matrix::summary(nadiv::makeA(ped[,1:3])))
+}
+
+
+# ped<-ped_sub_full
+
+ped_stat <- function(ped, phenotyped=NULL){	
+	colnames(ped) <- c("animal","dam","sire")
+
+	# dummy_dam <- which(is.na(ped$dam) & !is.na(ped$sire))
+	# dummy_sire <- which(is.na(ped$sire) & !is.na(ped$dam))
+
+	# ped[dummy_sire,"sire"] <- paste0("ds_",seq_along(dummy_sire))
+	# ped[dummy_dam,"dam"] <- paste0("dd_",seq_along(dummy_dam))
+
+
+	## parent pairs
+	ped$pair<-paste(ped$dam,ped$sire)
+	ped$pair<-ifelse(ped$pair== "NA NA", NA, ped$pair)
+
+  ## grandparents
+	ped$MGM <- ped[match(ped[,2],ped[,1]),2]
+	ped$MGF <- ped[match(ped[,2],ped[,1]),3]
+	ped$PGM <- ped[match(ped[,3],ped[,1]),2]
+	ped$PGF <- ped[match(ped[,3],ped[,1]),3]
+
+	## grandparent pairs
+	ped$MGP <- paste(ped$MGM,ped$MGF)
+	ped$PGP <- paste(ped$PGM,ped$PGF)
+	# ped$MGP<-ifelse(ped$MGP== "NA NA", NA, ped$MGP)
+	# ped$PGP<-ifelse(ped$PGP== "NA NA", NA, ped$PGP)
+	ped$MGP<-ifelse(grepl("NA",ped$MGP), NA, ped$MGP)
+	ped$PGP<-ifelse(grepl("NA",ped$PGP), NA, ped$PGP)
+
+	## if dont specify phenotyped, then assume all phenotyped
+	if(is.null(phenotyped)) phenotyped <- ped[,1]
+	## subset to phenotyped individuals
+	ped2 <- subset(ped,animal %in% phenotyped)	
+
+
+	####################
+	# ---- parents and grandparents
+	####################
+
+	gp <- apply(ped[ped[,1] %in% phenotyped,c("dam","sire","MGM","MGF","PGM","PGF")],2,function(x) sum(x%in% phenotyped) )
+
+
+	####################
+	# ---- sibs
+	####################
+
+	mat_sib <- sum(table(ped2$dam) * (table(ped2$dam)-1)/2)
+	pat_sib <- sum(table(ped2$sire) * (table(ped2$sire)-1)/2)
+	ped2$pair <- paste(ped2$dam,ped2$sire)
+	n_pair <-table(ped2$pair[!grepl("NA",ped2$pair)])
+	FS <- sum(n_pair * (n_pair-1)/2)
+	sibs <- c(FS=FS, MHS=mat_sib-FS, PHS=pat_sib-FS)
+
+
+
+	####################
+	# ---- Cousins
+	####################
+		## stack maternal and paternal grandparents, to get allows for all cousins relationships, not just through mothers or father
+	GM <- rbind_notAnnoying(ped2[,c("animal","dam","MGM","MGF","MGP")], ped2[,c("animal","sire","PGM","PGF","PGP")])
+
+	cousin_D_FS <- n_cousin(p="dam", gp="MGP", ped=ped2)
+	cousin_D_MHS <- n_cousin(p="dam", gp="MGM", ped=ped2) - cousin_D_FS
+	cousin_D_PHS <- n_cousin(p="dam", gp="MGF", ped=ped2) - cousin_D_FS
+
+	cousin_S_FS <- n_cousin(p="sire", gp="PGP", ped=ped2)
+	cousin_S_MHS <- n_cousin(p="sire", gp="PGM", ped=ped2) - cousin_S_FS
+	cousin_S_PHS <- n_cousin(p="sire", gp="PGF", ped=ped2) - cousin_S_FS
+
+
+	cousin_FS <- n_cousin(p="dam", gp="MGP", ped=GM)
+	cousin_DS_FS <- cousin_FS-cousin_D_FS-cousin_S_FS
+
+	cousin_MS <- n_cousin(p="dam", gp="MGM", ped=GM)
+	cousin_DS_MHS <- cousin_MS-cousin_FS-cousin_D_MHS-cousin_S_MHS
+
+	cousin_PS <- n_cousin(p="dam", gp="MGF", ped=GM)
+	cousin_DS_PHS <- cousin_PS-cousin_FS-cousin_D_PHS-cousin_S_PHS
+
+	# cousins <- c(cousin_D_FS=cousin_D_FS,
+	# 	cousin_DS_FS=cousin_DS_FS,
+	# 	cousin_S_FS=cousin_S_FS,
+	# 	cousin_D_MHS=cousin_D_MHS,
+	# 	cousin_DS_MHS=cousin_DS_MHS,
+	# 	cousin_S_MHS=cousin_S_MHS,
+	# 	cousin_D_PHS=cousin_D_PHS,
+	# 	cousin_DS_PHS=cousin_DS_PHS,
+	# 	cousin_S_PHS=cousin_S_PHS)
+
+	cousins <- c(cousin_D_FS=cousin_D_FS,
+		cousin_DS_FS=cousin_DS_FS,
+		cousin_S_FS=cousin_S_FS,
+		cousin_D_HS=cousin_D_MHS + cousin_D_PHS,
+		cousin_DS_HS=cousin_DS_MHS + cousin_DS_PHS,
+		cousin_S_HS=cousin_S_MHS + cousin_S_PHS)
+
+
+####################
+# ---- aunts and uncles
+####################
+
+	# related through a maternal grandmother (au_D_FS + au_D_MHS ?)
+	au_D_MS <- n_au("MGM",ped2)
+
+	# related through a maternal grandfather (au_D_FS + au_D_PHS ?)
+	au_D_PS <- n_au("MGF",ped2)
+
+	# related through a maternal grandparents (au_D_FS ?)
+	au_D_FS <- n_au("MGP",ped2)
+
+	au_D_PHS <- au_D_PS - au_D_FS
+	au_D_MHS <- au_D_MS - au_D_FS
+
+	# related through a paternal grandmother (au_S_FS + au_S_MHS ?)
+	au_S_MS <- n_au("PGM",ped2)
+
+	# related through a paternal grandfather (au_S_FS + au_D_PHS ?)
+	au_S_PS <- n_au("PGF",ped2)
+
+	# related through a paternal grandparents (au_S_FS ?)
+	au_S_FS <- n_au("PGP",ped2)
+
+	au_S_PHS <- au_S_PS - au_S_FS
+	au_S_MHS <- au_S_MS - au_S_FS
+
+	au <- c(au_D_FS=au_D_FS,au_S_FS=au_S_FS,au_D_MHS=au_D_MHS,au_S_MHS=au_S_MHS,au_D_PHS=au_D_PHS,au_S_PHS=au_S_PHS)
+
+		####################
+		# ---- put together
+		####################
+
+
+	stat <- c(
+		individuals = length(phenotyped),
+		links = length(phenotyped) * (length(phenotyped) - 1) / 2,
+		gp[c("dam","sire")],
+		MG=as.vector(gp["MGM"] + gp["MGF"]), PG=as.vector(gp["PGM"] + gp["PGF"]),
+		sibs,au,cousins
+	)
+	all_rel <- c("individuals","links","dam","sire","FS","MHS","PHS","MG","PG","au_D_FS","au_S_FS","au_D_MHS","au_S_MHS","au_D_PHS","au_S_PHS","cousin_D_FS","cousin_DS_FS","cousin_S_FS","cousin_D_HS","cousin_DS_HS","cousin_S_HS")#,"cousin_D_FS","cousin_DS_FS","cousin_S_FS","cousin_D_MHS","cousin_DS_MHS","cousin_S_MHS","cousin_D_PHS","cousin_DS_PHS","cousin_S_PHS"
+
+	out<-rep(0,length(all_rel))
+	names(out)<-all_rel
+
+	out[names(stat)]<-stat
+	out
+}
+
+
+
+
 
 ped_stat2 <- function(ped){
 	colnames(ped)[1]<-"animal"
@@ -90,6 +246,15 @@ ped_stat2 <- function(ped){
 }
 
 
+
+########################
+# SIMULATION FUNCTIONS
+######################## 
+
+
+####
+#--- modification of MCMCglmms rbv function for simulating breeding values, that accepts 0 variance 
+####
 rbv0 <- function(pedigree, G){
 	X <- matrix(0, nrow=nrow(pedigree), ncol=nrow(G))
 	index <- which(diag(G)!=0)
@@ -101,7 +266,10 @@ rbv0 <- function(pedigree, G){
 	X
 }
 
- mge_sim <- function(ped,param, Vp=1){
+####
+#--- simulate maternal genetic effects
+####
+mge_sim <- function(ped,param, Vp=1){
  	
  	colnames(ped) <- c("animal","dam","sire")
 
@@ -133,172 +301,191 @@ rbv0 <- function(pedigree, G){
  }
 
 
-## paternal genetic effects 
-pge_sim <- function(ped, Va, Vmg, Vpg, R, Vme, Vpe, Vp=1){
- 	D <- diag(sqrt(c(Va,Vmg,Vpg)))
-	# R <- matrix(c(1,r_amg,r_amg,1),nrow=2)
-	G <- D%*%R%*%D
+########################
+# MODELLING FUNCTIONS
+######################## 
 
-	Ve <- Vp - sum(G) - Vme
-
-	## simulate direct, maternal genetic and environmental effects, add together to make phenotype
-	
-	g <- rbv0(ped[,1:3],G)
-	a <- g[,1]
-	mg <- g[match(ped[,2],ped[,1]),2]
-	## need to be linked to social father
-	pg <- g[match(ped[,"social_sire"],ped[,1]),3]
-
-	me <- rnorm(nrow(ped),0,sqrt(Vme))[match(ped[,2],ped[,1])]
-	e <- rnorm(nrow(ped),0,sqrt(Ve))
-	p <- a + mg + me + e
-	data <- data.frame(cbind(p=p,ped))
-	data$mother <- as.factor(data$dam)
-	data$mother_PE <- as.factor(data$dam)
-	data$animal <- as.factor(data$animal)
-	data <- subset(data, !is.na(mother)) 
-	data
- }
+####
+#--- gets the sampling covariance matrix for the variance components from an asreml model. Note that it needs residual = ~idv(units) to have been run in the model to work
+####
+inv_hessian_varcomp <- function(mod){
+	inv_hess <- mod$ai
+	inv_hess <- as.matrix(inv_hess[rownames(inv_hess)!="units!R",colnames(inv_hess)!="units!R"])
+	ih_names <- rownames(inv_hess)
+	ih_names <- sub("!.+$", "", ih_names)
+	ih_names <- sub(".*\\((\\w*)\\,.+\\).*$", "\\1", ih_names)
+	colnames(inv_hess)<-rownames(inv_hess)<-ih_names
+	return(inv_hess)
+}
 
 
-  ## Model 1 - additive genetic effects, assuming phenotype is trait of offspring
+## Model 1 - additive genetic effects, assuming phenotype is trait of offspring
 m1_func <- function(data){
-	mod_1 <- asreml(
+	mod <- asreml(
 		fixed= p~1
 		, random= ~vm(animal,ped.ainv)
-	  , data= data, trace=FALSE)
-	m1 <- summary(mod_1)$varcomp
-	c(A= m1["vm(animal, ped.ainv)",1], 
-		Me=NA, 
-		Mg=NA,
-		cov_AMg =NA,
-		E = m1["units!R",1])
+	  , residual = ~idv(units)
+    , data= data, trace=FALSE)
+	m1 <- summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml = c(
+			A= m1["vm(animal, ped.ainv)",1], 
+			Me=NA, 
+			Mg=NA,
+			cov_AMg =NA,
+			E = m1["units!R",1])
+	)
+	
 }
 
 m1a_func <- function(data){
-	mod_1 <- asreml(
+	mod <- asreml(
 		fixed= p~1
 		, random= ~mother_PE
-	  , data= data, trace=FALSE)
-	m1 <- summary(mod_1)$varcomp
-	c(A= NA, 
-		Me=m1["mother_PE",1], 
-		Mg=NA,
-		cov_AMg =NA,
-		E = m1["units!R",1])
+	  , residual = ~idv(units)
+    , data= data, trace=FALSE)
+	m1 <- summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= NA, 
+			Me=m1["mother_PE",1], 
+			Mg=NA,
+			cov_AMg =NA,
+			E = m1["units!R",1])
+		)
 }
 
   ## Model 2 - additive genetic effects with maternal environment effects, assuming phenotype is trait of offspring
 m2_func <- function(data){
-	mod_2 <- asreml(
+	mod <- asreml(
 		fixed= p~1
     , random= ~vm(animal,ped.ainv) + mother_PE
+    , residual = ~idv(units)
     , data= data, trace=FALSE)
-	m2<-summary(mod_2)$varcomp
-	m2_sum <- c(
-		A= m2["vm(animal, ped.ainv)",1], 
-		Me=m2["mother_PE",1], 
-		Mg=NA,
-		cov_AMg =NA,
-		E = m2["units!R",1])
+	m2<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= m2["vm(animal, ped.ainv)",1], 
+			Me=m2["mother_PE",1], 
+			Mg=NA,
+			cov_AMg =NA,
+			E = m2["units!R",1])
+		)
 }
 
 m3_func <- function(data){
-	mod_3 <- asreml(
+	mod <- asreml(
 		fixed= p~1
 		, random= ~vm(animal,ped.ainv) + vm(mother,ped.ainv) 
-		, data= data, trace=FALSE)
-	m3<-summary(mod_3)$varcomp
-	m3_sum <- c(
-		A= m3["vm(animal, ped.ainv)",1], 
-		Me=NA, 
-		Mg=m3["vm(mother, ped.ainv)",1],
-		cov_AMg =NA,
-		E = m3["units!R",1])
+		, residual = ~idv(units)
+    , data= data, trace=FALSE)
+	m3<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= m3["vm(animal, ped.ainv)",1], 
+			Me=NA, 
+			Mg=m3["vm(mother, ped.ainv)",1],
+			cov_AMg =NA,
+			E = m3["units!R",1])
+		)
 }
 
 m4_func <- function(data){
-  mod_4 <- asreml(
+  mod <- asreml(
 		fixed= p~1
 	  , random= ~vm(animal,ped.ainv) + vm(mother,ped.ainv) + mother_PE
-	  , data= data, trace=FALSE)
-	m4<-summary(mod_4)$varcomp
-	m4_sum <- c(
-		A= m4["vm(animal, ped.ainv)",1], 
-		Me=m4["mother_PE",1], 
-		Mg=m4["vm(mother, ped.ainv)",1],
-		cov_AMg =NA,
-		E = m4["units!R",1])
+	  , residual = ~idv(units)
+    , data= data, trace=FALSE)
+	m4<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= m4["vm(animal, ped.ainv)",1], 
+			Me=m4["mother_PE",1], 
+			Mg=m4["vm(mother, ped.ainv)",1],
+			cov_AMg =NA,
+			E = m4["units!R",1])
+		)
 }
 
 m5_func <- function(data){
-	mod_5 <- asreml(
+	mod <- asreml(
 		fixed= p~1
     , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
+    , residual = ~idv(units)
     , data= data, trace=FALSE,maxit=50)
-	m5<-summary(mod_5)$varcomp
-	m5_sum <- c(
-		A= m5[1,1], 
-		Me=m5["mother_PE",1], 
-		Mg=m5[3,1],
-		cov_AMg =m5[2,1],
-		E = m5["units!R",1])
+	m5<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= m5[1,1], 
+			Me=m5["mother_PE",1], 
+			Mg=m5[3,1],
+			cov_AMg =m5[2,1],
+			E = m5["units!R",1])
+		)
 }	
-
-	# 	assign("ped.ainv", asreml::ainverse(hs_peds[[2]]), envir = .GlobalEnv) 
-	# 	out <- do.call(rbind,parallel::mclapply(hs_data[[2]], m5_func, mc.cores=6))
-	# 	rm("ped.ainv", envir = .GlobalEnv)
-	# 	out
- 
-	# mod_5 <- asreml(
-	# 	fixed= p~1
- #    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
- #    , data= hs_data[[2]][[3]], trace=FALSE,maxit=50)
 
 
 m6_func <- function(data){
-	mod_6 <- asreml(
+	mod <- asreml(
 		fixed= p~1
     , random= ~vm(mother,ped.ainv)
+    , residual = ~idv(units)
     , data= data, trace=FALSE)
-	m6<-summary(mod_6)$varcomp
-	m6_sum <- c(
-		A= NA, 
-		Me=NA, 
-		Mg=m6["vm(mother, ped.ainv)",1],
-		cov_AMg =NA,
-		E = m6["units!R",1])
+	m6<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= NA, 
+			Me=NA, 
+			Mg=m6["vm(mother, ped.ainv)",1],
+			cov_AMg =NA,
+			E = m6["units!R",1])
+		)
 }	
 
 
 m7_func <- function(data){
-	mod_7 <- asreml(
+	mod <- asreml(
 		fixed= p~1
 	  , random= ~vm(mother,ped.ainv) + mother_PE
-	  , data= data, trace=FALSE)
-	m7<-summary(mod_7)$varcomp
-	m7_sum <- c(
-		A= NA, 
-		Me=m7["mother_PE",1], 
-		Mg=m7["vm(mother, ped.ainv)",1],
-		cov_AMg =NA,
-		E = m7["units!R",1])
+	  , residual = ~idv(units)
+    , data= data, trace=FALSE)
+	m7<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= NA, 
+			Me=m7["mother_PE",1], 
+			Mg=m7["vm(mother, ped.ainv)",1],
+			cov_AMg =NA,
+			E = m7["units!R",1])
+		)
 }	
 
 
 m8_func <- function(data){
 	data_means <- aggregate(p~mother,data,mean)
-	mod_8 <- asreml(
+	mod <- asreml(
 		fixed= p~1
     , random= ~vm(mother,ped.ainv)
+    , residual = ~idv(units)
     , data= data_means, trace=FALSE)
-	m8<-summary(mod_8)$varcomp
-	m8_sum <- c(
-		A= NA, 
-		Me=NA, 
-		Mg=m8["vm(mother, ped.ainv)",1],
-		cov_AMg =NA,
-		E = m8["units!R",1])
+	m8<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= NA, 
+			Me=NA, 
+			Mg=m8["vm(mother, ped.ainv)",1],
+			cov_AMg =NA,
+			E = m8["units!R",1])
+		)
 }	
 
 model_func <- function(FUN,peds,data,mc.cores=8){
@@ -321,7 +508,6 @@ model_func <- function(FUN,peds,data,mc.cores=8){
 
 list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(NULL,c("A","Me","Mg","cov_AMg","E"),NULL))
 
-change2zero <- function(x) ifelse(is.na(x), 0, x)
 
 total_va <- function(x, j, m){
 	out<-rep(NA, nrow(x))

@@ -1,18 +1,11 @@
 
 rm(list=ls())
 
-library(asreml)
-library(parallel)
-
 wd <- "/Users/joelpick/github/maternal_effects/"
 
 data_wd <- paste0(wd,"Data/Intermediate/")
 
-source(paste0(wd,"R/extract_cousins.R"))
 source(paste0(wd,"R/00_functions.R"))
-source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
-# devtools::load_all("~/github/squidSim/R")
-
 
 load(paste0(data_wd,"mge_sims3.Rdata"))
 
@@ -213,7 +206,7 @@ dev.off()
 	legend_text<-apply(scenarios[,1:3],1, function(x) paste(colnames(scenarios[,1:3]),"=",formatC(x,digits=2,format="f"), collapse=", "))
 
 
-	par(mfrow=c(1,3))
+	par(mfrow=c(3,3))
 	plot_func(c(2,5,6), cols=col2)
 	legend("bottomleft", legend_text[c(2,5,6)], pch=pchs[c(2,5,6)], col=col2[c(2,5,6)],pt.bg=col2[c(2,5,6)], bty="n", cex=1.25)
 

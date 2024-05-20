@@ -50,7 +50,7 @@ Study,Species,Population,Method,Trait,juv_trait,h2_1,c2_1,i2_1,h2_2,m2_2,c2_2,i2
 9,Red Deer,wild,animal model,anti-Tc IgM,1,,,,0.0588,0.3137,0.1569,,
 9,Red Deer,wild,animal model,total IgM,1,,,,0.0361,0.3144,0.1186,,
 9,Red Deer,wild,animal model,anti-Tc IgG,1,,,,0.0192,0.2692,0.2885,,
-9,Red Deer,wild,animal model,total IgG,1,,,,0.0000,0.0862,0.0000,,
+9,Red Deer,wild,animal model,total IgG,1,,,,0,0.0862,0,,
 10,Bighorn Sheep,wild,animal model,June weight age 0,1,,,,0.000017,0.197,,,
 10,Bighorn Sheep,wild,animal model,June weight age 1,0,,,,0.447,0.135,,,
 11,Bighorn Sheep,wild,animal model,Boldness,0,,,,0.39,0,,,
@@ -62,3 +62,5 @@ Study,Species,Population,Method,Trait,juv_trait,h2_1,c2_1,i2_1,h2_2,m2_2,c2_2,i2
 13,Squirrel Monkeys,managed,animal model,female neonate mass,1,0.1901,0.3182,,0.0916,0.3441,0.0574,,-0.2503
 13,Squirrel Monkeys,managed,animal model,male neonate mass,1,0.1588,0.2562,,0.1208,0.2396,0.0762,,-0.3143
 14,Cuvier’s gazelle,managed,animal model,Juvenile Survival,1,0.067,0.247,,0.115,0.136,0.18,,-0.217
+15,Roe Deer,wild,animal model,Juvenile body mass,1,0.1,0.12,,0.05,0,0.11,,
+15,Roe Deer,wild,animal model,Juvenile body mass,1,0.53,0.08,,0.44,0.23,0,,

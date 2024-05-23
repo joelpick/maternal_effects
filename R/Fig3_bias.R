@@ -53,8 +53,8 @@ mod2<-do.call(rbind,lapply(ped_names,function(k) {
 			data.frame(
 				r=k,
 				scenario=i,
-				Va_est = x[i,"A"],
-				Vm_est = x[i,"Me"],
+				Va_est = x[["ml"]][i,"A"],
+				Vm_est = x[["ml"]][i,"Me"],
 				Va_sim=scenarios[i,"Va"],
 				Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),
 				Vmg_sim=scenarios[i,"Vmg"])))
@@ -62,7 +62,7 @@ mod2<-do.call(rbind,lapply(ped_names,function(k) {
 	# assign(paste0("mod2_",k),mod2)
 }))
 
-
+nrow(mod2)
 head(mod2,20)
 mod2$Va_bias <- mod2$Va_est - mod2$Va_sim
 mod2$Vm_bias <- mod2$Vm_est - mod2$Vm_sim
@@ -201,44 +201,48 @@ dev.off()
 
 
 
-	col2 <- c(palette.colors(),palette.colors()[5])#cols[c(5,2,6,1,3,7:10)]
+	col2 <- c(palette.colors(10),palette.colors()[5])#cols[c(5,2,6,1,3,7:10)]
 	pchs <- rep(21:25,2)
 	legend_text<-apply(scenarios[,1:3],1, function(x) paste(colnames(scenarios[,1:3]),"=",formatC(x,digits=2,format="f"), collapse=", "))
 
 
 	par(mfrow=c(3,3))
-	plot_func(c(2,5,6), cols=col2)
+	plot_func(c(1:3), cols=col2)
 	legend("bottomleft", legend_text[c(2,5,6)], pch=pchs[c(2,5,6)], col=col2[c(2,5,6)],pt.bg=col2[c(2,5,6)], bty="n", cex=1.25)
 
-	plot_func(c(1,4), cols=col2)
+	plot_func(c(4:5), cols=col2)
 		legend("bottomleft", legend_text[c(1,4)], pch=pchs[c(1,4)], col=col2[c(1,4)],pt.bg=col2[c(1,4)], bty="n", cex=1.25)
 
 	legend_text<-apply(scenarios[,c(1:2,4)],1, function(x) paste(colnames(scenarios[,c(1:2,4)]),"=",formatC(x,digits=2,format="f"), collapse=", "))
-	plot_func(c(3,7:10), cols=col2)
+	plot_func(c(6:10), cols=col2)
 	legend("bottomright", legend_text[c(3,7:10)], pch=pchs[c(3,7:10)], col=col2[c(3,7:10)],pt.bg=col2[c(3,7:10)], box.col="white", cex=1.25,bg="white")
 
 
 
 
-plot_func2 <-function(s, legend_parts=1:4, legend_order=1:length(s), lines=TRUE, cols=viridis::viridis(10), pchs=rep(21:25,2), Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
+plot_func2 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
 	dd<-subset(va2, scenario %in% s)
 	dd_se<-subset(va2_se, scenario %in% s)
 	# cols<-viridis::viridis(length(s))
 
- 	pch<- pchs[dd$scenario] 
-	col<-cols[dd$scenario]
-		
+	pch= rep(21:25,2)[dd$scenario]
+	col= c(palette.colors(),1)[dd$scenario]
+	bg= c(palette.colors(),"white")[dd$scenario]
 
 	# layout(matrix(c(1,2,3,4,4,4),nrow=2, byrow=TRUE), height=c(5,2))
-	par(mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
 	plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~V[A]), 
 		pch=pch, 
 		col=col,
-		bg=col,
+		bg=bg,
 		ylim=Va_lim)
 	arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.01, col=col)
 	# arrows(dd$mat_ratio+dd_se$mat_ratio,dd$Va_bias,dd$mat_ratio-dd_se$mat_ratio,dd$Va_bias,code=3,angle=90,length=0.01)
 	abline(h=0)
+
+	legend("topleft",letters[s],
+		pch= rep(21:25,2)[s], 
+		col= c(palette.colors(),1)[s],
+		pt.bg= c(palette.colors(),"white")[s],bty="n",title="Scenario")
 
 	if(lines){
 		coefsA<-sapply(s,function(i)(coef(lm(Va_bias~mat_ratio,dd,subset=scenario==i))))
@@ -262,71 +266,55 @@ plot_func2 <-function(s, legend_parts=1:4, legend_order=1:length(s), lines=TRUE,
 
 }
 
-{
-	# par(mfrow=c(1,2))
-	# par(mfrow=c(4,3))
-	cols <- viridis::viridis(11)[c(10,5,6, 1 ,2,9, 1,4,8,11)]
-	pchs <- rep(21:25,2)
 
-	legend_text<-apply(scenarios,1, function(x) paste(colnames(scenarios),"=",formatC(x,digits=2,format="f"), collapse=", "))
-	# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
-
-	legend_text2<-paste0(LETTERS[1:9], ": ", legend_text[c(5,2,6,1,3,7:10)])
-	col2 <- c(palette.colors(),palette.colors()[4])#cols[c(5,2,6,1,3,7:10)]
-	pch2 <- pchs[c(5,2,6,1,3,7:10)]
-
-	par(mfrow=c(3,2))
-
-	plot_func2(c(2,5,6), cols=col2)
-	plot_func2(c(1,4), cols=col2)
-	plot_func2(c(1,3), cols=col2)
-
-	par(mfrow=c(1,2))
-	plot_func2(c(3,7:10), cols=col2)
-par(mar=c(0,0,0,0))
-	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center", legend_text2[1:3], pch=pch2[1:3], col=col2[1:3],pt.bg=col2[1:3], bty="n", cex=1.5)
-
-	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center", legend_text2[4:6], pch=pch2[4:6], col=col2[4:6],pt.bg=col2[4:6], bty="n", cex=1.5)
-
-		plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center", legend_text2[7:9], pch=pch2[7:9], col=col2[7:9],pt.bg=col2[7:9], bty="n", cex=1.5)
-}
-
-
-
-
-
-
-
-
-
-plot_func3 <-function(s, legend_parts=1:4, legend_order=1:length(s), lines=TRUE, cols=viridis::viridis(10), pchs=rep(21:25,2), Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
+plot_func3 <-function(s, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06), legend_pos="bottomleft"){
 	dd<-subset(va2, scenario %in% s)
 	dd_se<-subset(va2_se, scenario %in% s)
-	# cols<-viridis::viridis(length(s))
-
- 	pch<- pchs[dd$scenario] 
-	col<-cols[dd$scenario]
-		
-
+	
+cols <- c(palette.colors(),1)[dd$scenario]
 
 	plot(Vm_bias~ Va_bias, dd, cex=1, xlab=expression(Bias~"in"~V[A]), ylab=expression(Bias~"in"~V[M]), 
-		pch=pch, 
-		col=col,
-		bg=col,
+		pch= rep(21:25,2)[dd$scenario], 
+		col= cols,
+		bg= c(palette.colors(),"white")[dd$scenario],
 		ylim=Vm_lim,
 		xlim=Va_lim)
 	abline(0,-0.5)
-	arrows(dd$Va_bias,dd$Vm_bias+dd_se$Vm_bias,dd$Va_bias,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=col)
-	arrows(dd$Va_bias+dd_se$Va_bias,dd$Vm_bias,dd$Va_bias-dd_se$Va_bias,dd$Vm_bias,code=3,angle=90,length=0.01, col=col)
-	legend("topright",expression(m^2~"="~"-"*0.5*h^2),lty=1,bty="n")
+	arrows(dd$Va_bias,dd$Vm_bias+dd_se$Vm_bias,dd$Va_bias,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=cols)
+	arrows(dd$Va_bias+dd_se$Va_bias,dd$Vm_bias,dd$Va_bias-dd_se$Va_bias,dd$Vm_bias,code=3,angle=90,length=0.01, col=cols)
+	legend(legend_pos,,letters[s],
+		pch= rep(21:25,2)[s], 
+		col= c(palette.colors(),1)[s],
+		pt.bg= c(palette.colors(),"white")[s],bg="white",box.col=0,title="Scenario")
+
 
 }
 
-	col2 <- c(palette.colors(),palette.colors()[4])#cols[c(5,2,6,1,3,7:10)]
 
-	par(mfrow=c(1,2))
-	plot_func3(c(1,2,3,5,6), cols=col2)
-	plot_func3(c(3,7:10), cols=col2)
+
+### add in one that is open symbols
+
+
+setEPS()
+pdf(paste0(wd,"Figures/Fig3_bias.pdf"), height=10, width=8)
+
+{	
+	par(mfrow=c(3,2),	mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1)
+
+	plot_func2(c(1:3))
+	plot_func2(c(4:5))
+	plot_func2(c(6:10))
+}
+dev.off()
+
+setEPS()
+pdf(paste0(wd,"Figures/Fig4_Va_Vm.pdf"), height=5, width=10)
+
+{
+	par(mfrow=c(1,2),	mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1)
+	plot_func3(c(1:5))
+	legend("topright",expression(m^2~"="~"-"*0.5*h^2),lty=1,bty="n")
+
+	plot_func3(c(6:10), legend_pos="bottomright")
+}
+dev.off()

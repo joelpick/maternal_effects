@@ -497,16 +497,21 @@ model_func <- function(FUN,peds,data,mc.cores=8){
 		}
 		colnames(ped) <- c("animal","dam","sire")
 		assign("ped.ainv", asreml::ainverse(ped), envir = .GlobalEnv) 
-		out <- do.call(rbind,lapply(data[[i]], FUN))
+		out <- lapply(data[[i]], FUN)
+		out2 <- list(
+			ml=do.call(rbind,lapply(out,function(x) x[["ml"]])),
+			samp_cov=list2array(lapply(out,function(x) x[["samp_cov"]]))
+		)
 		rm("ped.ainv", envir = .GlobalEnv)
 		cat(i," ")
-		out
+		out2
 	}, mc.cores=mc.cores)
 }
 
 
+list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(rownames(x[[1]]),colnames(x[[1]]),NULL))
 
-list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(NULL,c("A","Me","Mg","cov_AMg","E"),NULL))
+# list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(NULL,c("A","Me","Mg","cov_AMg","E"),NULL))
 
 
 total_va <- function(x, j, m){

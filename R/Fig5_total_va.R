@@ -1,18 +1,12 @@
 
 rm(list=ls())
 
-library(asreml)
-library(parallel)
 
 wd <- "/Users/joelpick/github/maternal_effects/"
 
 data_wd <- paste0(wd,"Data/Intermediate/")
 
-source(paste0(wd,"R/extract_cousins.R"))
 source(paste0(wd,"R/00_functions.R"))
-source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
-# devtools::load_all("~/github/squidSim/R")
-
 
 load(paste0(data_wd,"mge_sims3.Rdata"))
 
@@ -38,14 +32,13 @@ total_Va<-do.call(rbind,lapply(ped_names,function(k) {
 		do.call(rbind,lapply(1:nrow(scenarios), function(i) data.frame(
 			r=k,
 			scenario=i,
-			max=x[i,"A"] + 0.5*x[i,"Me"], 
-			min=x[i,"A"], 
+			max=x[["ml"]][i,"A"] + 0.5*x[["ml"]][i,"Me"], 
+			min=x[["ml"]][i,"A"], 
 			sim=scenarios[i,"Va"] + 0.5*scenarios[i,"Vmg"]+ 1.5*scenarios[i,"r_amg"]*sqrt(scenarios[i,"Va"] * scenarios[i,"Vmg"])
 			)
 		))
 	}))}
 	))
-total_Va$coverage <- total_Va$max>total_Va$sim & total_Va$min<total_Va$sim
 total_Va$bias <- total_Va$min - total_Va$sim
 
 # hist(total_Va$bias)
@@ -61,12 +54,12 @@ tVa_means$mat_ratio <- mat_ratio[r_order]
 tVa_means[,c("ms","fec","imm")] <- do.call(rbind,strsplit(tVa_means$r,"_"))
 
 setEPS()
-pdf(paste0(wd,"Figures/fig4_totalVa.pdf"), height=6, width=12)
+pdf(paste0(wd,"Figures/Fig5_totalVa.pdf"), height=6, width=8)
 {	
 
-		layout(matrix(c(1,2),nrow=1, byrow=TRUE), width=c(3,2))
+	layout(matrix(c(1,2),nrow=1, byrow=TRUE), width=c(10,1))
 
-	par( mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
+	par( mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1 )
 
 	cols<-c(palette.colors(),1)#viridis::viridis(10)
 	bgs= c(palette.colors(),0)
@@ -81,29 +74,13 @@ pdf(paste0(wd,"Figures/fig4_totalVa.pdf"), height=6, width=12)
 	# x<-parse(text="a")
 # expression(bquote(.(x)^2))
 
-	legend_text<-apply(scenarios,1, function(x) paste(colnames(scenarios),"=",formatC(x,digits=2,format="f"), collapse=", "))
+	# legend_text<-apply(scenarios,1, function(x) paste(colnames(scenarios),"=",formatC(x,digits=2,format="f"), collapse=", "))
 	# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
 
 	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center",legend_text, pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1)
+	legend("center",LETTERS[1:10], pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1,title="Scenario")
 
 
 
 }
 dev.off()
-
-
-{
-	cols<-viridis::viridis(9)
-
-	par(mfrow=c(1,2), mar=c(5,5,1,1), cex.lab=1.75, cex.axis=1.25 )
-
-	plot(bias~mat_ratio,tVa_means, pch=19, col=(cols)[as.factor(tVa_means$scenario)]);abline(h=0)
-	# legend("topleft",apply(scenarios[,c(1,2,4)],1, function(x) paste(colnames(scenarios[,c(1,2,4)]),"=",x, collapse=",")), pch=19, col=cols)
-
-	plot(coverage~mat_ratio,tVa_means, pch=19, col=(cols)[as.factor(tVa_means$scenario)])
-}
-## take home here is that an inference based on just Va where maternal genetic effects are likely is not very informative, as we are likely underestmating, but be overesitmaint g  
-
-
-hist(tVa_means$mat_ratio)

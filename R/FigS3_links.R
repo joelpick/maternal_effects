@@ -26,7 +26,7 @@ cov_ratio <- colMeans(cov_ratio_all)
 
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS1_links_cor.pdf"), height=5, width=5)
+pdf(paste0(wd,"Figures/FigS3_links_cor.pdf"), height=5, width=5)
 par(mar=c(6,6,1,1))
 plot(cov_ratio~mat_ratio, pch=19, xlab="Proportion non-sibling maternal links (Vmg)", ylab="Proportion non-sibling links \nthrough single mother (COVa,mg)")
 dev.off()

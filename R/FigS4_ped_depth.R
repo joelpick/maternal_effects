@@ -72,7 +72,7 @@ mat_ratio_pd <- colMeans(mat_ratio_all_pd)
 
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS3_ped_depth.pdf"), height=5, width=7)
+pdf(paste0(wd,"Figures/FigS4_ped_depth.pdf"), height=5, width=7)
 {
 	par(mar=c(5,5,1,1))
 plot(mat_ratio_pd~rep(1:10,4), pch=19, col=rep(viridis::viridis(4),each=10),ylim=c(0,0.4), xlab="Pedigree Depth (Generations)", ylab="Proportion of non-sibling maternal links")

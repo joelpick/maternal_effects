@@ -9,15 +9,6 @@ source(paste0(wd,"R/00_functions.R"))
 
 load(paste0(data_wd,"mge_sims3.Rdata"))
 
-
-# ped_names2 <- ped_names[!grepl("fI",ped_names)]
-
-# ped_str<-ped_str[ped_names2]
-# ped_str_mat<-ped_str_mat[ped_names2]
-
-# ped_sum<-sapply(ped_str,colMeans)
-# ped_sum_mat<-sapply(ped_str_mat,colMeans)
-
 mat_ratio_all<-sapply(ped_str,function(x){
 	rowSums(x[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(x[,-(1:2)]) 
 })
@@ -38,26 +29,16 @@ mat_ratio_se <- apply(mat_ratio_all,2,se)
 matsib_ratio <- colMeans(matsib_ratio_all)
 
 
-matM_ratio_all<-sapply(ped_str_mat,function(x){
-	(x[,"mat_links"] - x[,"mat_sib"])/x[,"total_links"]
-})
-
-matM_ratio <- colMeans(matM_ratio_all)
-matM_ratio_se <- apply(matM_ratio_all,2,se)
-
-
-
 mod2<-do.call(rbind,lapply(ped_names,function(k) {
 	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
-		do.call(rbind,lapply(1:nrow(scenarios), function(i) 
 			data.frame(
 				r=k,
-				scenario=i,
-				Va_est = x[["ml"]][i,"A"],
-				Vm_est = x[["ml"]][i,"Me"],
-				Va_sim=scenarios[i,"Va"],
-				Vm_sim =sum(scenarios[i,c("Vmg","Vme")]),
-				Vmg_sim=scenarios[i,"Vmg"])))
+				scenario=1:nrow(scenarios),
+				Va_est = x[["ml"]][,"A"],
+				Vm_est = x[["ml"]][,"Me"],
+				Va_sim=scenarios[,"Va"],
+				Vm_sim = rowSums(scenarios[,c("Vmg","Vme")]),
+				Vmg_sim=scenarios[,"Vmg"])
 	}))
 	# assign(paste0("mod2_",k),mod2)
 }))
@@ -81,15 +62,20 @@ r_order<- sapply(va2$r, function(x) which(ped_names==x))
 # which(va1$r)
 
 va2$mat_ratio <- mat_ratio[r_order]
-va2$matM_ratio<- matM_ratio[r_order]
-
 va2_se$mat_ratio <- mat_ratio_se[r_order]
-va2_se$matM_ratio <- matM_ratio_se[r_order]
+
+va2$matsib_ratio <- matsib_ratio[r_order]
 
 
 va2[,c("ms","fec","imm")] <- do.call(rbind,strsplit(va2$r,"_"))
 # va2$matM_ratio2<- matM_ratio2[r_order]
-scenarios
+plot(Va_bias ~ matsib_ratio,va2, col=va2$scenario, pch=19)
+
+
+
+
+plot(matsib_ratio)
+
 
 
 

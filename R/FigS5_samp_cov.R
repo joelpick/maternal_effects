@@ -37,14 +37,6 @@ mat_ratio_se <- apply(mat_ratio_all,2,se)
 
 matsib_ratio <- colMeans(matsib_ratio_all)
 
-
-matM_ratio_all<-sapply(ped_str_mat,function(x){
-	(x[,"mat_links"] - x[,"mat_sib"])/x[,"total_links"]
-})
-
-matM_ratio <- colMeans(matM_ratio_all)
-matM_ratio_se <- apply(matM_ratio_all,2,se)
-
 samp_cov<-do.call(rbind,lapply(ped_names,function(k) {
 	do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
 			data.frame(
@@ -69,33 +61,29 @@ samp_cov$matsib_ratio <- matsib_ratio[r_order2]
 summary(lme4::lmer(Va_Vm ~ mat_ratio +matsib_ratio + (1|r),samp_cov, subset=scenario=="1"))
 
 # samp_cov$ln_Va_bias <- log(samp_cov$Va_bias)
-Va_Vm_mean<-aggregate(cbind(Va_Vm,Vmg_sim)~ scenario+r, samp_cov,mean)
-Va_Vm_se<-aggregate(cbind(Va_Vm,Vmg_sim)~ scenario+r, samp_cov,se)
-r_order<- sapply(va2$r, function(x) which(ped_names==x))
+Va_Vm_mean<-aggregate(cbind(Va_Vm,Vmg_sim,mat_ratio,matsib_ratio)~ scenario+r, samp_cov,mean)
+Va_Vm_se<-aggregate(cbind(Va_Vm)~ scenario+r, samp_cov,se)
+# r_order<- sapply(Va_Vm_mean$r, function(x) which(ped_names==x))
 
 # which(va1$r)
 
-Va_Vm_mean$mat_ratio <- mat_ratio[r_order]
-
-Va_Vm_se$mat_ratio <- mat_ratio_se[r_order]
+# Va_Vm_mean$mat_ratio <- mat_ratio[r_order]
+# Va_Vm_se$mat_ratio <- mat_ratio_se[r_order]
 
 head(Va_Vm_mean)
 Va_Vm_mean$Vmg_n0 <- as.numeric(Va_Vm_mean$Vmg_sim>0) +1
 
 Va_Vm_mean[,c("ms","fec","imm")] <- do.call(rbind,strsplit(Va_Vm_mean$r,"_"))
 # va2$matM_ratio2<- matM_ratio2[r_order]
-scenarios
+
 
 
 plot(Va_Vm ~ mat_ratio,Va_Vm_mean, col=Va_Vm_mean$scenario, pch=19)
+plot(Va_Vm ~ matsib_ratio,Va_Vm_mean, col=Va_Vm_mean$scenario, pch=19)
+
 boxplot(Va_Vm ~ scenario,Va_Vm_mean)
 
 boxplot(Va_Vm ~ r,Va_Vm_mean)
-
-
-beeswarm::beeswarm(Va_Vm~ r, Va_Vm_mean,pch=19, cex=0.2, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
-
-beeswarm::beeswarm(Va_Vm~ scenario, Va_Vm_mean,pch=19, cex=0.5, col=scales::alpha(Va_Vm_mean$Vmg_n0,0.5),method = "compactswarm",corral="wrap")
 
 
 beeswarm::beeswarm(Va_Vm~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.5),method = "compactswarm",corral="wrap")

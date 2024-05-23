@@ -14,7 +14,7 @@ source(paste0(wd,"R/00_functions.R"))
 # source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
 # devtools::load_all("~/github/squidSim/R")
 
-run=FALSE
+run=TRUE
 
 n_sims <-100
 
@@ -105,13 +105,13 @@ scenarios <- rbind(
 ###------------------------
 
 if(run){
-	cores<-4
+	cores<-6
 	set.seed(20230126)
 
 	ped_str <- vector("list",length=nrow(peds_param))
 	names(ped_str) <- ped_names
-	ped_str_mat <- vector("list",length=nrow(peds_param))
-	names(ped_str_mat) <- ped_names
+	# ped_str_mat <- vector("list",length=nrow(peds_param))
+	# names(ped_str_mat) <- ped_names
 
 # k="fs_lF_mI"
 	## make pedigrees
@@ -138,13 +138,10 @@ if(run){
 		ped_str[[k]]<- do.call(rbind,mclapply(peds,FUN= function(x){
 			ped_stat(x,phenotyped=x[!is.na(x[,"dam"]),"animal"])}, mc.cores=cores))
 		# ped_str_mat[[k]]<- do.call(rbind,mclapply(peds,ped_stat2, mc.cores=cores))
-		}
-# 
-		sapply(ped_str,colMeans)[1,]8	
+
 
 		cat("Simulating Data\n")
 		## simulate data
-	
 		dat<-mclapply(peds, function(i){
 			x<-vector("list", nrow(scenarios))
 			for(j in 1:nrow(scenarios)){
@@ -168,7 +165,7 @@ if(run){
 	}
 
 #paste0("model1_",ped_names),
-	save(list=(c("ped_names","peds_param","scenarios","ped_str","ped_str_mat",paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims3.Rdata"))
+	save(list=(c("ped_names","peds_param","scenarios","ped_str",paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims3.Rdata"))#"ped_str_mat",
 }else{
 	load(paste0(data_wd,"mge_sims3.Rdata"))	
 }

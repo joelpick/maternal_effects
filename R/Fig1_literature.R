@@ -110,3 +110,7 @@ hist(round(dd$h2_1-dd$h2_2,3)[dd$h2_1-dd$h2_2<0], breaks=5,col="red", add=TRUE)
 
 }
 dev.off()
+
+plot((dd$h2_1-dd$h2_2),(dd$c2_1-(dd$m2_2+dd$c2_2)),pch=19,col=c(1,2)[as.factor(dd$h2_1-dd$h2_2>=0)])
+abline(h=0,v=0)
+abline(0,-0.5)

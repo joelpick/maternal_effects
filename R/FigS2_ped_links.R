@@ -22,11 +22,21 @@ ratio_dat$total <- rowSums(t(sapply(ped_str,colMeans))[,-(1:2)])
 
 ratio_dat <- cbind(ratio_dat,t(sapply(ped_str,colMeans)))
 
+
+setEPS()
+pdf(paste0(wd,"Figures/FigS4_links_ped.pdf"), height=10, width=5)
+{
 par(mfrow=c(3,1), mar=c(4,4,1,1), cex.lab=1.4,mgp=c(2,0.5,0))
 
-boxplot(nsml ~ ms,ratio_dat, at=c(2,3,1), names=c("Mixed", "Full-sibs", "Half-sibs"), ylab="Prop. relationships", xlab="Mating system")
-boxplot(nsml ~ fec,ratio_dat, at=c(1,3,2), names=c("Low","High", "Mid"), ylab="Prop. relationships", xlab="Fecundity")
-boxplot(nsml ~ imm,ratio_dat, at=c(3,2,4,1), names=c("Both sexes", "Female", "Male", "None"), ylab="Prop. relationships", xlab="Dispersal")
+boxplot(nsml ~ ms,ratio_dat, at=c(2,3,1), names=c("Mixed", "Full-sibs", "Half-sibs"), ylab="Proportion non-sibling maternal links", xlab="Mating system")
+boxplot(nsml ~ fec,ratio_dat, at=c(1,3,2), names=c("Low","High", "Mid"), ylab="Proportion non-sibling maternal links", xlab="Fecundity")
+boxplot(nsml ~ imm,ratio_dat, at=c(3,2,4,1), names=c("Both sexes", "Female", "Male", "None"), ylab="Proportion non-sibling maternal links", xlab="Dispersal")
+}
+dev.off()
+
+
+
+
 
 ### dam-offspring are fixed in all sims
 
@@ -49,6 +59,10 @@ boxplot(MG ~ ms,ratio_dat, at=c(2,3,1), names=c("Mixed", "Full-sibs", "Half-sibs
 boxplot(au_D_FS + au_D_MHS ~ ms,ratio_dat, at=c(2,3,1), names=c("Mixed", "Full-sibs", "Half-sibs"), ylab="Maternal aunt/uncle", xlab="Mating system")
 boxplot(cousin_D_FS+cousin_D_HS ~ ms,ratio_dat, at=c(2,3,1), names=c("Mixed", "Full-sibs", "Half-sibs"), ylab="maternal cousins", xlab="Mating system")
 }
+
+# boxplot(cousin_D_FS ~ ms,ratio_dat, at=c(2,3,1), names=c("Mixed", "Full-sibs", "Half-sibs"), ylab="maternal cousins", xlab="Mating system")
+# boxplot(cousin_D_HS ~ ms,ratio_dat, at=c(2,3,1), names=c("Mixed", "Full-sibs", "Half-sibs"), ylab="maternal cousins", xlab="Mating system")
+
 
 {
 par(mfrow=c(3,2), mar=c(4,4,1,1), cex.lab=1.4,mgp=c(2,0.5,0))

@@ -266,6 +266,20 @@ rbv0 <- function(pedigree, G){
 	X
 }
 
+
+####
+#--- makes matriline 
+####
+matriline <- function(ped){
+	matriline <- vector(mode="character",length=nrow(ped))
+	for(i in 1:nrow(ped)){
+		matriline[i] <- ifelse(is.na(ped[i,"dam"]), ped[i,"animal"],matriline[match(ped[i,"dam"],ped[,"animal"])])
+	}
+	matriline
+}
+
+
+
 ####
 #--- simulate maternal genetic effects
 ####
@@ -296,6 +310,8 @@ mge_sim <- function(ped,param, Vp=1){
 	data$mother <- as.factor(data$dam)
 	data$mother_PE <- as.factor(data$dam)
 	data$animal <- as.factor(data$animal)
+	data$matriline <- as.factor(matriline(ped))
+
 	data <- subset(data, !is.na(mother)) 
 	data
  }
@@ -485,6 +501,24 @@ m8_func <- function(data){
 			Mg=m8["vm(mother, ped.ainv)",1],
 			cov_AMg =NA,
 			E = m8["units!R",1])
+		)
+}	
+
+
+m9_func <- function(data){
+	mod <- asreml(
+		fixed= p~1
+    , random= ~vm(animal,ped.ainv) + mother_PE + matriline
+    , residual = ~idv(units)
+    , data= data, trace=FALSE)
+	m9<-summary(mod)$varcomp
+	list(
+		samp_cov = inv_hessian_varcomp(mod),
+		ml= c(
+			A= m9["vm(animal, ped.ainv)",1], 
+			Me=m9["mother_PE",1], 
+			Ml=m9["matriline",1],
+			E = m9["units!R",1])
 		)
 }	
 

@@ -37,12 +37,15 @@ mat_ratio_se <- apply(mat_ratio_all,2,se)
 
 matsib_ratio <- colMeans(matsib_ratio_all)
 
+model2_fs_lF_bI [["samp_cov"]]
+
 samp_cov<-do.call(rbind,lapply(ped_names,function(k) {
 	do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
 			data.frame(
 				r=k,
 				scenario=1:nrow(scenarios),
-				Va_Vm = apply(x[["samp_cov"]], 3, function(y) cov2cor(y)["mother_PE","animal"]),
+				Va_Vm_cov = x[["samp_cov"]]["mother_PE","animal",],
+				Va_Vm_cor = apply(x[["samp_cov"]], 3, function(y) cov2cor(y)["mother_PE","animal"]),
 				Vmg_sim=scenarios[,"Vmg"]
 			)
 	}))
@@ -51,40 +54,47 @@ samp_cov<-do.call(rbind,lapply(ped_names,function(k) {
 
 nrow(samp_cov)
 head(samp_cov,20)
-hist(samp_cov$Va_Vm,breaks=50)
+tail(samp_cov,30)
+hist(samp_cov$Va_Vm_cor,breaks=50)
+
+samp_cov[1000:1020,]
+
+
 
 r_order2<- sapply(samp_cov$r, function(x) which(ped_names==x))
 
 samp_cov$mat_ratio <- mat_ratio[r_order2]
 samp_cov$matsib_ratio <- matsib_ratio[r_order2]
 
-summary(lme4::lmer(Va_Vm ~ mat_ratio +matsib_ratio + (1|r),samp_cov, subset=scenario=="1"))
+summary(lme4::lmer(Va_Vm_cor ~ mat_ratio +matsib_ratio + (1|r),samp_cov, subset=scenario=="1"))
 
 # samp_cov$ln_Va_bias <- log(samp_cov$Va_bias)
-Va_Vm_mean<-aggregate(cbind(Va_Vm,Vmg_sim,mat_ratio,matsib_ratio)~ scenario+r, samp_cov,mean)
-Va_Vm_se<-aggregate(cbind(Va_Vm)~ scenario+r, samp_cov,se)
-# r_order<- sapply(Va_Vm_mean$r, function(x) which(ped_names==x))
+Va_Vm_cor_mean<-aggregate(cbind(Va_Vm_cor,Vmg_sim,mat_ratio,matsib_ratio)~ scenario+r, samp_cov,mean)
+Va_Vm_cor_se<-aggregate(cbind(Va_Vm_cor)~ scenario+r, samp_cov,se)
+# r_order<- sapply(Va_Vm_cor_mean$r, function(x) which(ped_names==x))
 
 # which(va1$r)
 
-# Va_Vm_mean$mat_ratio <- mat_ratio[r_order]
-# Va_Vm_se$mat_ratio <- mat_ratio_se[r_order]
+# Va_Vm_cor_mean$mat_ratio <- mat_ratio[r_order]
+# Va_Vm_cor_se$mat_ratio <- mat_ratio_se[r_order]
 
-head(Va_Vm_mean)
-Va_Vm_mean$Vmg_n0 <- as.numeric(Va_Vm_mean$Vmg_sim>0) +1
+head(Va_Vm_cor_mean)
+Va_Vm_cor_mean$Vmg_n0 <- as.numeric(Va_Vm_cor_mean$Vmg_sim>0) +1
 
-Va_Vm_mean[,c("ms","fec","imm")] <- do.call(rbind,strsplit(Va_Vm_mean$r,"_"))
+Va_Vm_cor_mean[,c("ms","fec","imm")] <- do.call(rbind,strsplit(Va_Vm_cor_mean$r,"_"))
 # va2$matM_ratio2<- matM_ratio2[r_order]
 
 
 
-plot(Va_Vm ~ mat_ratio,Va_Vm_mean, col=Va_Vm_mean$scenario, pch=19)
-plot(Va_Vm ~ matsib_ratio,Va_Vm_mean, col=Va_Vm_mean$scenario, pch=19)
+plot(Va_Vm_cor ~ mat_ratio,Va_Vm_cor_mean, col=Va_Vm_cor_mean$scenario, pch=19)
+plot(Va_Vm_cor ~ matsib_ratio,Va_Vm_cor_mean, col=Va_Vm_cor_mean$scenario, pch=19)
 
-boxplot(Va_Vm ~ scenario,Va_Vm_mean)
+boxplot(Va_Vm_cor ~ scenario,Va_Vm_cor_mean)
 
-boxplot(Va_Vm ~ r,Va_Vm_mean)
+boxplot(Va_Vm_cor ~ r,Va_Vm_cor_mean)
 
 
-beeswarm::beeswarm(Va_Vm~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.5),method = "compactswarm",corral="wrap")
+beeswarm::beeswarm(Va_Vm_cor~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.5),method = "compactswarm",corral="wrap")
 abline(h=0)
+
+beeswarm::beeswarm(Va_Vm_cov~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.5),method = "compactswarm",corral="wrap")

@@ -15,7 +15,7 @@ source(paste0(wd,"R/00_functions.R"))
 max_gen <- 10
 n_sims <- 50
 cores<-6
-fecundity=8
+fecundity=6
 
 immigration <- rbind(
 	no_immigration = c(0,0),
@@ -72,9 +72,9 @@ mat_ratio_pd <- colMeans(mat_ratio_all_pd)
 
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS4_ped_depth.pdf"), height=5, width=7)
+pdf(paste0(wd,"Figures/FigSM_ped_depth.pdf"), height=5, width=7)
 {
-	par(mar=c(5,5,1,1))
+	par(mar=c(5,5,1,1),cex.lab=1.3, cex.axis=1.1)
 plot(mat_ratio_pd~rep(1:10,4), pch=19, col=rep(viridis::viridis(4),each=10),ylim=c(0,0.4), xlab="Pedigree Depth (Generations)", ylab="Proportion of non-sibling maternal links")
 for(i in 1:4) lines(mat_ratio_pd[(1:10)+10*(i-1)]~c(1:10),col=viridis::viridis(4)[i])
 

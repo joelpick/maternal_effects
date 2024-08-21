@@ -287,30 +287,33 @@ mge_sim <- function(ped,param, Vp=1){
  	
  	colnames(ped) <- c("animal","dam","sire")
 
- 	Va <- param["Va"]
+	Va <- param["Va"]
  	Vmg <- param["Vmg"]
- 	r_amg <- param["r_amg"]
+ 	cov_amg <- param["r_amg"]*sqrt(Vmg)*sqrt(Va)
  	Vme <- param["Vme"]
-
- 	D <- diag(sqrt(c(Va,Vmg)))
-	R <- matrix(c(1,r_amg,r_amg,1),nrow=2)
-	G <- D%*%R%*%D
-
-	Ve <- Vp - sum(G) - Vme
+ 	Ve <- Vp - (Vme + Va + Vmg + cov_amg)
 
 	## simulate direct, maternal genetic and environmental effects, add together to make phenotype
 	
-	g <- rbv0(ped[,1:3],G)
-	a <- g[,1]
-	mg <- g[match(ped[,2],ped[,1]),2]
-	me <- rnorm(nrow(ped),0,sqrt(Vme))[match(ped[,2],ped[,1])]
-	e <- rnorm(nrow(ped),0,sqrt(Ve))
-	p <- a + mg + me + e
-	data <- data.frame(cbind(p=p,ped))
+	squid_data <- simulate_population(
+	  parameters =list(
+	    animal = list(
+	      names = c("direct","maternal"),
+	      vcov = matrix(c(Va,cov_amg,cov_amg,Vmg),2,2)
+	    ),
+	    dam = list(names="maternalE", vcov=Vme),
+	    residual = list(names = "residual",vcov = Ve)
+	  ),
+	  data_structure=ped,
+	  pedigree=list(animal=ped),
+	  index_link=list(dam_link="dam-animal"),
+	  model = "p = direct + maternal[dam_link] + maternalE + residual"
+	)
+	data <- get_population_data(squid_data)
 	data$mother <- as.factor(data$dam)
 	data$mother_PE <- as.factor(data$dam)
 	data$animal <- as.factor(data$animal)
-	data$matriline <- as.factor(matriline(ped))
+	# data$matriline <- as.factor(matriline(ped))
 
 	data <- subset(data, !is.na(mother)) 
 	data

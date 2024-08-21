@@ -39,7 +39,7 @@ stat_mr<-rowSums(stat1[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_
 
 
 setEPS()
-pdf(paste0(wd,"Figures/fig2_mat_links.pdf"), height=6, width=8)
+pdf(paste0(wd,"Figures/Fig3_mat_links.pdf"), height=6, width=8)
 order <- c(7,8)
 {
 par(mar=c(5,1,1,1), cex.lab=1.5, cex.axis=1.25)

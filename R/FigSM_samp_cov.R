@@ -52,6 +52,13 @@ samp_cov<-do.call(rbind,lapply(ped_names,function(k) {
 	# assign(paste0("samp_cov_",k),samp_cov)
 }))
 
+order_exp <- expand.grid(imm=c("mI","nI","bI","fI"),fec=c("lF","mF","hF"),ms=c("fs","fhs","hs"))
+order<-apply(order_exp,1,function(x) paste(x[3:1],collapse="_"))
+
+samp_cov$order <- match(samp_cov$r,order)
+
+
+
 nrow(samp_cov)
 head(samp_cov,20)
 tail(samp_cov,30)
@@ -85,16 +92,70 @@ Va_Vm_cor_mean[,c("ms","fec","imm")] <- do.call(rbind,strsplit(Va_Vm_cor_mean$r,
 # va2$matM_ratio2<- matM_ratio2[r_order]
 
 
-
-plot(Va_Vm_cor ~ mat_ratio,Va_Vm_cor_mean, col=Va_Vm_cor_mean$scenario, pch=19)
-plot(Va_Vm_cor ~ matsib_ratio,Va_Vm_cor_mean, col=Va_Vm_cor_mean$scenario, pch=19)
-
-boxplot(Va_Vm_cor ~ scenario,Va_Vm_cor_mean)
-
-boxplot(Va_Vm_cor ~ r,Va_Vm_cor_mean)
+# plot(matsib_ratio ~ mat_ratio,Va_Vm_cor_mean, col=Va_Vm_cor_mean$scenario, pch=19)
 
 
-beeswarm::beeswarm(Va_Vm_cor~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.5),method = "compactswarm",corral="wrap")
-abline(h=0)
+	
+	setEPS()
+	pdf(paste0(wd,"Figures/FigSM_samp_cov_mat_links.pdf"), height=6, width=13)
 
-beeswarm::beeswarm(Va_Vm_cov~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.5),method = "compactswarm",corral="wrap")
+
+{	
+		layout(matrix(c(1,2),nrow=1, byrow=TRUE), width=c(10,1))
+
+par(mar=c(5,5,1,1),cex.lab=1.5, cex.axis=1.1 )
+
+cols<-c(palette.colors(),1)#viridis::viridis(10)
+	bgs= c(palette.colors(),0)
+	pch=rep(21:25,2)
+
+plot(Va_Vm_cor ~ mat_ratio,Va_Vm_cor_mean, pch= pch[Va_Vm_cor_mean$scenario],col= cols[Va_Vm_cor_mean$scenario],bg= bgs[Va_Vm_cor_mean$scenario], xlab="Proportion non-sibling maternal links", ylab="Estimated Sampling covariance")
+	abline(h=0, col=alpha("grey",0.5))
+
+par(mar=c(0,0,0,0))
+	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
+	legend("center",LETTERS[1:10], pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1.1,title="Scenario")
+
+}
+	dev.off()
+
+# plot(Va_Vm_cor ~ matsib_ratio,Va_Vm_cor_mean, col=Va_Vm_cor_mean$scenario, pch=19)
+
+# boxplot(Va_Vm_cor ~ scenario,Va_Vm_cor_mean)
+# boxplot(Va_Vm_cor ~ r,Va_Vm_cor_mean)
+
+	setEPS()
+	pdf(paste0(wd,"Figures/FigSM_samp_cov_ped.pdf"), height=6, width=13)
+
+
+{	par(mar=c(5,5,5,1),cex.lab=1.5, cex.axis=1.1)
+	beeswarm(Va_Vm_cor~ order, samp_cov,pch=19, cex=0.1, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab="Estimated Sampling covariance", labels=c("M","N","U","F"), xlab="Immigration")
+	abline(h=0, col=alpha("grey",0.5))
+
+
+	for(i in c(0,12,24)){
+		axis(3,c(1,2.5,4)+i,c("","Low",""), lwd.ticks=0, line=1, padj=1, cex.axis=1)
+		axis(3,c(1,2.5,4)+4+i,c("","Medium",""), lwd.ticks=0, line=1, padj=1, cex.axis=1)
+		axis(3,c(1,2.5,4)+8+i,c("","High",""), lwd.ticks=0, line=1, padj=1, cex.axis=1)
+	}
+	axis(3,c(1,6.5,12),c("","Full-Sib",""), lwd.ticks=0, line=3, padj=1, cex.axis=1)
+	axis(3,c(1,6.5,12) + 12,c("","Mixed",""), lwd.ticks=0, line=3, padj=1, cex.axis=1)
+	axis(3,c(1,6.5,12) + 24,c("","Half-Sib",""), lwd.ticks=0, line=3, padj=1, cex.axis=1)
+
+	mtext("Mating System", side=3, line=-1.75, outer=TRUE, adj=0)
+	mtext("Fecundity", side=3, line=-3.75, outer=TRUE, adj=0)
+
+}
+	dev.off()
+
+
+	setEPS()
+	pdf(paste0(wd,"Figures/FigSM_samp_cov_scenario.pdf"), height=6, width=13)
+
+{
+	par(mar=c(5,5,1,1),cex.lab=1.5, cex.axis=1.1)
+	beeswarm::beeswarm(Va_Vm_cor~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.3),method = "compactswarm",corral="wrap",labels=LETTERS[1:10],ylab="Estimated Sampling covariance", xlab="Scenario")
+	abline(h=0, col=alpha("grey",0.5))
+	}	
+	dev.off()
+# beeswarm::beeswarm(Va_Vm_cov~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.5),method = "compactswarm",corral="wrap")

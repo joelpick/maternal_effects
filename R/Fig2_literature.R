@@ -16,7 +16,7 @@ dd<-read.csv(paste0(data_wd,"MGE - all_est.csv"))
 ########
 
 setEPS()
-pdf("/Users/joelpick/github/maternal_effects/Figures/fig1_lit.pdf", height=5, width=15)
+pdf("/Users/joelpick/github/maternal_effects/Figures/Fig2_lit.pdf", height=5, width=15)
 
 {
 par(mfrow=c(1,3),mar=c(6,6,1,1), cex.lab=2, cex.axis=1.6, mgp=c(4,1,0))

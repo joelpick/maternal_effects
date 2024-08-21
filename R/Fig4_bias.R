@@ -52,7 +52,10 @@ r_order2<- sapply(mod2$r, function(x) which(ped_names==x))
 mod2$mat_ratio <- mat_ratio[r_order2]
 mod2$matsib_ratio <- matsib_ratio[r_order2]
 
-summary(lme4::lmer(Va_bias ~ mat_ratio +matsib_ratio + (1|r),mod2, subset=scenario=="1"))
+summary(lme4::lmer(Va_bias ~ mat_ratio  + (1|r),mod2, subset=scenario=="1"))
+
+summary(lme4::lmer(Va_bias ~ 1+ (1|r),mod2, subset=scenario=="1"))
+
 
 # mod2$ln_Va_bias <- log(mod2$Va_bias)
 va2<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim,Vm_bias)~ scenario+r, mod2,mean)
@@ -72,11 +75,7 @@ va2[,c("ms","fec","imm")] <- do.call(rbind,strsplit(va2$r,"_"))
 plot(Va_bias ~ matsib_ratio,va2, col=va2$scenario, pch=19)
 
 
-
-
 plot(matsib_ratio)
-
-
 
 
 plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
@@ -104,8 +103,13 @@ plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
 		pt.bg= c(palette.colors(),"white")[s],bty="n",title="Scenario")
 
 	if(lines){
-		coefsA<-sapply(s,function(i)(coef(lm(Va_bias~mat_ratio,dd,subset=scenario==i))))
-		sapply(1:length(s),function(x) abline(coefsA[1,x],coefsA[2,x],col=cols[s[x]], lty=2))
+		coefsA <- sapply(s,function(i){
+			coefs <- coef(lm(Va_bias~mat_ratio,dd,subset=scenario==i))
+			preds <- data.frame(x=range(dd$mat_ratio))
+			preds$y <- coefs[1] + coefs[2]*preds$x
+			print(preds)
+			lines(y~x,preds,col=cols[i], lty=2)
+		})
 	}
 
 
@@ -119,8 +123,13 @@ plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
 	abline(h=0)
 
 	if(lines){
-		coefsM<-sapply(s,function(i)(coef(lm(Vm_bias~mat_ratio,dd,subset=scenario==i))))
-		sapply(1:length(s),function(x) abline(coefsM[1,x],coefsM[2,x],col=cols[s[x]], lty=2))
+		coefsM <- sapply(s,function(i){
+			coefs <- coef(lm(Vm_bias~mat_ratio,dd,subset=scenario==i))
+			preds <- data.frame(x=range(dd$mat_ratio))
+			preds$y <- coefs[1] + coefs[2]*preds$x
+			print(preds)
+			lines(y~x,preds,col=cols[i], lty=2)
+		})
 	}
 
 }
@@ -154,8 +163,7 @@ cols <- c(palette.colors(),1)[dd$scenario]
 
 
 setEPS()
-pdf(paste0(wd,"Figures/Fig3_bias.pdf"), height=10, width=8)
-
+pdf(paste0(wd,"Figures/Fig4_bias.pdf"), height=10, width=8)
 {	
 	par(mfrow=c(3,2),	mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1)
 
@@ -166,11 +174,10 @@ pdf(paste0(wd,"Figures/Fig3_bias.pdf"), height=10, width=8)
 dev.off()
 
 setEPS()
-pdf(paste0(wd,"Figures/Fig4_Va_Vm.pdf"), height=5, width=10)
-
+pdf(paste0(wd,"Figures/Fig5_Va_Vm.pdf"), height=5, width=10)
 {
 	par(mfrow=c(1,2),	mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1)
-	plot_fig4(c(1:5))
+	plot_fig4(c(1:6))
 	legend("topright",expression(m^2~"="~"-"*0.5*h^2),lty=1,bty="n")
 
 	plot_fig4(c(6:10), legend_pos="bottomright")

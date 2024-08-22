@@ -307,6 +307,7 @@ mge_sim <- function(ped,param, Vp=1){
 	  data_structure=ped,
 	  pedigree=list(animal=ped),
 	  index_link=list(dam_link="dam-animal"),
+	  suppress_index_warning=TRUE,
 	  model = "p = direct + maternal[dam_link] + maternalE + residual"
 	)
 	data <- get_population_data(squid_data)

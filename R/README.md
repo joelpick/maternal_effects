@@ -5,20 +5,18 @@
 - Contains the functions that are commonly used in other scripts.
 
 
-## 01_simulations.R
+## 01_parameters.R
 
-- Generates Gaussian 'observed' datasets and runs on them models
+- defines the parameters used in the simulations
+
+## 02_simulations.R
+
+- Simulates pedigrees and datasets, and analyses them
 
 
-## 02_bias_variance.R
+## 03_bias_variance.R
 
-- Generates null distributions via permutation for the datasets and models generated in 01_gaussian_sims.R
-
-
-## 03_gaussian_sims_boot.R
-
-- Generates null distributions via simulation for the datasets and models generated in 01_gaussian_sims.R
-
+- 
 
 ## Figure_1_example.R
 
@@ -55,9 +53,10 @@
 - Generates figure 7
 
 
-## FigSM_fay_plot.R
+## FigSM_all_sim.R
 
-- Generates FigSM_fay.pdf
+- Generates all FigSM_all_sim... figures
+
 
 
 

@@ -1,28 +1,16 @@
 
 rm(list=ls())
 
-library(asreml)
-library(parallel)
-library(squidPed)
+# devtools::install_github("squid-group/squidSim")
 
 wd <- "/Users/joelpick/github/maternal_effects/"
 
 data_wd <- paste0(wd,"Data/Intermediate/")
 
-# source(paste0(wd,"R/extract_cousins.R"))
-source(paste0(wd,"R/00_functions.R"))
-# source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
-# devtools::load_all("~/github/squidSim/R")
-
-run=TRUE
-
-n_sims <-100
-
 ##------------------------
 ## Pedigree parameters
 ##------------------------
 
-generations=5
 n_offspring=600
 
 ## Range from bonnet et al 
@@ -72,6 +60,30 @@ ped_names <- rownames(peds_param) <- paste(
 	i_names[combos[,"immigration"]], sep="_")
 
 
+
+
+##------------------------
+## Reduced set of pedigree parameters
+##------------------------
+
+# Postma 2014, the median sample size of studies using animal models is 361
+# in young and postma 2023 its 420
+    #  0%     10%     25%     50%     75%     90%    100% 
+    # 6.0   105.4   174.5   420.0  1106.0  1895.0 38024.0 
+
+peds_param_reduced <- rbind(
+	cbind(generations=2,peds_param[grep("fhs_lF",ped_names),]),
+	cbind(generations=4,peds_param[grep("fhs_lF",ped_names),])
+	)
+peds_param_reduced[,"n_females"] <- rep(c(20,30),each=4)
+
+ped_names_reduced <- rownames(peds_param_reduced) <- c(
+	paste0(ped_names[grep("fhs_lF",ped_names)],"_small"),
+	paste0(ped_names[grep("fhs_lF",ped_names)],"_medium")
+	)
+
+
+
 ##-------------------------------
 ## Different simulation scenarios
 ##-------------------------------
@@ -96,78 +108,20 @@ scenarios <- rbind(
 	h=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=0.6),
 	# I+J) Direct and maternal genetic, - covariance
 	i=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=-0.3),
-	j=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=-0.6)		
+	j=c(Va=0.25, Vmg=0.25, Vme=0, r_amg=-0.6),
+
+	# K+L) just Va
+	k= c(Va=0.25, Vmg=0, Vme=0, r_amg=0),
+	l= c(Va=0.25, Vmg=0, Vme=0.25, r_amg=0)	
 )
 
 
-###------------------------
-### Pedigree and Phenotype Simulations, and Running Models
-###------------------------
-
-if(run){
-	cores<-6
-	set.seed(20230126)
-
-	ped_str <- vector("list",length=nrow(peds_param))
-	names(ped_str) <- ped_names
-	# ped_str_mat <- vector("list",length=nrow(peds_param))
-	# names(ped_str_mat) <- ped_names
-
-# k="fs_lF_mI"
-	## make pedigrees
-	
-	for(k in ped_names){
-		cat(k, "\n")
-		cat("Simulating Pedigrees\n")
-		peds <- mclapply(1:n_sims,	function(i){
-			simulate_pedigree(
-				years = generations,
-				n_females = peds_param[k,"n_females"],
-				fecundity = peds_param[k,"fecundity"],
-				p_sire = peds_param[k,"p_sire"],
-				p_polyandry=1,
-				juv_surv = c(peds_param[k,"juv_surv_f"],peds_param[k,"juv_surv_m"]),
-				adult_surv = 0,					# discrete generations
-				immigration = c(peds_param[k,"immigration_f"],peds_param[k,"immigration_m"]), 				# closed population
-				constant_pop = TRUE     # constant population size
-				)$pedigree
-		}, mc.cores=cores)
-		# assign(paste0(k ,"_peds"),peds)	
-
-		cat("Generating Pedigree Metrics\n")
-		ped_str[[k]]<- do.call(rbind,mclapply(peds,FUN= function(x){
-			ped_stat(x,phenotyped=x[!is.na(x[,"dam"]),"animal"])}, mc.cores=cores))
-		# ped_str_mat[[k]]<- do.call(rbind,mclapply(peds,ped_stat2, mc.cores=cores))
 
 
-		cat("Simulating Data\n")
-		## simulate data
-		dat<-mclapply(peds, function(i){
-			x<-vector("list", nrow(scenarios))
-			for(j in 1:nrow(scenarios)){
-				x[[j]]<- mge_sim(i[,1:3], param=scenarios[j,])
-			}
-			x
-		}, mc.cores=cores)
-		# assign(paste0(k,"_data"),dat)
+save(ped_names,peds_param,ped_names_reduced,peds_param_reduced,scenarios,file=paste0(data_wd,"parameters.Rdata"))
 
-	## run models
-		cat("Running models: \n")
-	
-		# cat("Model 1: ")
-		# model1 <- model_func(m1a_func,peds,dat,mc.cores=cores)
-		# assign(paste0("model1_",k),model1)
-		cat("\nModel 2: ")
-		model2 <- model_func(m2_func,peds,dat,mc.cores=cores)
-		assign(paste0("model2_",k),model2)
-		cat("\n")
-		rm(peds,dat)
-	}
 
-#paste0("model1_",ped_names),
-	save(list=(c("ped_names","peds_param","scenarios","ped_str",paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims3.Rdata"))#"ped_str_mat",
-}else{
-	load(paste0(data_wd,"mge_sims3.Rdata"))	
-}
+
+
 
 

@@ -2,6 +2,8 @@
 
 rm(list=ls())
 
+# devtools::install_github("squidgroup/squidSim")
+# devtools::install_github("squidgroup/squidPed")
 
 library(asreml)
 library(parallel)
@@ -12,55 +14,125 @@ wd <- "/Users/joelpick/github/maternal_effects/"
 
 data_wd <- paste0(wd,"Data/Intermediate/")
 
-source(paste0(wd,"R/extract_cousins.R"))
 source(paste0(wd,"R/00_functions.R"))
-# source("/Users/joelpick/github/squidPed/R/simulate_pedigree.R")
-# devtools::load_all("~/github/squidSim/R")
+load(paste0(data_wd,"parameters.Rdata"))
 
-
-
-
+### WOULD A DAM SIRE MODEL WORK?
 
 run=TRUE
 
-n_sims <-100
 cores<-6
-
-##------------------------
-## Pedigree parameters
-##------------------------
-
-generations=3
-
-fecundity=3
-
-immigration <- c(f=0.5,m=0.5)
-
-juv_surv <- c(
-	f=2*(1 - immigration["f"])/fecundity,
-	m=2*(1 - immigration["m"])/fecundity
-)
+n_sims <-100
 
 
-# Postma 2014, the median sample size of studies using animal models is 361
-# in young and postma 2023 its 420
-scenario <-   c(Va = 0.1, Vmg= 0.2, Vme = 0.05, r_amg =0)
- 
+# sapply( (peds_param_2[,"juv_surv_f"] * peds_param_2[,"fecundity"])/2 + peds_param_2[,"immigration_f"],all.equal,1)
+# scenario <-   c(Va = 0.3, Vmg= 0.1, Vme = 0.1, r_amg =0)
+
+
+###------------------------
+### Pedigree and Phenotype Simulations, and Running Models
+###------------------------
+
+if(run){
+	
+	set.seed(20240822)
+
+# k="fhs_lF_nI_small"
+	## make pedigrees
+	
+	for(k in ped_names_reduced){
+		cat(k, "\n")
+		cat("Simulating Pedigrees\n")
+		peds <- lapply(1:n_sims,	function(i){
+			# print(i)
+			# set.seed(85)
+			ped<-simulate_pedigree(
+							years = peds_param_reduced[k,"generations"],
+							n_females = peds_param_reduced[k,"n_females"],
+							fecundity = peds_param_reduced[k,"fecundity"],
+							fixed_fecundity = TRUE,
+							p_sire = peds_param_reduced[k,"p_sire"],
+							p_polyandry=1,
+							p_breed=1,
+							juv_surv = c(peds_param_reduced[k,"juv_surv_f"],peds_param_reduced[k,"juv_surv_m"]),
+							adult_surv = 0,					# discrete generations
+							immigration = c(peds_param_reduced[k,"immigration_f"],peds_param_reduced[k,"immigration_m"]),
+							constant_pop = TRUE   # constant population size
+							)$pedigree
+		})
+
+		cat("Simulating Data\n")
+		## simulate data
+		dat<-mclapply(peds, function(i){
+			x<-vector("list", nrow(scenarios))
+			for(j in 1:nrow(scenarios)){
+				x[[j]]<- mge_sim(i[,1:3], param=scenarios[j,])
+			}
+			x
+		}, mc.cores=cores)
+
+	## run models
+		cat("Running models: \n")
+	
+		# cat("Model 1: ")
+		# model1 <- model_func(m1a_func,peds,dat,mc.cores=cores)
+		# assign(paste0("model1_",k),model1)
+		cat("\nModel 1: ")
+		model1 <- model_func(m1_func,peds,dat,mc.cores=cores)
+
+		cat("\nModel 2: ")
+		model2 <- model_func(m2_func,peds,dat,mc.cores=cores)
+
+		cat("\nModel 4: ")
+		model4 <- model_func(m4_func,peds,dat,mc.cores=cores)
+
+		cat("\nModel 5: ")
+		model5 <- model_func(m5_func,peds,dat,mc.cores=cores)
+
+
+		assign(paste0("model1_",k),model1)
+		assign(paste0("model2_",k),model2)
+		assign(paste0("model4_",k),model4)
+		assign(paste0("model5_",k),model5)
+		
+		cat("\n")
+		rm(peds,dat)
+	}
+
+	save(list=c(
+		paste0("model1_",ped_names_reduced),
+		paste0("model2_",ped_names_reduced),
+		paste0("model4_",ped_names_reduced),
+		paste0("model5_",ped_names_reduced)
+		),
+		file=paste0(data_wd,"mge_sims_small_ped.Rdata"))
+}else{
+	load(paste0(data_wd,"mge_sims_small_ped.Rdata"))
+}
+
+
+
+
+
+
+
 ped<-simulate_pedigree(
-				years = generations,
-				n_females = 30,
-				fecundity = fecundity,
-				p_sire = 0.75,
+				years = peds_param_2[k,"generations"],
+				n_females = peds_param_2[k,"n_females"],
+				fecundity = peds_param_2[k,"fecundity"],
+				fixed_fecundity = TRUE,
+				p_sire = peds_param_2[k,"p_sire"],
 				p_polyandry=1,
-				juv_surv = juv_surv,
+				p_breed=1,
+				juv_surv = c(peds_param_2[k,"juv_surv_f"],peds_param_2[k,"juv_surv_m"]),
 				adult_surv = 0,					# discrete generations
-				immigration = immigration, 				# closed population
+				immigration = c(peds_param_2[k,"immigration_f"],peds_param_2[k,"immigration_m"]),
 				constant_pop = TRUE     # constant population size
 				)$pedigree
 nrow(ped)
 sum(!is.na(ped$dam))
 
-table()
+table(ped$cohort)
 
 if(run){
 	set.seed(20230920)
@@ -104,15 +176,15 @@ if(run){
 		cat("\nModel 9: ")
 		model9 <- model_func(m9_func,peds,dat,mc.cores=cores)
 
-		cat("\nModel 5: ")
-		model5 <- model_func(m5_func,peds,dat,mc.cores=cores)
+		# cat("\nModel 5: ")
+		# model5 <- model_func(m5_func,peds,dat,mc.cores=cores)
 		cat("\n")
 		rm(peds,dat)
 	}
-			assign("ped.ainv", asreml::ainverse(peds[[2]]), envir = .GlobalEnv) 
+
 
 	
-m5_func(dat[[2]][[1]])
+
 
 
 #paste0("model1_",ped_names),
@@ -141,47 +213,75 @@ mods <- do.call(rbind,lapply(1:n_sims, function(x) {
 		Vme_sim=as.numeric(scenario["Vme"]),
 		Vmg_sim=as.numeric(scenario["Vmg"]),
 
-		Va_se=c(model2[[x]]$samp_cov["animal","animal",1],model4[[x]]$samp_cov["animal","animal",1],model9[[x]]$samp_cov["animal","animal",1]),
-		Vmg_se=c(model2[[x]]$samp_cov["animal","animal",1],model4[[x]]$samp_cov["animal","animal",1],model9[[x]]$samp_cov["animal","animal",1])
-
+		Va_se=sqrt(c(model2[[x]]$samp_cov["animal","animal",1],model4[[x]]$samp_cov["animal","animal",1],model9[[x]]$samp_cov["animal","animal",1])),
+		Vme_se=sqrt(c(model2[[x]]$samp_cov["mother_PE","mother_PE",1],model4[[x]]$samp_cov["mother_PE","mother_PE",1],model9[[x]]$samp_cov["mother_PE","mother_PE",1])),
+		Vmg_se=sqrt(c(NA,model4[[x]]$samp_cov["mother","mother",1],model9[[x]]$samp_cov["matriline","matriline",1]))
 		)
-
 }))
 
 mods$Va_bias <- mods$Va_est - mods$Va_sim
 mods$Vm_bias <- mods$Vm_est - mods$Vm_sim
+mods$Va_z <- mods$Va_se/mods$Va_est
+mods$Vmg_z <- mods$Vmg_se/mods$Vmg_est
+mods$Vme_z <- mods$Vme_se/mods$Vme_est
+
 
 # mod2$ln_Va_bias <- log(mod2$Va_bias)
-va<-aggregate(cbind(Va_bias,Vmg_sim,Vm_sim,Vm_bias)~ model, mods,mean)
-aggregate(cbind(Va_est,Vm_est)~ model, mods,mean)
+
+va<-aggregate(cbind(Va_bias,Vm_bias,Va_est,Vm_est, Va_se)~ model, mods,mean,)
+
 
 aggregate(cbind(Va_est,Vm_est, Va_se)~ model, mods,mean)
 
 va_prec<-aggregate(cbind(Va_est,Vm_est)~ model, mods,function(x) sd(x))
 
-va2_se<-aggregate(cbind(Va_bias,Vm_bias)~ model, mods,se)
+aggregate(cbind(Va_bias)~ model, mods, function(x) sqrt(mean(x^2)))
 
 par(mfrow=c(2,2))
 boxplot(Va_est~model,mods); abline(h=scenario["Va"])
+points(Va_est~c(1,2,3),va, pch=19, col="red")
+
 boxplot(Vm_est~model,mods); abline(h=scenario["Vme"] + scenario["Vmg"])
-boxplot(Vme_est~model,mods); abline(h=scenario["Vme"])
+points(Vm_est~c(1,2,3),va, pch=19, col="red")
 
-boxplot(sqrt(Va_se)~model,mods); abline(h=scenario["Vme"] + scenario["Vmg"])
+# boxplot(Vme_est~model,mods); abline(h=scenario["Vme"])
 
-boxplot(Va_se~model,mods); abline(h=scenario["Vme"] + scenario["Vmg"])
+boxplot(Va_se~model,mods)
+points(Va_se~c(1,2,3),va, pch=19, col="red")
 
-{
-par(mfrow=c(2,2))
-plot(Va_bias~mat_ratio,va2)
-points(Va_bias~mat_ratio,va4, pch=19)
+boxplot(Vme_se~model,mods)
+boxplot(Vmg_se~model,mods)
 
-plot(Va_est~mat_ratio,va2_prec)
-points(Va_est~mat_ratio,va4_prec, pch=19)
 
-plot(Vm_bias~mat_ratio,va2)
-points(Vm_bias~mat_ratio,va4, pch=19)
 
-plot(Vm_est~mat_ratio,va2_prec)
-points(Vm_est~mat_ratio,va4_prec, pch=19)
-}
+library(beeswarm)
+par(mfrow=c(3,2))
+	beeswarm(Va_est~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
+points(Va_est~c(1,2,3),va, pch=19, col="red")
+
+	beeswarm(Va_se~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
+	points(Va_se~c(1,2,3),va, pch=19, col="red")
+
+# 	beeswarm(Vm_est~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
+# points(Vm_est~c(1,2,3),va, pch=19, col="red")
+
+	beeswarm(Vmg_est~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
+points(Vmg_est~c(1,2,3),va, pch=19, col="red")
+
+
+	beeswarm(Vmg_se~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
+
+		beeswarm(Vme_est~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
+
+	beeswarm(Vme_se~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap")
+
+
+plot(Vmg_est~Vme_est,mods)
+
+par(mfrow=c(1,3))
+
+	beeswarm(Va_z~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap", ylim=c(0,10))
+	beeswarm(Vmg_z~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap", ylim=c(0,10))
+	beeswarm(Vme_z~model,mods, pch=19, cex=0.4, col=scales::alpha(1,0.3),method = "compactswarm",corral="wrap", ylim=c(0,10))
+
 

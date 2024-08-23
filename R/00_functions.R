@@ -230,54 +230,9 @@ ped_stat <- function(ped, phenotyped=NULL){
 
 
 
-
-ped_stat2 <- function(ped){
-	colnames(ped)[1]<-"animal"
-	dat <- ped[!is.na(ped$dam),]
-	A <- nadiv::makeA(ped[,1:3])
-	A_dam<-A[as.character(dat$dam),as.character(dat$dam)]
-	A_id<-A[as.character(dat$animal),as.character(dat$animal)]
-	dam_sum<-Matrix::summary(A_dam)
-	id_sum<-Matrix::summary(A_id)
-	mat_sibs<- table(ped$dam)
-	c(mat_sib = sum(mat_sibs * (mat_sibs-1)/2),
-		mat_links = nrow(dam_sum)-nrow(dat),
-		total_links = nrow(id_sum)-nrow(dat))
-}
-
-
-
 ########################
 # SIMULATION FUNCTIONS
 ######################## 
-
-
-####
-#--- modification of MCMCglmms rbv function for simulating breeding values, that accepts 0 variance 
-####
-rbv0 <- function(pedigree, G){
-	X <- matrix(0, nrow=nrow(pedigree), ncol=nrow(G))
-	index <- which(diag(G)!=0)
-	if(any(diag(G)==0)) G <- G[index,index]
-	if(length(index)>0){
-		X2 <- MCMCglmm::rbv(pedigree=pedigree, G=G)
-		X[,index] <- X2	
-	}
-	X
-}
-
-
-####
-#--- makes matriline 
-####
-matriline <- function(ped){
-	matriline <- vector(mode="character",length=nrow(ped))
-	for(i in 1:nrow(ped)){
-		matriline[i] <- ifelse(is.na(ped[i,"dam"]), ped[i,"animal"],matriline[match(ped[i,"dam"],ped[,"animal"])])
-	}
-	matriline
-}
-
 
 
 ####
@@ -314,8 +269,6 @@ mge_sim <- function(ped,param, Vp=1){
 	data$mother <- as.factor(data$dam)
 	data$mother_PE <- as.factor(data$dam)
 	data$animal <- as.factor(data$animal)
-	# data$matriline <- as.factor(matriline(ped))
-
 	data <- subset(data, !is.na(mother)) 
 	data
  }
@@ -332,14 +285,17 @@ inv_hessian_varcomp <- function(mod){
 	inv_hess <- mod$ai
 	inv_hess <- as.matrix(inv_hess[rownames(inv_hess)!="units!R",colnames(inv_hess)!="units!R"])
 	ih_names <- rownames(inv_hess)
+cov_names <- grepl("!us\\(",ih_names)
+stringr::str_match(ih_names[cov_names],".+\\((\\w*)\\,.+\\)+|!")
+	
 	ih_names <- sub("!.+$", "", ih_names)
-	ih_names <- sub(".*\\((\\w*)\\,.+\\).*$", "\\1", ih_names)
+	ih_names <- sub(".*\\((\\w*)\\, .+\\).*$", "\\2", ih_names)
 	colnames(inv_hess)<-rownames(inv_hess)<-ih_names
 	return(inv_hess)
 }
 
-
-## Model 1 - additive genetic effects, assuming phenotype is trait of offspring
+stringr::str_match_all
+## Model 1 - additive genetic effects only
 m1_func <- function(data){
 	mod <- asreml(
 		fixed= p~1
@@ -359,25 +315,7 @@ m1_func <- function(data){
 	
 }
 
-m1a_func <- function(data){
-	mod <- asreml(
-		fixed= p~1
-		, random= ~mother_PE
-	  , residual = ~idv(units)
-    , data= data, trace=FALSE)
-	m1 <- summary(mod)$varcomp
-	list(
-		samp_cov = inv_hessian_varcomp(mod),
-		ml= c(
-			A= NA, 
-			Me=m1["mother_PE",1], 
-			Mg=NA,
-			cov_AMg =NA,
-			E = m1["units!R",1])
-		)
-}
-
-  ## Model 2 - additive genetic effects with maternal environment effects, assuming phenotype is trait of offspring
+## Model 2 - additive genetic effects with maternal identity effects (simple maternal effects model)
 m2_func <- function(data){
 	mod <- asreml(
 		fixed= p~1
@@ -396,24 +334,7 @@ m2_func <- function(data){
 		)
 }
 
-m3_func <- function(data){
-	mod <- asreml(
-		fixed= p~1
-		, random= ~vm(animal,ped.ainv) + vm(mother,ped.ainv) 
-		, residual = ~idv(units)
-    , data= data, trace=FALSE)
-	m3<-summary(mod)$varcomp
-	list(
-		samp_cov = inv_hessian_varcomp(mod),
-		ml= c(
-			A= m3["vm(animal, ped.ainv)",1], 
-			Me=NA, 
-			Mg=m3["vm(mother, ped.ainv)",1],
-			cov_AMg =NA,
-			E = m3["units!R",1])
-		)
-}
-
+## Model 3 - additive genetic effects with maternal environment and genetic effects, no covariance modelled
 m4_func <- function(data){
   mod <- asreml(
 		fixed= p~1
@@ -432,12 +353,14 @@ m4_func <- function(data){
 		)
 }
 
+## Model 4 - additive genetic effects with maternal environment and genetic effects, and direct-maternal covariance 
 m5_func <- function(data){
-	mod <- asreml(
-		fixed= p~1
-    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
-    , residual = ~idv(units)
-    , data= data, trace=FALSE,maxit=50)
+	mod<-tryCatch({
+		suppressWarnings(asreml(
+			fixed= p~1
+	    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
+	    , residual = ~idv(units)
+	    , data= data, trace=FALSE,maxit=50))
 	m5<-summary(mod)$varcomp
 	list(
 		samp_cov = inv_hessian_varcomp(mod),
@@ -448,83 +371,12 @@ m5_func <- function(data){
 			cov_AMg =m5[2,1],
 			E = m5["units!R",1])
 		)
-}	
 
+	}
+	, error = function(e) NA)
 
-m6_func <- function(data){
-	mod <- asreml(
-		fixed= p~1
-    , random= ~vm(mother,ped.ainv)
-    , residual = ~idv(units)
-    , data= data, trace=FALSE)
-	m6<-summary(mod)$varcomp
-	list(
-		samp_cov = inv_hessian_varcomp(mod),
-		ml= c(
-			A= NA, 
-			Me=NA, 
-			Mg=m6["vm(mother, ped.ainv)",1],
-			cov_AMg =NA,
-			E = m6["units!R",1])
-		)
-}	
+	}	
 
-
-m7_func <- function(data){
-	mod <- asreml(
-		fixed= p~1
-	  , random= ~vm(mother,ped.ainv) + mother_PE
-	  , residual = ~idv(units)
-    , data= data, trace=FALSE)
-	m7<-summary(mod)$varcomp
-	list(
-		samp_cov = inv_hessian_varcomp(mod),
-		ml= c(
-			A= NA, 
-			Me=m7["mother_PE",1], 
-			Mg=m7["vm(mother, ped.ainv)",1],
-			cov_AMg =NA,
-			E = m7["units!R",1])
-		)
-}	
-
-
-m8_func <- function(data){
-	data_means <- aggregate(p~mother,data,mean)
-	mod <- asreml(
-		fixed= p~1
-    , random= ~vm(mother,ped.ainv)
-    , residual = ~idv(units)
-    , data= data_means, trace=FALSE)
-	m8<-summary(mod)$varcomp
-	list(
-		samp_cov = inv_hessian_varcomp(mod),
-		ml= c(
-			A= NA, 
-			Me=NA, 
-			Mg=m8["vm(mother, ped.ainv)",1],
-			cov_AMg =NA,
-			E = m8["units!R",1])
-		)
-}	
-
-
-m9_func <- function(data){
-	mod <- asreml(
-		fixed= p~1
-    , random= ~vm(animal,ped.ainv) + mother_PE + matriline
-    , residual = ~idv(units)
-    , data= data, trace=FALSE)
-	m9<-summary(mod)$varcomp
-	list(
-		samp_cov = inv_hessian_varcomp(mod),
-		ml= c(
-			A= m9["vm(animal, ped.ainv)",1], 
-			Me=m9["mother_PE",1], 
-			Ml=m9["matriline",1],
-			E = m9["units!R",1])
-		)
-}	
 
 model_func <- function(FUN,peds,data,mc.cores=8){
 	mclapply(1:length(data), function(i){

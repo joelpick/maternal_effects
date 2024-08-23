@@ -11,7 +11,6 @@ library(squidSim)
 library(squidPed)
 
 wd <- "/Users/joelpick/github/maternal_effects/"
-
 data_wd <- paste0(wd,"Data/Intermediate/")
 
 source(paste0(wd,"R/00_functions.R"))
@@ -117,22 +116,33 @@ if(run){
 
 
 ped<-simulate_pedigree(
-				years = peds_param_2[k,"generations"],
-				n_females = peds_param_2[k,"n_females"],
-				fecundity = peds_param_2[k,"fecundity"],
+				years = peds_param_reduced[1,"generations"],
+				n_females = peds_param_reduced[1,"n_females"],
+				fecundity = peds_param_reduced[1,"fecundity"],
 				fixed_fecundity = TRUE,
-				p_sire = peds_param_2[k,"p_sire"],
+				p_sire = peds_param_reduced[1,"p_sire"],
 				p_polyandry=1,
 				p_breed=1,
-				juv_surv = c(peds_param_2[k,"juv_surv_f"],peds_param_2[k,"juv_surv_m"]),
+				juv_surv = c(peds_param_reduced[1,"juv_surv_f"],peds_param_reduced[1,"juv_surv_m"]),
 				adult_surv = 0,					# discrete generations
-				immigration = c(peds_param_2[k,"immigration_f"],peds_param_2[k,"immigration_m"]),
+				immigration = c(peds_param_reduced[1,"immigration_f"],peds_param_reduced[1,"immigration_m"]),
 				constant_pop = TRUE     # constant population size
 				)$pedigree
 nrow(ped)
 sum(!is.na(ped$dam))
 
 table(ped$cohort)
+
+
+assign("ped.ainv", asreml::ainverse(ped), envir = .GlobalEnv) 
+data <- mge_sim(ped[,1:3], param=scenarios[1,])
+mod<-asreml(
+		fixed= p~1
+    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
+    , residual = ~idv(units)
+    , data= data, trace=FALSE,maxit=50)
+mod2<-m5_func(data)
+
 
 if(run){
 	set.seed(20230920)

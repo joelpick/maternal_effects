@@ -46,18 +46,18 @@ if(run){
 			# print(i)
 			# set.seed(85)
 			ped<-simulate_pedigree(
-							years = peds_param_reduced[k,"generations"],
-							n_females = peds_param_reduced[k,"n_females"],
-							fecundity = peds_param_reduced[k,"fecundity"],
-							fixed_fecundity = TRUE,
-							p_sire = peds_param_reduced[k,"p_sire"],
-							p_polyandry=1,
-							p_breed=1,
-							juv_surv = c(peds_param_reduced[k,"juv_surv_f"],peds_param_reduced[k,"juv_surv_m"]),
-							adult_surv = 0,					# discrete generations
-							immigration = c(peds_param_reduced[k,"immigration_f"],peds_param_reduced[k,"immigration_m"]),
-							constant_pop = TRUE   # constant population size
-							)$pedigree
+				years = peds_param_reduced[k,"generations"],
+				n_females = peds_param_reduced[k,"n_females"],
+				fecundity = peds_param_reduced[k,"fecundity"],
+				fixed_fecundity = TRUE,
+				p_sire = peds_param_reduced[k,"p_sire"],
+				p_polyandry=1,
+				p_breed=1,
+				juv_surv = c(peds_param_reduced[k,"juv_surv_f"],peds_param_reduced[k,"juv_surv_m"]),
+				adult_surv = 0,					# discrete generations
+				immigration = c(peds_param_reduced[k,"immigration_f"],peds_param_reduced[k,"immigration_m"]),
+				constant_pop = TRUE   # constant population size
+				)$pedigree
 		})
 
 		cat("Simulating Data\n")
@@ -119,9 +119,9 @@ mmm<-asreml(
 			fixed= p~1
 	    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
 	    , residual = ~idv(units)
-	    , data= dat[[1]][[2]], trace=FALSE,maxit=50)
+	    , data= dat[[1]][[4]], trace=FALSE,maxit=50)
 summary(mmm)$varcomp
-m<-m5_func(dat[[1]][[1]])
+m5_func(dat[[1]][[3]])
 
 mean(is.na(do.call(rbind,lapply(model5, function(x) x[["ml"]]))[,1]))
 

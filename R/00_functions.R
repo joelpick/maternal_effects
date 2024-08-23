@@ -356,25 +356,28 @@ m4_func <- function(data){
 
 ## Model 4 - additive genetic effects with maternal environment and genetic effects, and direct-maternal covariance 
 m5_func <- function(data){
-	mod<-tryCatch({
-		suppressWarnings(asreml(
-			fixed= p~1
-	    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
-	    , residual = ~idv(units)
-	    , data= data, trace=FALSE,maxit=50))
-	m5<-summary(mod)$varcomp
-	list(
-		samp_cov = inv_hessian_varcomp(mod),
-		ml= c(
-			A= m5[1,1], 
-			Me=m5["mother_PE",1], 
-			Mg=m5[3,1],
-			cov_AMg =m5[2,1],
-			E = m5["units!R",1])
+	tryCatch({
+		suppressWarnings(
+			mod<-asreml(
+				fixed= p~1
+		    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
+		    , residual = ~idv(units)
+		    , data= data, trace=FALSE,maxit=50
+		   )
 		)
-
-	}
-	, error = function(e) list(
+		m5<-summary(mod)$varcomp
+		list(
+			samp_cov = inv_hessian_varcomp(mod),
+			ml= c(
+				A= m5[1,1], 
+				Me=m5["mother_PE",1], 
+				Mg=m5[3,1],
+				cov_AMg =m5[2,1],
+				E = m5["units!R",1]
+			)
+		)
+	}, 
+	error = function(e) list(
 		samp_cov = matrix(NA,5,5),
 		ml= c(
 			A= NA, 
@@ -382,9 +385,9 @@ m5_func <- function(data){
 			Mg=NA,
 			cov_AMg =NA,
 			E = NA)
-		))
-
-	}	
+		)
+	)
+}	
 
 
 model_func <- function(FUN,peds,data,mc.cores=8){

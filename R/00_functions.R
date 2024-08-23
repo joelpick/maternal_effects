@@ -285,16 +285,17 @@ inv_hessian_varcomp <- function(mod){
 	inv_hess <- mod$ai
 	inv_hess <- as.matrix(inv_hess[rownames(inv_hess)!="units!R",colnames(inv_hess)!="units!R"])
 	ih_names <- rownames(inv_hess)
-cov_names <- grepl("!us\\(",ih_names)
-stringr::str_match(ih_names[cov_names],".+\\((\\w*)\\,.+\\)+|!")
-	
+# cov_names <- grepl("!us\\(",ih_names)
+# stringr::str_match(ih_names[cov_names],".+\\((\\w*)\\,.+\\)+|!")
+# stringr::str_match_all
+
 	ih_names <- sub("!.+$", "", ih_names)
 	ih_names <- sub(".*\\((\\w*)\\, .+\\).*$", "\\2", ih_names)
 	colnames(inv_hess)<-rownames(inv_hess)<-ih_names
 	return(inv_hess)
 }
 
-stringr::str_match_all
+
 ## Model 1 - additive genetic effects only
 m1_func <- function(data){
 	mod <- asreml(
@@ -373,7 +374,15 @@ m5_func <- function(data){
 		)
 
 	}
-	, error = function(e) NA)
+	, error = function(e) list(
+		samp_cov = matrix(NA,5,5),
+		ml= c(
+			A= NA, 
+			Me=NA, 
+			Mg=NA,
+			cov_AMg =NA,
+			E = NA)
+		))
 
 	}	
 

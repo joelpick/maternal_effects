@@ -36,7 +36,7 @@ if(run){
 	
 	set.seed(20240822)
 
-# k="fhs_lF_nI_small"
+# k="fhs_lF_nI_medium"
 	## make pedigrees
 	
 	for(k in ped_names_reduced){
@@ -88,7 +88,7 @@ if(run){
 		cat("\nModel 5: ")
 		model5 <- model_func(m5_func,peds,dat,mc.cores=cores)
 
-
+# do.call(rbind,lapply(model5, function(x) x[["ml"]]))
 		assign(paste0("model1_",k),model1)
 		assign(paste0("model2_",k),model2)
 		assign(paste0("model4_",k),model4)
@@ -97,6 +97,7 @@ if(run){
 		cat("\n")
 		rm(peds,dat)
 	}
+	
 
 	save(list=c(
 		paste0("model1_",ped_names_reduced),
@@ -112,103 +113,19 @@ if(run){
 
 
 
+		assign("ped.ainv", asreml::ainverse(peds[[1]]), envir = .GlobalEnv) 
+rm(mmm)
+mmm<-asreml(
+			fixed= p~1
+	    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
+	    , residual = ~idv(units)
+	    , data= dat[[1]][[2]], trace=FALSE,maxit=50)
+summary(mmm)$varcomp
+m<-m5_func(dat[[1]][[1]])
+
+mean(is.na(do.call(rbind,lapply(model5, function(x) x[["ml"]]))[,1]))
 
 
-
-ped<-simulate_pedigree(
-				years = peds_param_reduced[1,"generations"],
-				n_females = peds_param_reduced[1,"n_females"],
-				fecundity = peds_param_reduced[1,"fecundity"],
-				fixed_fecundity = TRUE,
-				p_sire = peds_param_reduced[1,"p_sire"],
-				p_polyandry=1,
-				p_breed=1,
-				juv_surv = c(peds_param_reduced[1,"juv_surv_f"],peds_param_reduced[1,"juv_surv_m"]),
-				adult_surv = 0,					# discrete generations
-				immigration = c(peds_param_reduced[1,"immigration_f"],peds_param_reduced[1,"immigration_m"]),
-				constant_pop = TRUE     # constant population size
-				)$pedigree
-nrow(ped)
-sum(!is.na(ped$dam))
-
-table(ped$cohort)
-
-
-assign("ped.ainv", asreml::ainverse(ped), envir = .GlobalEnv) 
-data <- mge_sim(ped[,1:3], param=scenarios[1,])
-mod<-asreml(
-		fixed= p~1
-    , random= ~str(~vm(animal,ped.ainv) +vm(mother,ped.ainv) ,~us(2):vm(animal,ped.ainv)) + mother_PE
-    , residual = ~idv(units)
-    , data= data, trace=FALSE,maxit=50)
-mod2<-m5_func(data)
-
-
-if(run){
-	set.seed(20230920)
-	
-	cat("Simulating Pedigrees\n")
-	## make pedigrees
-		peds <- mclapply(1:n_sims,	function(i){
-			simulate_pedigree(
-				years = generations,
-				n_females = 30,
-				fecundity = fecundity,
-				p_sire = 0.75,
-				p_polyandry=1,
-				juv_surv = juv_surv,
-				adult_surv = 0,					# discrete generations
-				immigration = immigration, 				# closed population
-				constant_pop = TRUE     # constant population size
-				)$pedigree
-		}, mc.cores=cores)
-
-		cat("Generating Pedigree Metrics\n")
-		ped_str<- do.call(rbind,mclapply(peds,ped_stat, mc.cores=cores))
-		
-		cat("Simulating Data\n")
-		## simulate data
-	
-		dat<-mclapply(peds, function(i){	
-			list(mge_sim(i[,1:3], param=scenario))
-		}, mc.cores=cores)
-		# assign(paste0(k,"_data"),dat)
-
-	## run models
-		cat("Running models: \n")
-
-		cat("\nModel 2: ")
-		model2 <- model_func(m2_func,peds,dat,mc.cores=cores)
-
-		cat("\nModel 4: ")
-		model4 <- model_func(m4_func,peds,dat,mc.cores=cores)
-
-		cat("\nModel 9: ")
-		model9 <- model_func(m9_func,peds,dat,mc.cores=cores)
-
-		# cat("\nModel 5: ")
-		# model5 <- model_func(m5_func,peds,dat,mc.cores=cores)
-		cat("\n")
-		rm(peds,dat)
-	}
-
-
-	
-
-
-
-#paste0("model1_",ped_names),
-	save(ped_names,ped_str,model2,
-		model4,
-		model9
-		)),file=paste0(data_wd,"mge_sims_bv.Rdata"))
-}
-
-	load(file=paste0(data_wd,"mge_sims_bv.Rdata"))
-
-mat_ratio_all<-rowSums(ped_str[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_D_HS")])/rowSums(ped_str[,-(1:2)]) 
-
-mat_ratio <- mean(mat_ratio_all)
 
 mods <- do.call(rbind,lapply(1:n_sims, function(x) {
 	data.frame(

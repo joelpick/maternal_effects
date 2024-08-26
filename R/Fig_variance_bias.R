@@ -143,14 +143,17 @@ beeswarm(Va_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[
 }
 
 
+pchs <- c(15,16,17)
+cols <- alpha(palette.colors()[1:4],0.5)
+
 plot_va <- subset(va, r %in% ped_names_reduced[grep("bI",ped_names_reduced)])
 {
 	par(mfrow=c(4,1),mar=c(1,5,1,1))
-beeswarm(Va_bias~ order, plot_va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Va", las=2)#, 
+beeswarm(Va_bias~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Bias in Va", las=2)#, 
 abline(h=0)
-beeswarm(Va_precision~ order, plot_va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Precision Va", las=2)#, 
-beeswarm(Va_rel_prec~ order, plot_va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Realtive precision Va", las=2)#, 
-beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Absolute Error Va", las=2)#, label=order)
+beeswarm(Va_precision~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Precision Va", las=2)#, 
+beeswarm(Va_rel_prec~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Realtive precision Va", las=2)#, 
+beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Absolute Error Va", las=2)#, label=order)
 }
 
 
@@ -159,8 +162,9 @@ for(i in 1:nrow(scenarios)){
 	for(j in 1:length(ped_names_reduced)){
 	lines(Va_abs_bias~order,subset(va,r==ped_names_reduced[j] & scenario==i), col=alpha(1,0.2))}}
 
-
-par(mfrow=c(1,2))
+{
+	breaks=seq(-0.2,0.2,0.02)
+par(mfrow=c(3,2))
 par(mar=c(4,4,1,1))
 ## mod 2 better than mod 1
 
@@ -168,14 +172,14 @@ par(mar=c(4,4,1,1))
 # hist(subset(va, model==1 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==2& scenario%in%c(7:10))$Va_abs_bias, breaks=seq(-0.5,0.5,0.02), add=TRUE, col="blue")
 
 ## mod 4 better than mod 3
-hist(subset(va, model==2)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=seq(-0.5,0.5,0.02))
-hist(subset(va, model==2 & scenario%in%c(3,7:12))$Va_abs_bias-subset(va, model==4& scenario%in%c(3,7:12))$Va_abs_bias, breaks=seq(-0.5,0.5,0.02), add=TRUE, col="red")
-hist(subset(va, model==2 & scenario%in%c(3,11,12))$Va_abs_bias-subset(va, model==4& scenario%in%c(3,11,12))$Va_abs_bias, breaks=seq(-0.5,0.5,0.02), add=TRUE, col="blue")
+hist(subset(va, model==2)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=breaks)
+hist(subset(va, model==2 & scenario%in%c(3,7:12))$Va_abs_bias-subset(va, model==4& scenario%in%c(3,7:12))$Va_abs_bias, breaks=breaks, add=TRUE, col="red")
+hist(subset(va, model==2 & scenario%in%c(3,11,12))$Va_abs_bias-subset(va, model==4& scenario%in%c(3,11,12))$Va_abs_bias, breaks=breaks, add=TRUE, col="blue")
 
 
 ## mod 5 better than mod 4
-hist(subset(va, model==4)$Va_abs_bias-subset(va, model==5)$Va_abs_bias, breaks=seq(-0.5,0.5,0.02))
+hist(subset(va, model==4)$Va_abs_bias-subset(va, model==5)$Va_abs_bias, breaks=breaks)
 
-hist(subset(va, model==4 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==5& scenario%in%c(7:10))$Va_abs_bias, breaks=seq(-0.5,0.5,0.02), add=TRUE, col="blue")
+hist(subset(va, model==4 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==5& scenario%in%c(7:10))$Va_abs_bias, breaks=breaks, add=TRUE, col="blue")
 
-hist(subset(va, model==4 & scenario%in%c(1:4))$Va_abs_bias-subset(va, model==5& scenario%in%c(1:4))$Va_abs_bias, breaks=seq(-0.5,0.5,0.02), add=TRUE, col="red")
+hist(subset(va, model==4 & scenario%in%c(1:4))$Va_abs_bias-subset(va, model==5& scenario%in%c(1:4))$Va_abs_bias, breaks=breaks, add=TRUE, col="red")}

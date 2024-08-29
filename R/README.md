@@ -4,7 +4,6 @@
 
 - Contains the functions that are commonly used in other scripts.
 
-
 ## 01_parameters.R
 
 - defines the parameters used in the simulations

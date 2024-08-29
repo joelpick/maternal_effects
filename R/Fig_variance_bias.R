@@ -59,8 +59,9 @@ mod5<-do.call(rbind,lapply(ped_names_reduced,function(k) {
 
 head(mod5)
 mean(is.na(mod5$Va_est))
-table(is.na(mod5$Va_est),mod5$scenario)
-table(is.na(mod5$Va_est),mod5$r)
+par(mfrow=c(2,1))
+barplot(table(is.na(mod5$Va_est),mod5$scenario))
+barplot(table(is.na(mod5$Va_est),mod5$r))
 
 all_mod<-rbind(
 	cbind(model=1,mod1),
@@ -72,6 +73,9 @@ all_mod$r_model <- paste0(all_mod$r,"_",all_mod$model)
 all_mod$order <- match(all_mod$r_model,order)
 
 all_mod$Va_bias <- all_mod$Va_est - all_mod$Va_sim
+
+
+all_mod
 
 
 
@@ -143,21 +147,23 @@ beeswarm(Va_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[
 }
 
 
-pchs <- c(15,16,17)
+pchs <- c(21:24)
 cols <- alpha(palette.colors()[1:4],0.5)
 
 plot_va <- subset(va, r %in% ped_names_reduced[grep("bI",ped_names_reduced)])
 {
-	par(mfrow=c(4,1),mar=c(1,5,1,1))
-beeswarm(Va_bias~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Bias in Va", las=2)#, 
+	par(mfrow=c(4,1),mar=c(4,5,1,1))
+beeswarm(Va_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xlab='Model',ylab="Bias in Va", label=c(1:4,1:4))#, 
 abline(h=0)
-beeswarm(Va_precision~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Precision Va", las=2)#, 
-beeswarm(Va_rel_prec~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Realtive precision Va", las=2)#, 
-beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,method = "compactswarm",corral="wrap", ylab="Absolute Error Va", las=2)#, label=order)
+beeswarm(Va_precision~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xlab='Model',ylab="Precision Va", label=c(1:4,1:4))#, 
+beeswarm(Va_rel_prec~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xlab='Model',ylab="Realtive precision Va", label=c(1:4,1:4))#, 
+beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xlab='Model',ylab="Absolute Error Va", label=c(1:4,1:4))#, label=order)
 }
 
+	par(mfrow=c(1,1),mar=c(4,5,1,1))
 
-plot(Va_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=12), ylab="Mean Absolute Error in Va", las=2)#, 
+s_col <- rep(alpha(palette.colors()[1:4],0.5), 8)[va$order]
+plot(Va_abs_bias~ order, va,pch=pchs, cex=1, col=s_col, bg=s_col ylab="Mean Absolute Error in Va", las=2)#, 
 for(i in 1:nrow(scenarios)){
 	for(j in 1:length(ped_names_reduced)){
 	lines(Va_abs_bias~order,subset(va,r==ped_names_reduced[j] & scenario==i), col=alpha(1,0.2))}}

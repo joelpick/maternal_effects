@@ -157,6 +157,7 @@ par(mfrow=c(2,1), mar=c(5,5,1,1))
 barplot(table(is.na(mod5$Va_est),mod5$scenario), xlab="Scenario")
 barplot(table(is.na(mod5$Va_est),mod5$r)[,order_cov2], xlab="Pedigree", names=substring(order_cov2,8))
 
+
 ```
 
 
@@ -203,11 +204,13 @@ par(mfrow=c(1,2))
 par(mar=c(4,4,1,1))
 ## mod 2 better than mod 1
 
-# hist(subset(va, model==1)$Va_abs_bias-subset(va, model==2)$Va_abs_bias, breaks=seq(-0.5,0.5,0.02))
+hist(subset(va, model==1)$Va_abs_bias-subset(va, model==2)$Va_abs_bias, breaks=seq(-0.5,0.5,0.02))
+hist(subset(va, model==1)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=seq(-0.5,0.5,0.02))
+
 # hist(subset(va, model==1 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==2& scenario%in%c(7:10))$Va_abs_bias, breaks=seq(-0.5,0.5,0.02), add=TRUE, col="blue")
 
 ## mod 4 better than mod 3
-hist(subset(va, model==2)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=breaks, main ="MGE model MAE - MI model MAE", xlab="Difference")
+hist(subset(va, model==2)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=breaks, main ="MI model MAE - MGE model MAE", xlab="Difference")
 hist(subset(va, model==2 & scenario%in%c(3,7:12))$Va_abs_bias-subset(va, model==4& scenario%in%c(3,7:12))$Va_abs_bias, breaks=breaks, add=TRUE, col="red")
 hist(subset(va, model==2 & scenario%in%c(7:8))$Va_abs_bias-subset(va, model==4& scenario%in%c(7:8))$Va_abs_bias, breaks=breaks, add=TRUE, col="red")
 hist(subset(va, model==2 & scenario%in%c(9:10))$Va_abs_bias-subset(va, model==4& scenario%in%c(9:10))$Va_abs_bias, breaks=breaks, add=TRUE, col="orange")
@@ -226,6 +229,54 @@ hist(subset(va, model==4 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==5&
 hist(subset(va, model==4 & scenario%in%c(1:4))$Va_abs_bias-subset(va, model==5& scenario%in%c(1:4))$Va_abs_bias, breaks=breaks, add=TRUE, col="orange")
 legend("topleft",legend=c("Cov","no Va"), fill=c("yellow","orange"))
 
+hist(subset(va, model==4 & scenario%in%c(5,6,11,12))$Va_abs_bias-subset(va, model==5& scenario%in%c(5,6,11,12))$Va_abs_bias, breaks=breaks,  col="orange")
+
+
 }
+
+```
+
+
+
+# Are the differences in mod 4 and mod 5 due to model convergence
+
+```{r}
+
+na_mod5<-which(is.na(mod5$Va_est))
+hist(mod4$Va_est[na_mod5])
+
+mod4$na_mod5 <- is.na(mod5$Va_est)
+
+mod4_1<-subset(mod4, scenario==1)
+
+par(mfrow=c(2,1))
+hist(mod4_1$Va_est[mod4_1$na_mod5], xlim=c(0,1),breaks=seq(0,1,0.025))
+hist(mod4_1$Va_est[!mod4_1$na_mod5], xlim=c(0,1),breaks=seq(0,1,0.025))
+
+tapply()
+
+mean(mod4_1$Va_est[mod4_1$na_mod5])
+mean(mod4_1$Va_est[!mod4_1$na_mod5])
+mean(mod4_1$Va_est)
+
+mod5$Va_bias <- mod5$Va_est - mod5$Va_sim
+mod4$Va_bias <- mod4$Va_est - mod4$Va_sim
+
+va5<- aggregate(Va_est ~ scenario+r, mod5,mean)
+va4<- aggregate(Va_est ~ scenario+r, mod4[!is.na(mod5$Va_est),],mean)
+
+
+va4_MAE_with <- aggregate(Va_bias ~ scenario+r, mod4, function(x) mean(abs(x)))$Va_bias
+va4_MAE_without <- aggregate(Va_bias ~ scenario+r, mod4[!is.na(mod5$Va_est),], function(x) mean(abs(x)))$Va_bias
+hist(va4_MAE_with-va4_MAE_without)
+
+va5_MAE <- aggregate(Va_bias ~ scenario+r, mod5, function(x) mean(abs(x)))$Va_bias
+hist(va4_MAE_with)
+hist(va4_MAE_without)
+
+hist(va4_MAE_with - va5_MAE, breaks=breaks)
+hist(va4_MAE_without - va5_MAE, breaks=breaks)
+
+
 
 ```

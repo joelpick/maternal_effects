@@ -16,45 +16,52 @@ library(scales)
 order_exp <- expand.grid(fec=c("lF"),ms=c("fhs"), model=c(1,2,4,5),imm=c("mI","nI","bI","fI"),size=c("small","medium"))
 order<-apply(order_exp,1,function(x) paste(x[c(2,1,4,5,3)],collapse="_"))
 
-mod1<-do.call(rbind,lapply(ped_names_reduced,function(k) {
-	mod1 <- do.call(rbind,lapply(get(paste0("model1_",k)), function(x) {
-			data.frame(
-				r=k,
-				scenario=1:nrow(scenarios),
-				Va_est = x[["ml"]][,"A"],
-				Va_sim=scenarios[,"Va"])
-	}))
+extract_func <- function(x,k) {
+	data.frame(
+		r=k,
+		scenario=1:nrow(scenarios),
+		Va_est = x[["ml"]][,"A"],
+		Vmg_est = x[["ml"]][,"Mg"],
+		cov_amg_est = x[["ml"]][,"cov_AMg"],
+		Va_sim=scenarios[,"Va"],
+		Vmg_sim=scenarios[,"Vmg"],
+		cov_amg_sim = scenarios[,"r_amg"]*sqrt(scenarios[,"Va"] * scenarios[,"Vmg"])
+	)
+}
+
+all_mod<-do.call(rbind,lapply(ped_names_reduced,function(k) {
+	
+	mod1 <- do.call(rbind,lapply(get(paste0("model1_",k)), extract_func,k=k))
+
+	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), extract_func,k=k))
+
+	mod4 <- do.call(rbind,lapply(get(paste0("model4_",k)),
+			extract_func,k=k))
+
+	mod5 <- do.call(rbind,lapply(get(paste0("model5_",k)), extract_func,k=k))
+
+	rbind(
+		cbind(model=1,mod1),
+		cbind(model=2,mod2),
+		cbind(model=4,mod4),	
+		cbind(model=5,mod5)
+	)
 }))
 
-mod2<-do.call(rbind,lapply(ped_names_reduced,function(k) {
-	mod2 <- do.call(rbind,lapply(get(paste0("model2_",k)), function(x) {
-			data.frame(
-				r=k,
-				scenario=1:nrow(scenarios),
-				Va_est = x[["ml"]][,"A"],
-				Va_sim=scenarios[,"Va"])
-	}))
-}))
+all_mod$r_model <- paste0(all_mod$r,"_",all_mod$model)
+all_mod$order <- match(all_mod$r_model,order)
 
-mod4<-do.call(rbind,lapply(ped_names_reduced,function(k) {
-	mod4 <- do.call(rbind,lapply(get(paste0("model4_",k)), function(x) {
-			data.frame(
-				r=k,
-				scenario=1:nrow(scenarios),
-				Va_est = x[["ml"]][,"A"],
-				Va_sim=scenarios[,"Va"])
-	}))
-}))
+all_mod$Va_bias <- all_mod$Va_est - all_mod$Va_sim
 
-mod5<-do.call(rbind,lapply(ped_names_reduced,function(k) {
-	mod5 <- do.call(rbind,lapply(get(paste0("model5_",k)), function(x) {
-			data.frame(
-				r=k,
-				scenario=1:nrow(scenarios),
-				Va_est = x[["ml"]][,"A"],
-				Va_sim=scenarios[,"Va"])
-	}))
-}))
+all_mod$tVa_sim <- all_mod$Va_sim + 0.5*all_mod$Vmg_sim+ 1.5*all_mod$cov_amg_sim
+
+all_mod$Vmg_est <- ifelse(is.na(all_mod$Vmg_est),0,all_mod$Vmg_est)
+all_mod$cov_amg_est <- ifelse(is.na(all_mod$cov_amg_est),0,all_mod$cov_amg_est)
+
+all_mod$tVa_est <- all_mod$Va_est + 0.5*all_mod$Vmg_est+ 1.5*all_mod$cov_amg_est
+
+all_mod$tVa_bias <- all_mod$tVa_est - all_mod$tVa_sim
+
 ## are these 0 when one of the variances is 0?
 
 head(mod5)
@@ -63,19 +70,7 @@ par(mfrow=c(2,1))
 barplot(table(is.na(mod5$Va_est),mod5$scenario))
 barplot(table(is.na(mod5$Va_est),mod5$r))
 
-all_mod<-rbind(
-	cbind(model=1,mod1),
-	cbind(model=2,mod2),
-	cbind(model=4,mod4),	
-	cbind(model=5,mod5)
-)
-all_mod$r_model <- paste0(all_mod$r,"_",all_mod$model)
-all_mod$order <- match(all_mod$r_model,order)
 
-all_mod$Va_bias <- all_mod$Va_est - all_mod$Va_sim
-
-
-all_mod
 
 
 
@@ -97,18 +92,24 @@ beeswarm(Va_bias~ order, subset(all_mod,scenario==6),pch=19, cex=0.2, col=rep(al
 va<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,mean)
 
 va$Va_sd<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,sd)$Va_est
+va$Va_z<-va$Va_sd/va$Va_est
+
 va$Va_precision<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,function(x)1/sd(x))$Va_est
 va$Va_rel_prec<-va$Va_est/va$Va_sd
 
-va$Va_bias <- aggregate(Va_bias ~ scenario+r_model+r+model, all_mod, function(x) mean(x))$Va_bias
+va$Va_bias <- aggregate(Va_bias ~ scenario+r_model+r+model, all_mod, mean)$Va_bias
 
 va$Va_abs_bias <- aggregate(Va_bias ~ scenario+r_model+r+model, all_mod, function(x) mean(abs(x)))$Va_bias
 
 va$order <- match(va$r_model,order)
 
+va$tVa_bias<- aggregate(tVa_bias ~ scenario+r_model+r+model, all_mod,mean)$tVa_bias
+va$tVa_abs_bias<- aggregate(tVa_bias ~ scenario+r_model+r+model, all_mod, function(x) mean(abs(x)))$tVa_bias
 
-va$Va_z<-va$Va_sd/va$Va_est
-# va$Va_z2<-va$Va_sd/va$Va_sim
+
+
+
+
 
 ps<-11
 pchs <- c(15,16,17)
@@ -135,7 +136,6 @@ abline(h=0)
 
 
 ### 
-ps<-11
 pchs <- c(15,16,17)
 {
 	par(mfrow=c(4,1),mar=c(1,5,1,1))
@@ -145,6 +145,11 @@ beeswarm(Va_sd~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0
 beeswarm(Va_z~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Realtive precision Va", las=2)#, 
 beeswarm(Va_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Absolute Error Va", las=2)#, label=order)
 }
+
+beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="bias in tVa", las=2)#, label=order)
+abline(h=0)
+beeswarm(tVa_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="bias in tVa", las=2)#, label=order)
+abline(h=0)
 
 
 pchs <- c(21:24)
@@ -189,3 +194,17 @@ hist(subset(va, model==4)$Va_abs_bias-subset(va, model==5)$Va_abs_bias, breaks=b
 hist(subset(va, model==4 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==5& scenario%in%c(7:10))$Va_abs_bias, breaks=breaks, add=TRUE, col="blue")
 
 hist(subset(va, model==4 & scenario%in%c(1:4))$Va_abs_bias-subset(va, model==5& scenario%in%c(1:4))$Va_abs_bias, breaks=breaks, add=TRUE, col="red")}
+
+
+
+par(mfrow=c(2,2))
+hist(subset(va, model==2)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=breaks)
+
+
+hist(subset(va, model==2)$tVa_abs_bias-subset(va, model==4)$tVa_abs_bias, breaks=breaks)
+
+hist(subset(va, model==4)$Va_abs_bias-subset(va, model==5)$Va_abs_bias, breaks=breaks)
+
+
+hist(subset(va, model==4)$tVa_abs_bias-subset(va, model==5)$tVa_abs_bias, breaks=breaks)
+

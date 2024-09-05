@@ -78,14 +78,13 @@ plot(Va_bias ~ matsib_ratio,va2, col=va2$scenario, pch=19)
 plot(matsib_ratio)
 
 
-plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
+plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.35), Vm_lim=c(-0.17,0.06),cols=c(palette.colors(),1),pchs=rep(21:25,2), bgs=c(palette.colors(),"white"), labels=c("","") , label_at=0.09){
 	dd<-subset(va2, scenario %in% s)
 	dd_se<-subset(va2_se, scenario %in% s)
 	# cols<-viridis::viridis(length(s))
-	cols<-c(palette.colors(),1)
-	pch= rep(21:25,2)[dd$scenario]
+	pch= pchs[dd$scenario]
 	col= cols[dd$scenario]
-	bg= c(palette.colors(),"white")[dd$scenario]
+	bg= bgs[dd$scenario]
 
 	# layout(matrix(c(1,2,3,4,4,4),nrow=2, byrow=TRUE), height=c(5,2))
 	plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~V[A]), 
@@ -98,9 +97,9 @@ plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
 	abline(h=0)
 
 	legend("topleft",letters[s],
-		pch= rep(21:25,2)[s], 
-		col= c(palette.colors(),1)[s],
-		pt.bg= c(palette.colors(),"white")[s],bty="n",title="Scenario")
+		pch= pchs[s], 
+		col= cols[s],
+		pt.bg= bgs[s],bty="n",title="Scenario")
 
 	if(lines){
 		coefsA <- sapply(s,function(i){
@@ -111,12 +110,13 @@ plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
 			lines(y~x,preds,col=cols[i], lty=2)
 		})
 	}
+	mtext(labels[1],side=3, at=label_at, cex=1.4, las=1, line=-0.6)
 
 
 	plot(Vm_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~V[M]), 
 		pch=pch, 
 		col=col,
-		bg=col,
+		bg=bg,
 		ylim=Vm_lim)
 	# arrows(dd$mat_ratio,dd$Va_bias+dd_se$Va_bias,dd$mat_ratio,dd$Va_bias-dd_se$Va_bias,code=3,angle=90,length=0.1)
 	arrows(dd$mat_ratio,dd$Vm_bias+dd_se$Vm_bias,dd$mat_ratio,dd$Vm_bias-dd_se$Vm_bias,code=3,angle=90,length=0.01, col=col)
@@ -131,10 +131,11 @@ plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06)){
 			lines(y~x,preds,col=cols[i], lty=2)
 		})
 	}
+	mtext(labels[2],side=3, at=label_at, cex=1.4, las=1, line=-0.6)
 
 }
 
-plot_fig4 <-function(s, Va_lim=c(-0.11,0.3), Vm_lim=c(-0.17,0.06), legend_pos="bottomleft"){
+plot_fig4 <-function(s, Va_lim=c(-0.11,0.35), Vm_lim=c(-0.17,0.06), legend_pos="bottomleft"){
 	dd<-subset(va2, scenario %in% s)
 	dd_se<-subset(va2_se, scenario %in% s)
 	
@@ -167,9 +168,9 @@ pdf(paste0(wd,"Figures/Fig4_bias.pdf"), height=10, width=8)
 {	
 	par(mfrow=c(3,2),	mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1)
 
-	plot_fig3(c(1:3))
-	plot_fig3(c(4:5))
-	plot_fig3(c(6:10))
+	plot_fig3(c(1:3), labels=c("A)","B)"))
+	plot_fig3(c(4:5), labels=c("C)","D)"))
+	plot_fig3(c(6:10), labels=c("E)","F)"))
 }
 dev.off()
 
@@ -179,7 +180,29 @@ pdf(paste0(wd,"Figures/Fig5_Va_Vm.pdf"), height=5, width=10)
 	par(mfrow=c(1,2),	mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1)
 	plot_fig4(c(1:6))
 	legend("topright",expression(m^2~"="~"-"*0.5*h^2),lty=1,bty="n")
+	mtext("A)",side=3, at=-0.225, cex=1.4, las=1, line=-0.5)
 
 	plot_fig4(c(6:10), legend_pos="bottomright")
+
+	mtext("B)",side=3, at=-0.225, cex=1.4, las=1, line=-0.5)
+
 }
 dev.off()
+
+
+
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_extra_scenarios.pdf"), height=4, width=10)
+{
+	par(mfrow=c(1,2),	mar=c(5,5,1,1), cex.lab=1.5, cex.axis=0.9)
+	plot_fig3(c(11:12), 
+		cols=c(palette.colors(),palette.colors()),
+		bgs=c(palette.colors(),palette.colors()), 
+		pchs=rep(21:25,3),
+		Va_lim=c(-0.1,0.1), Vm_lim=c(-0.05,0.05),
+		labels=c("A)","B)"), label_at=0.075
+		)
+}
+dev.off()
+
+

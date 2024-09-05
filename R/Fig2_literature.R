@@ -9,6 +9,14 @@ data_wd <- paste0(wd,"Data/Intermediate/")
 
 dd<-read.csv(paste0(data_wd,"MGE - all_est.csv"))
 
+## n studies
+length(unique(dd$Study))
+
+##n estimates
+nrow(dd)
+
+##adult and juvenile estimates
+table(dd$juv_trait)
 
 
 ########
@@ -16,19 +24,16 @@ dd<-read.csv(paste0(data_wd,"MGE - all_est.csv"))
 ########
 
 setEPS()
-pdf("/Users/joelpick/github/maternal_effects/Figures/Fig2_lit.pdf", height=5, width=15)
+pdf("/Users/joelpick/github/maternal_effects/Figures/Fig2_lit.pdf", height=10, width=12)
 
 {
-par(mfrow=c(1,3),mar=c(6,6,1,1), cex.lab=2, cex.axis=1.6, mgp=c(4,1,0))
-# hist(dd$m2_2, breaks=20, xlab="Mg^2", main="") 
-# hist(dd$m2_2[dd$juv_trait==1], breaks=20, xlab="Mg^2", main="") 
-
+par(mfrow=c(2,2),mar=c(6,6,1,1), cex.lab=2, cex.axis=1.6, mgp=c(4,1,0))
 
 hist(dd$m2_2, breaks=20, xlab=expression(m[g]^2), main="", col="blue") 
-legend("topright",c("1st year traits","Older traits"),col=c("lightblue","blue"), pch=15, bty="n", cex=2)
+legend("topright",c("1st year traits","Older traits"),col=c("lightblue","blue"), pch=15, bty="n", cex=1.6)
 hist(dd$m2_2[dd$juv_trait==1], breaks=20, main="", add=TRUE, col="lightblue") 
-text(0.35,17,paste("1st year mean =",round(mean(dd$m2_2[dd$juv_trait==1],na.rm=TRUE),3)), adj=0, cex=1.75)
-text(0.35,16,paste("All mean =",round(mean(dd$m2_2,na.rm=TRUE),3)), adj=0, cex=1.75)
+text(0.35,16.5,paste("1st year mean =",round(mean(dd$m2_2[dd$juv_trait==1],na.rm=TRUE),3)), adj=0, cex=1.75)
+text(0.35,15,paste("All mean =",round(mean(dd$m2_2,na.rm=TRUE),3)), adj=0, cex=1.75)
 
 # x<-"a"
 # expression(bquote(.(x)^2))
@@ -40,17 +45,26 @@ mtext(expression( (m^2>0.05)), side=1, line=3.5, cex=1, adj=1)
 
 # hist((dd$m2_2/(dd$m2_2+dd$c2_2)), breaks=20, xlab="Vmg / Vmg+Vme", main="") 
 hist((dd$m2_2/(dd$m2_2+dd$c2_2))[dd$juv_trait==1 & (dd$m2_2+dd$c2_2)>0.05], breaks=20,add=TRUE, col="lightblue") 
-text(0.05,4.7,paste("1st year mean =",round(mean((dd$m2_2/(dd$m2_2+dd$c2_2))[dd$juv_trait==1 &(dd$m2_2+dd$c2_2)>0.05],na.rm=TRUE),3)), adj=0, cex=1.75)
-text(0.05,4.4,paste("All mean =",round(mean((dd$m2_2/(dd$m2_2+dd$c2_2))[(dd$m2_2+dd$c2_2)>0.05],na.rm=TRUE),3)), adj=0, cex=1.75)
+text(0.05,4.65,paste("1st year mean =",round(mean((dd$m2_2/(dd$m2_2+dd$c2_2))[dd$juv_trait==1 &(dd$m2_2+dd$c2_2)>0.05],na.rm=TRUE),3)), adj=0, cex=1.75)
+text(0.05,4.2,paste("All mean =",round(mean((dd$m2_2/(dd$m2_2+dd$c2_2))[(dd$m2_2+dd$c2_2)>0.05],na.rm=TRUE),3)), adj=0, cex=1.75)
 
 
-hist(round(dd$h2_1-dd$h2_2,3)[dd$h2_1-dd$h2_2>=0], breaks=15, xlim=c(-0.1,0.2), main="",xlab=expression(h^2~difference))
-hist(round(dd$h2_1-dd$h2_2,3)[dd$h2_1-dd$h2_2<0], breaks=5,col="red", add=TRUE)
+# hist(round(dd$h2_1-dd$h2_2,3)[dd$h2_1-dd$h2_2>=0], breaks=15, xlim=c(-0.1,0.2), main="",xlab=expression(h^2~difference))
+# hist(round(dd$h2_1-dd$h2_2,3)[dd$h2_1-dd$h2_2<0], breaks=5,col="red", add=TRUE)
+
+h2_diff <- dd$h2_1-dd$h2_2
+hist(h2_diff[h2_diff>=0], breaks=10, xlim=c(-0.1,0.2), main="",xlab=expression(h^2~difference),col=scales::alpha("red",0.8))
+hist(h2_diff[h2_diff<0], breaks=2, add=TRUE)
+
+m2_diff <- dd$c2_1 - (dd$m2_2+dd$c2_2)
+hist(m2_diff[m2_diff<0], breaks=15, col=scales::alpha("red",0.8), xlim=c(-0.15,0.05),xlab=expression(m^2~difference), main="")
+hist(m2_diff[m2_diff>0], breaks=2, add=TRUE)
 
 }
 dev.off()
 
-
+## number with simple and complex estimates:
+sum!is.na(h2_diff))
 
 ########
 ## Figure S3
@@ -81,24 +95,3 @@ print(xt, include.rownames=FALSE,sanitize.text.function=function(x){x},only.cont
 
 
 
-
-
-subset(dd,m2_2>0.6)
-
-
-# prop m2 of total m2
-dd$h2m_2 <-dd$m2_2/(dd$m2_2+dd$c2_2)
-
-(dd$m2_2/(dd$m2_2+dd$c2_2))[(dd$m2_2+dd$c2_2)>0.05]
-
-
-cbind(dd$m2_2,dd$c2_2,dd$m2_2+dd$c2_2)
-
-subset(dd,m2_2+c2_2<0.05)
-subset(dd,h2m_2<0.05)
-subset(dd,m2_2==0)
-
-
-plot((dd$h2_1-dd$h2_2),(dd$c2_1-(dd$m2_2+dd$c2_2)),pch=19,col=c(1,2)[as.factor(dd$h2_1-dd$h2_2>=0)])
-abline(h=0,v=0)
-abline(0,-0.5)

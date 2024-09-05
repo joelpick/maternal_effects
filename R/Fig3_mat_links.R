@@ -39,19 +39,16 @@ stat_mr<-rowSums(stat1[,c("dam","MG","au_D_FS","au_D_MHS","cousin_D_FS","cousin_
 
 
 setEPS()
-pdf(paste0(wd,"Figures/Fig3_mat_links.pdf"), height=6, width=8)
-order <- c(7,8)
+pdf(paste0(wd,"Figures/Fig3_mat_links.pdf"), height=4, width=7)
 {
-par(mar=c(5,1,1,1), cex.lab=1.5, cex.axis=1.25)
-hist(mat_ratio, xlim=c(0,0.5), breaks=15, ylim=c(0,11), yaxt="n", xlab="Proportion non-sibling maternal links", ylab=
+par(mfrow=c(1,1),mar=c(5,1,1,1), cex.lab=1.5, cex.axis=1.25)
+hist(mat_ratio, xlim=c(0,0.5), breaks=15, ylim=c(0,8), yaxt="n", xlab="Proportion non-sibling maternal links", ylab=
 	"",main="")
-arrows(stat_mr[c(1,3)],order,stat_mr[c(2,4,6,8,10)],order,code=0)
-points(stat_mr, rep(order,each=2), pch=19, col=c("blue","red"), cex=1.5)
-# text(0.025,order,c("Blue tit","Red deer","Superb fairy wren","Soay sheep","Snow vole"))
-text(0.025,order,c("Blue tit","Red deer"), cex=1.5)
-# text(stat_mr[1:2],c(15,15),c("Juvenile","Adult"),col=c("blue","red"))
 
-legend("top",c("Juvenile","Adult"),pch=19,col=c("blue","red"),bty="n", cex=1.5)
+arrows(stat_mr,rep(6,4),stat_mr,rep(0,4),code=2,lwd=4,col=c("blue","blue","red","red"), length=0.15, lty=c(1,6))
+
+legend("topleft",c("Juvenile","Adult","Blue tit","Red deer"),lwd=2,lty=c(1,6,0,0),pch=c(NA,NA,19,19),col=c(1,1,"blue","red"),bty="n", cex=1.1)
+
 }
 dev.off()
 

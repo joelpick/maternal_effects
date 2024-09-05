@@ -13,8 +13,13 @@ library(beeswarm)
 library(scales)
 
 
-order_exp <- expand.grid(fec=c("lF"),ms=c("fhs"), model=c(1,2,4,5),imm=c("mI","nI","bI","fI"),size=c("small","medium"))
-order<-apply(order_exp,1,function(x) paste(x[c(2,1,4,5,3)],collapse="_"))
+# order_exp <- expand.grid(fec=c("lF"),ms=c("fhs"), model=c(1,2,4,5),imm=c("mI","nI","bI","fI"),size=c("small","medium"))
+# order<-apply(order_exp,1,function(x) paste(x[c(2,1,4,5,3)],collapse="_"))
+order_exp <- expand.grid(ms=c("fhs"),fec=c("lF"),imm=c("mI","nI","bI","fI"), model=c(1,2,4,5),size=c("small","medium"))
+order<-apply(order_exp,1,function(x) paste(x[c("ms","fec","imm","size","model")],collapse="_"))
+
+
+scenarios <- cbind(scenarios, cov_amg= scenarios[,"r_amg"]*sqrt(scenarios[,"Va"] * scenarios[,"Vmg"])) 
 
 extract_func <- function(x,k) {
 	data.frame(
@@ -22,12 +27,15 @@ extract_func <- function(x,k) {
 		scenario=1:nrow(scenarios),
 		Va_est = x[["ml"]][,"A"],
 		Vmg_est = x[["ml"]][,"Mg"],
+		Vm_est = rowSums(x[["ml"]][,c("Mg","Me")], na.rm=TRUE),
 		cov_amg_est = x[["ml"]][,"cov_AMg"],
 		Va_sim=scenarios[,"Va"],
 		Vmg_sim=scenarios[,"Vmg"],
-		cov_amg_sim = scenarios[,"r_amg"]*sqrt(scenarios[,"Va"] * scenarios[,"Vmg"])
+		Vm_sim = scenarios[,"Vmg"]+scenarios[,"Vme"],
+		cov_amg_sim = scenarios[,"cov_amg"]
 	)
 }
+
 
 all_mod<-do.call(rbind,lapply(ped_names_reduced,function(k) {
 	
@@ -53,86 +61,49 @@ all_mod$order <- match(all_mod$r_model,order)
 
 all_mod$Va_bias <- all_mod$Va_est - all_mod$Va_sim
 
-all_mod$tVa_sim <- all_mod$Va_sim + 0.5*all_mod$Vmg_sim+ 1.5*all_mod$cov_amg_sim
+all_mod$Vm_bias <- all_mod$Vm_est - all_mod$Vm_sim
+
+
+
+## calculation of total Va
 
 all_mod$Vmg_est <- ifelse(is.na(all_mod$Vmg_est),0,all_mod$Vmg_est)
 all_mod$cov_amg_est <- ifelse(is.na(all_mod$cov_amg_est),0,all_mod$cov_amg_est)
+
+all_mod$tVa_sim <- all_mod$Va_sim + 0.5*all_mod$Vmg_sim+ 1.5*all_mod$cov_amg_sim
 
 all_mod$tVa_est <- all_mod$Va_est + 0.5*all_mod$Vmg_est+ 1.5*all_mod$cov_amg_est
 
 all_mod$tVa_bias <- all_mod$tVa_est - all_mod$tVa_sim
 
-## are these 0 when one of the variances is 0?
-
-head(mod5)
-mean(is.na(mod5$Va_est))
-par(mfrow=c(2,1))
-barplot(table(is.na(mod5$Va_est),mod5$scenario))
-barplot(table(is.na(mod5$Va_est),mod5$r))
 
 
 
 
 
+########
+## MAKE SUMMARIES
+########
 
-par(mfrow=c(1,1),mar=c(10,5,1,1))
-beeswarm(Va_bias~ order, subset(all_mod,scenario==11),pch=19, cex=0.2, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Va",las=2, label=order)
+va<- aggregate(cbind(Va_bias,Vm_bias,tVa_bias) ~ scenario+r_model+r+model, all_mod,mean)
 
-
-par(mfrow=c(1,1),mar=c(10,5,1,1))
-beeswarm(Va_bias~ order, subset(all_mod,scenario==1),pch=19, cex=0.2, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Va",las=2, label=order)
-
-
-par(mfrow=c(1,1),mar=c(10,5,1,1))
-beeswarm(Va_bias~ order, subset(all_mod,scenario==6),pch=19, cex=0.2, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Va",las=2, label=order)
-
-
-
-
-va<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,mean)
-
-va$Va_sd<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,sd)$Va_est
-va$Va_z<-va$Va_sd/va$Va_est
 
 va$Va_precision<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,function(x)1/sd(x))$Va_est
-va$Va_rel_prec<-va$Va_est/va$Va_sd
 
-va$Va_bias <- aggregate(Va_bias ~ scenario+r_model+r+model, all_mod, mean)$Va_bias
+va$Va_rel_prec<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,function(x)mean(x)/sd(x))$Va_est
 
 va$Va_abs_bias <- aggregate(Va_bias ~ scenario+r_model+r+model, all_mod, function(x) mean(abs(x)))$Va_bias
 
-va$order <- match(va$r_model,order)
+
 
 va$tVa_bias<- aggregate(tVa_bias ~ scenario+r_model+r+model, all_mod,mean)$tVa_bias
 va$tVa_abs_bias<- aggregate(tVa_bias ~ scenario+r_model+r+model, all_mod, function(x) mean(abs(x)))$tVa_bias
 
+va$order <- match(va$r_model,order)
 
 
 
 
-
-ps<-11
-pchs <- c(15,16,17)
-{
-	par(mfrow=c(5,1),mar=c(1,5,1,1))
-beeswarm(Va_est~ order, subset(va,scenario==ps),pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Estimated Va", las=2)#, label=order)
-abline(h=0.25)
-
-# par(mar=c(10,5,1,1))
-beeswarm(Va_bias~ order, subset(va,scenario==ps),pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Va", las=2)#, label=order)
-abline(h=0)
-
-# par(mar=c(10,5,1,1))
-beeswarm(Va_sd~ order, subset(va,scenario==ps),pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="SE Va", las=2)#, label=order)
-
-# par(mar=c(10,5,1,1))
-beeswarm(Va_z~ order, subset(va,scenario==ps),pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Z Va", las=2)#, label=order)
-abline(h=0)
-
-# par(mar=c(10,5,1,1))
-beeswarm(Va_abs_bias~ order, subset(va,scenario==ps),pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Absolute Error Va", las=2)#, label=order)
-abline(h=0)
-}
 
 
 ### 
@@ -141,10 +112,11 @@ pchs <- c(15,16,17)
 	par(mfrow=c(4,1),mar=c(1,5,1,1))
 beeswarm(Va_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Va", las=2)#, 
 abline(h=0)
-beeswarm(Va_sd~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Precision Va", las=2)#, 
-beeswarm(Va_z~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Realtive precision Va", las=2)#, 
+beeswarm(Va_precision~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Precision Va", las=2)#, 
+beeswarm(Va_rel_prec~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Relative precision Va", las=2)#, 
 beeswarm(Va_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Absolute Error Va", las=2)#, label=order)
 }
+
 
 beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="bias in tVa", las=2)#, label=order)
 abline(h=0)

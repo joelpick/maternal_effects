@@ -131,23 +131,30 @@ hl_hist <- function(x, breaks, main="", col1, col2,...){
 pchs <- c(21:24)
 cols <- alpha(palette.colors()[1:4],0.5)
 
-plot_va <- subset(va, r %in% ped_names_reduced[grep("bI",ped_names_reduced)])
+plot_va <- subset(va, r %in% ped_names_reduced[grep("bI_small",ped_names_reduced)])
+
+plot_va$Vm_abs_bias <- ifelse(plot_va$model==1,NA,plot_va$Vm_abs_bias)
 
 breaks=seq(-0.2,0.2,0.02)
 {
-	par(mar=c(4,5,3,1))
 
-	layout(matrix(c(1,1,2,3,4,4,5,6,7,7,8,9),ncol=4,byrow=TRUE))
-beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xlab='Model',ylab="Absolute Error Va", label=c(1:4,1:4))#, label=order)
+	layout(matrix(c(1:9),ncol=3,byrow=TRUE), width=c(1.5,1,1))
+
+	par(mar=c(1,5,1,1))
+
+beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap",ylab="Absolute Error Va", xaxt="n")#, label=order)
+legend ("topright",c("1","2","3","4"), pch=pchs, col=cols, pt.bg=cols, title="Model")
+
 hl_hist(as.vector(va_2_4), breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2],  main ="Model 2 - Model 3", xlab="Difference")
 hl_hist(va_4_5, breaks=breaks, main ="Model 3 - Model 4", xlab="Difference", col1=palette.colors()[4],col2=palette.colors()[3])
 
+	par(mar=c(1,5,1,1))
 
-beeswarm(Vm_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xlab='Model',ylab="Absolute Error Vm", label=c(1:4,1:4))#, label=order)
+beeswarm(Vm_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols[2:4],bg=cols[2:4],method = "compactswarm",corral="wrap", xaxt="n",ylab="Absolute Error Vm", xlim=c(-0.5,3.5))#, label=order)
 hl_hist(vm_2_4, breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2], main ="Model 2 - Model 3", xlab="Difference")
 hl_hist(vm_4_5, breaks=breaks, main ="Model 3 - Model 4", xlab="Difference", col1=palette.colors()[4],col2=palette.colors()[3])
 
-beeswarm(tVa_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xlab='Model',ylab="Absolute Error total Va", label=c(1:4,1:4))#, label=order)
+beeswarm(tVa_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xaxt="n",ylab="Absolute Error total Va")#, label=order)
 hl_hist(tva_2_4, breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2], main ="Model 2 - Model 3", xlab="Difference")
 hl_hist(tva_4_5, breaks=breaks, main ="Model 3 - Model 4", xlab="Difference", col1=palette.colors()[4],col2=palette.colors()[3])
 }

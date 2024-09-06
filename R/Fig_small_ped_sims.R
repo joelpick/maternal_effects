@@ -79,9 +79,6 @@ all_mod$tVa_est <- all_mod$Va_est + 0.5*all_mod$Vmg_est+ 1.5*all_mod$cov_amg_est
 
 all_mod$tVa_bias <- all_mod$tVa_est - all_mod$tVa_sim
 
-head(subset(all_mod,model==5))
-
-
 
 
 ########

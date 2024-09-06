@@ -57,6 +57,26 @@ order<-apply(order_exp,1,function(x) paste(x[c("ms","fec","imm","size","model")]
 all_mod$r_model <- paste0(all_mod$r,"_",all_mod$model)
 all_mod$order <- match(all_mod$r_model,order)
 
+all_mod$Va_bias <- all_mod$Va_est - all_mod$Va_sim
+
+# code above calcaultes a vm also for modelt aht didnt converge - undo this
+all_mod$Vm_est <- ifelse(is.na(all_mod$Va_est),NA,all_mod$Vm_est)
+
+all_mod$Vm_bias <- all_mod$Vm_est - all_mod$Vm_sim
+
+
+
+## calculation of total Va
+
+all_mod$Vmg_est <- ifelse(all_mod$model %in% c(1,2) & is.na(all_mod$Vmg_est),0,all_mod$Vmg_est)
+all_mod$cov_amg_est <- ifelse(all_mod$model %in% c(1,2,4) & is.na(all_mod$cov_amg_est),0,all_mod$cov_amg_est)
+
+all_mod$tVa_sim <- all_mod$Va_sim + 0.5*all_mod$Vmg_sim+ 1.5*all_mod$cov_amg_sim
+
+all_mod$tVa_est <- all_mod$Va_est + 0.5*all_mod$Vmg_est+ 1.5*all_mod$cov_amg_est
+
+all_mod$tVa_bias <- all_mod$tVa_est - all_mod$tVa_sim
+
 
 for(j in 1:12){
 	setEPS()
@@ -120,16 +140,6 @@ dev.off()
 }
 
 
-#############
-## CONVERGENCE
-#############
-
-head(mod5)
-mean(is.na(mod5$Va_est))
-par(mfrow=c(2,1))
-barplot(table(is.na(mod5$Va_est),mod5$scenario))
-barplot(table(is.na(mod5$Va_est),mod5$r))
-
 
 
 
@@ -148,6 +158,130 @@ va[,c("Va_abs_bias","Vm_abs_bias","tVa_abs_bias")] <- aggregate(cbind(Va_bias,Vm
 va$order <- match(va$r_model,order)
 
 
+
+
+
+### 
+pchs <- c(21:24)
+cols <- alpha(palette.colors()[1:4],0.5)
+rep(alpha(palette.colors()[1:4],0.5), each=4)
+
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_small_ped_Va.pdf"), height=8, width=13)
+{
+	layout(matrix(1:6,ncol=1), height=c(1,2,2,2,2,1))
+	# par(mfrow=c(4,1))
+	# par(mar=c(1,7,5,0.5), cex.lab=1.5)#mfrow=c(3,1),
+	par(mar=c(0,0,0,0))#mfrow=c(3,1),
+	plot(NA,xlim=c(0,1),ylim=c(0,1),bty="n",xaxt="n",yaxt="n")
+
+
+	par(mar=c(0.5,7,0.5,0.5), cex.lab=1.5)#mfrow=c(3,1),
+	beeswarm(Va_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[A]), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+	abline(h=0)
+	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	for(i in c(0,8,16,24)){
+		axis(3,c(1,4.5,8)+i,c("",paste("Model",i/8+1),""), lwd.ticks=0, line=2.5, padj=1, cex.axis=1.25)
+		axis(3,c(1,2.5,4)+i,c("","Small",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+		axis(3,c(1,2.5,4)+4+i,c("","Medium",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+	}
+	
+	beeswarm(Va_precision~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Precision", las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+		abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	beeswarm(Va_rel_prec~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Relative Precision", las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+		abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	beeswarm(Va_abs_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Mean Absolute Error", las=2,xaxt="n", xlim=c(1.5,31.5))#, label=order)
+		abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+		axis(1,1:32,rep(c("M","N","U","F"),8))
+}
+dev.off()
+
+
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_small_ped_tVa.pdf"), height=8, width=13)
+{
+	layout(matrix(1:6,ncol=1), height=c(1,2,2,2,2,1))
+	# par(mfrow=c(4,1))
+	# par(mar=c(1,7,5,0.5), cex.lab=1.5)#mfrow=c(3,1),
+	par(mar=c(0,0,0,0))#mfrow=c(3,1),
+	plot(NA,xlim=c(0,1),ylim=c(0,1),bty="n",xaxt="n",yaxt="n")
+
+
+	par(mar=c(0.5,7,0.5,0.5), cex.lab=1.5)#mfrow=c(3,1),
+	beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[A]), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+	abline(h=0)
+	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	for(i in c(0,8,16,24)){
+		axis(3,c(1,4.5,8)+i,c("",paste("Model",i/8+1),""), lwd.ticks=0, line=2.5, padj=1, cex.axis=1.25)
+		axis(3,c(1,2.5,4)+i,c("","Small",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+		axis(3,c(1,2.5,4)+4+i,c("","Medium",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+	}
+	
+	beeswarm(tVa_precision~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Precision", las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+		abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	beeswarm(tVa_rel_prec~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Relative Precision", las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+		abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	beeswarm(tVa_abs_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Mean Absolute Error", las=2,xaxt="n", xlim=c(1.5,31.5))#, label=order)
+		abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
+		axis(1,1:32,rep(c("M","N","U","F"),8))
+}
+dev.off()
+
+
+		vm <- subset(va, model%in% c(2,4,5))
+
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_small_ped_Vm.pdf"), height=8, width=13)
+{
+
+	layout(matrix(1:6,ncol=1), height=c(1,2,2,2,2,1))
+	# par(mfrow=c(4,1))
+	# par(mar=c(1,7,5,0.5), cex.lab=1.5)#mfrow=c(3,1),
+	par(mar=c(0,0,0,0))#mfrow=c(3,1),
+	plot(NA,xlim=c(0,1),ylim=c(0,1),bty="n",xaxt="n",yaxt="n")
+
+
+	par(mar=c(0.5,7,0.5,0.5), cex.lab=1.5)#mfrow=c(3,1),
+	beeswarm(Vm_bias~ order, vm,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[M]), las=2,xaxt="n", xlim=c(1.5,23.5))#, 
+	abline(h=0)
+	abline(v=(1:5)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	for(i in c(0,8,16)){
+		axis(3,c(1,4.5,8)+i,c("",paste("Model",i/8+1),""), lwd.ticks=0, line=2.5, padj=1, cex.axis=1.25)
+		axis(3,c(1,2.5,4)+i,c("","Small",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+		axis(3,c(1,2.5,4)+4+i,c("","Medium",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+	}
+	
+	beeswarm(Vm_precision~ order, vm,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Precision", las=2,xaxt="n", xlim=c(1.5,23.5))#, 
+		abline(v=(1:5)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	beeswarm(Vm_rel_prec~ order, vm,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Relative Precision", las=2,xaxt="n", xlim=c(1.5,23.5))#, 
+		abline(v=(1:5)*4+0.5, col=alpha(c("grey","black"),0.5))
+
+	beeswarm(Vm_abs_bias~ order, vm,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="Mean Absolute Error", las=2,xaxt="n", xlim=c(1.5,23.5))#, label=order)
+		abline(v=(1:5)*4+0.5, col=alpha(c("grey","black"),0.5))
+		axis(1,1:24,rep(c("M","N","U","F"),6))
+}
+dev.off()
+
+
+
+
+
+
+
+plot(subset(va,r=="fhs_lF_nI_small")$Va_bias,subset(va,r=="fhs_lF_mI_small")$Va_bias)
+cor(sapply(ped_names_reduced,function(x)subset(va,r==x)$Va_bias))
+
+
+
+
 pchs <- c(15,16,17)
 
 #direct comparison with meyer
@@ -155,41 +289,67 @@ pchs <- c(15,16,17)
 va$Va_sd<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,sd)$Va_est
 
 par(mar=c(10,5,1,1))
-beeswarm(Va_sd~ order, subset(va,scenario==11),pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="SE Va", las=2, label=order)
+beeswarm(Va_sd~ order, subset(va,scenario==11),pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="SE Va", las=2, label=order)
 }
 
 
 
-### 
-pchs <- c(15,16,17)
-{
-	par(mfrow=c(4,1),mar=c(1,5,1,1))
-beeswarm(Va_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Va", las=2)#, 
-abline(h=0)
-beeswarm(Va_precision~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Precision Va", las=2)#, 
-beeswarm(Va_rel_prec~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Relative precision Va", las=2)#, 
-beeswarm(Va_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Absolute Error Va", las=2)#, label=order)
-}
-
-{
-		vm <- subset(va, model%in% c(2,4,5))
-
-	par(mfrow=c(4,1),mar=c(1,5,1,1))
-beeswarm(Vm_bias~ order, vm,pch=pchs, cex=1, col=rep(alpha(palette.colors()[2:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in Vm", las=2)#, 
-abline(h=0)
-beeswarm(Vm_precision~ order, vm,pch=pchs, cex=1, col=rep(alpha(palette.colors()[2:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Precision Vm", las=2)#, 
-beeswarm(Vm_rel_prec~ order, vm,pch=pchs, cex=1, col=rep(alpha(palette.colors()[2:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Relative precision Vm", las=2)#, 
-beeswarm(Vm_abs_bias~ order, vm,pch=pchs, cex=1, col=rep(alpha(palette.colors()[2:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Absolute Error Vm", las=2)#, label=order)
-}
-
-{
-	par(mfrow=c(4,1),mar=c(1,5,1,1))
-beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Bias in total Va", las=2)#, 
-abline(h=0)
-beeswarm(tVa_precision~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Precision total Va", las=2)#, 
-beeswarm(tVa_rel_prec~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Relative precision total Va", las=2)#, 
-beeswarm(tVa_abs_bias~ order, va,pch=pchs, cex=1, col=rep(alpha(palette.colors()[1:4],0.5), each=4),method = "compactswarm",corral="wrap", ylab="Absolute Error total Va", las=2)#, label=order)
-}
+#############
+## CONVERGENCE
+#############
+order_cov <- expand.grid(fec=c("lF"),ms=c("fhs"),imm=c("mI","nI","bI","fI"),size=c("small","medium"))
+order_cov2<-apply(order_cov,1,function(x) paste(x[c(2,1,3,4)],collapse="_"))
 
 
-plot(subset(va,r=="fhs_lF_nI_small")$Va_bias,subset(va,r=="fhs_lF_mI_small")$Va_bias)
+mod5 <- subset(all_mod,model==5)
+
+head(mod5)
+mean(is.na(mod5$Va_est))
+par(mfrow=c(2,1), mar=c(5,5,1,1))
+barplot(table(is.na(mod5$Va_est),mod5$scenario), xlab="Scenario",col=c(rep(scales::alpha("red",c(0.1,0.9)),4),rep(grey.colors(2),8)))
+d<-barplot(table(is.na(mod5$Va_est),mod5$r)[,order_cov2], xlab="Pedigree", names=substring(order_cov2,8), col=grey.colors(2))
+
+		axis(3,c(d[1],mean(d[1:4]),d[4]),c("","Small",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+		axis(3,c(d[5],mean(d[5:8]),d[8]),c("","Medium",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+
+
+
+
+
+
+na_mod5<-which(is.na(mod5$Va_est))
+hist(mod4$Va_est[na_mod5])
+
+mod4$na_mod5 <- is.na(mod5$Va_est)
+
+mod4_1<-subset(mod4, scenario==1)
+
+par(mfrow=c(2,1))
+hist(mod4_1$Va_est[mod4_1$na_mod5], xlim=c(0,1),breaks=seq(0,1,0.025))
+hist(mod4_1$Va_est[!mod4_1$na_mod5], xlim=c(0,1),breaks=seq(0,1,0.025))
+
+tapply()
+
+mean(mod4_1$Va_est[mod4_1$na_mod5])
+mean(mod4_1$Va_est[!mod4_1$na_mod5])
+mean(mod4_1$Va_est)
+
+mod5$Va_bias <- mod5$Va_est - mod5$Va_sim
+mod4$Va_bias <- mod4$Va_est - mod4$Va_sim
+
+va5<- aggregate(Va_est ~ scenario+r, mod5,mean)
+va4<- aggregate(Va_est ~ scenario+r, mod4[!is.na(mod5$Va_est),],mean)
+
+
+va4_MAE_with <- aggregate(Va_bias ~ scenario+r, mod4, function(x) mean(abs(x)))$Va_bias
+va4_MAE_without <- aggregate(Va_bias ~ scenario+r, mod4[!is.na(mod5$Va_est),], function(x) mean(abs(x)))$Va_bias
+hist(va4_MAE_with-va4_MAE_without)
+
+va5_MAE <- aggregate(Va_bias ~ scenario+r, mod5, function(x) mean(abs(x)))$Va_bias
+hist(va4_MAE_with)
+hist(va4_MAE_without)
+
+hist(va4_MAE_with - va5_MAE, breaks=breaks)
+hist(va4_MAE_without - va5_MAE, breaks=breaks)
+
+

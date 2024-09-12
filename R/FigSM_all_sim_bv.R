@@ -11,6 +11,7 @@ load(paste0(data_wd,"mge_sims3.Rdata"))
 load(paste0(data_wd,"parameters.Rdata"))
 load(paste0(data_wd,"mge_sims_small_ped.Rdata"))
 
+library(xtable)
 library(beeswarm)
 library(scales)
 
@@ -27,7 +28,7 @@ extract_func <- function(x,k) {
 		Va_sim=scenarios[,"Va"],
 		Vmg_sim=scenarios[,"Vmg"],
 		Vm_sim = scenarios[,"Vmg"]+scenarios[,"Vme"],
-		cov_amg_sim = scenarios[,"cov_amg"])
+		cov_amg_sim = scenarios[,"cov_amg"]
 	)
 }
 
@@ -78,6 +79,14 @@ all_mod$tVa_est <- all_mod$Va_est + 0.5*all_mod$Vmg_est+ 1.5*all_mod$cov_amg_est
 all_mod$tVa_bias <- all_mod$tVa_est - all_mod$tVa_sim
 
 
+
+
+pchs <- c(21:24)
+cols <- alpha(palette.colors()[1:4],0.5)
+
+
+
+
 for(j in 1:12){
 	setEPS()
 	pdf(paste0(wd,"Figures/FigSM_all_sim_bv",j,".pdf"), height=8, width=13)
@@ -87,7 +96,7 @@ for(j in 1:12){
 
 	par(mar=c(1,7,5,0.5), cex.lab=1.5)#mfrow=c(3,1),
 	
-	beeswarm(Va_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.3, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[A]),las=2, xaxt="n", xlim=c(1.5,31.5))
+	beeswarm(Va_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.3, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[A]),las=2, xaxt="n", xlim=c(1.5,31.5))
 	abline(h=scenarios[j,"Va"], col=alpha(palette.colors()[8],0.5))
 	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
 
@@ -104,7 +113,7 @@ for(j in 1:12){
 
 	par(mar=c(6,7,0,0.5))
 
-	beeswarm(Vm_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.2, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[M]), labels=c("M","N","U","F"), xlab="", xlim=c(1.5,31.5))
+	beeswarm(Vm_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[M]), labels=c("M","N","U","F"), xlab="", xlim=c(1.5,31.5))
 	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
 	abline(h=scenarios[j,"Vmg"]+scenarios[j,"Vme"], col=alpha(palette.colors()[8],0.5))
 	
@@ -114,7 +123,7 @@ for(j in 1:12){
 ####
 		par(mar=c(3,7,3,0.5))
 
-	beeswarm(Vmg_est~ order, subset(all_mod,scenario==j & model %in% c(4,5)),pch=19, cex=0.2, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[Mg]), labels=c("M","N","U","F"), xlab="", xlim=c(1,16))
+	beeswarm(Vmg_est~ order, subset(all_mod,scenario==j & model %in% c(4,5)),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[Mg]), labels=c("M","N","U","F"), xlab="", xlim=c(1,16))
 	abline(h=scenarios[j,"Vmg"], col=alpha(palette.colors()[8],0.5))
 	abline(v=(1:3)*4+0.5, col=alpha(c("grey","black"),0.5))
 
@@ -127,7 +136,7 @@ for(j in 1:12){
 	mtext("Immigration", side=2, line=1, adj=0.9, las=1, padj=10)
 
 
-	beeswarm(cov_amg_est~ order, subset(all_mod,scenario==j & model ==5),pch=19, cex=0.2, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab=expression(Estimated~COV["A,Mg"]), labels=c("M","N","U","F"), xlab="", xlim=c(0.5,8.5))
+	beeswarm(cov_amg_est~ order, subset(all_mod,scenario==j & model ==5),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~COV["A,Mg"]), labels=c("M","N","U","F"), xlab="", xlim=c(0.5,8.5))
 	abline(h=scenarios[j,"cov_amg"], col=alpha(palette.colors()[8],0.5))
 	abline(v=4.5, col=alpha(c("grey"),0.5))
 	axis(3,c(1,4.5,8),c("","Model 4",""), lwd.ticks=0, line=2.5, padj=1, cex.axis=1.25)
@@ -161,10 +170,52 @@ va$order <- match(va$r_model,order)
 
 
 
+#############
+### SUMMARY PLOTS
+#############
+
+# similarity of results across pedigrees
+
+abs_bias_cor<-round(cor(sapply(ped_names_reduced,function(x)subset(va,r==x)$Va_abs_bias)),3)
+abc_names <- sub("fhs_lF_","",rownames(abs_bias_cor))
+abc_names <- sub("_"," ",abc_names)
+abc_names <- sub("bI","uI",abc_names)
+
+colnames(abs_bias_cor)<-rownames(abs_bias_cor)<-abc_names
+abs_bias_cor[upper.tri(abs_bias_cor)]<-""
+
+xtable(abs_bias_cor)
+
+
+
+
+
+#direct comparison with meyer
+# order_exp2 <- expand.grid(ms=c("fhs"),fec=c("lF"), model=c(1,2,4,5),imm=c("mI","nI","bI","fI"),size=c("small","medium"))
+# order2<-apply(order_exp2,1,function(x) paste(x[c("ms","fec","imm","size","model")],collapse="_"))
+# va$order2 <- match(va$r_model,order2)
+
+
+# setEPS()
+# pdf(paste0(wd,"Figures/FigSM_small_ped_meyer.pdf"), height=8, width=13)
+
+# {
+# va$Va_sd<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,sd)$Va_est
+
+# ## split into two plots by ped size
+# par(mfrow=c(2,1),mar=c(10,5,1,1))
+# beeswarm(Va_sd~ order2, subset(va,scenario==11),cex=1, pch=pchs,col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="SE Va", las=2, label=order)
+# beeswarm(Va_sd~ order2, subset(va,scenario==11),cex=1, pch=pchs,col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="SE Va", las=2, label=order)
+# }
+
+# dev.off()
+
+
+
+
+
 ### 
-pchs <- c(21:24)
-cols <- alpha(palette.colors()[1:4],0.5)
-rep(alpha(palette.colors()[1:4],0.5), each=4)
+
 
 setEPS()
 pdf(paste0(wd,"Figures/FigSM_small_ped_Va.pdf"), height=8, width=13)
@@ -272,84 +323,49 @@ dev.off()
 
 
 
-
-
-
-
-plot(subset(va,r=="fhs_lF_nI_small")$Va_bias,subset(va,r=="fhs_lF_mI_small")$Va_bias)
-cor(sapply(ped_names_reduced,function(x)subset(va,r==x)$Va_bias))
-
-
-
-
-pchs <- c(15,16,17)
-
-#direct comparison with meyer
-{
-va$Va_sd<- aggregate(Va_est ~ scenario+r_model+r+model, all_mod,sd)$Va_est
-
-par(mar=c(10,5,1,1))
-beeswarm(Va_sd~ order, subset(va,scenario==11),pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab="SE Va", las=2, label=order)
-}
-
-
-
 #############
 ## CONVERGENCE
 #############
 order_cov <- expand.grid(fec=c("lF"),ms=c("fhs"),imm=c("mI","nI","bI","fI"),size=c("small","medium"))
 order_cov2<-apply(order_cov,1,function(x) paste(x[c(2,1,3,4)],collapse="_"))
 
-
 mod5 <- subset(all_mod,model==5)
 
-head(mod5)
 mean(is.na(mod5$Va_est))
-par(mfrow=c(2,1), mar=c(5,5,1,1))
-barplot(table(is.na(mod5$Va_est),mod5$scenario), xlab="Scenario",col=c(rep(scales::alpha("red",c(0.1,0.9)),4),rep(grey.colors(2),8)))
-d<-barplot(table(is.na(mod5$Va_est),mod5$r)[,order_cov2], xlab="Pedigree", names=substring(order_cov2,8), col=grey.colors(2))
 
-		axis(3,c(d[1],mean(d[1:4]),d[4]),c("","Small",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
-		axis(3,c(d[5],mean(d[5:8]),d[8]),c("","Medium",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_small_ped_convergence.pdf"), height=8, width=7)
 
+{
+par(mfrow=c(2,1), mar=c(6,5,2,1))
+converge_scenario<-table(is.na(mod5$Va_est),mod5$scenario)
 
+barplot(converge_scenario, xlab="Scenario", names=LETTERS[1:12], ylab="Number of models")
+barplot(converge_scenario[,1:4], xlab="Scenario",col=scales::alpha("red",c(0.9,0.3)), add=TRUE,xaxt="n")
+mtext("A)",side=3,line=-2,adj=0.025, outer=TRUE, cex=1.25)
 
-
-
-
-na_mod5<-which(is.na(mod5$Va_est))
-hist(mod4$Va_est[na_mod5])
-
-mod4$na_mod5 <- is.na(mod5$Va_est)
-
-mod4_1<-subset(mod4, scenario==1)
-
-par(mfrow=c(2,1))
-hist(mod4_1$Va_est[mod4_1$na_mod5], xlim=c(0,1),breaks=seq(0,1,0.025))
-hist(mod4_1$Va_est[!mod4_1$na_mod5], xlim=c(0,1),breaks=seq(0,1,0.025))
-
-tapply()
-
-mean(mod4_1$Va_est[mod4_1$na_mod5])
-mean(mod4_1$Va_est[!mod4_1$na_mod5])
-mean(mod4_1$Va_est)
-
-mod5$Va_bias <- mod5$Va_est - mod5$Va_sim
-mod4$Va_bias <- mod4$Va_est - mod4$Va_sim
-
-va5<- aggregate(Va_est ~ scenario+r, mod5,mean)
-va4<- aggregate(Va_est ~ scenario+r, mod4[!is.na(mod5$Va_est),],mean)
+d<-barplot(table(is.na(mod5$Va_est),mod5$r)[,order_cov2], xlab="Pedigree", names=rep(c("M","N","U","F"),2), col=grey.colors(2), ylab="Number of models")
+axis(3,c(d[1],mean(d[1:4]),d[4]),c("","Small",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+axis(3,c(d[5],mean(d[5:8]),d[8]),c("","Medium",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
+mtext("B)",side=3,line=-22,adj=0.025, outer=TRUE, cex=1.25)
+}
+dev.off()
 
 
-va4_MAE_with <- aggregate(Va_bias ~ scenario+r, mod4, function(x) mean(abs(x)))$Va_bias
-va4_MAE_without <- aggregate(Va_bias ~ scenario+r, mod4[!is.na(mod5$Va_est),], function(x) mean(abs(x)))$Va_bias
-hist(va4_MAE_with-va4_MAE_without)
+### comparing results from model 3 in datasets where model did and did not converge
 
-va5_MAE <- aggregate(Va_bias ~ scenario+r, mod5, function(x) mean(abs(x)))$Va_bias
-hist(va4_MAE_with)
-hist(va4_MAE_without)
-
-hist(va4_MAE_with - va5_MAE, breaks=breaks)
-hist(va4_MAE_without - va5_MAE, breaks=breaks)
+mod5_sub <- subset(all_mod,model==5 & scenario %in% 1:4)
+mod4_sub <- subset(all_mod,model==4 & scenario %in% 1:4)
+## va estimated in model 3 when model 4 doesnt converge
+mod4_sub$na_mod5 <- !is.na(mod5_sub$Va_est)
+mod5_sub$na_mod5 <- !is.na(mod5_sub$Va_est)
+mod45_sub <- rbind(mod4_sub,mod5_sub)
 
 
+conv_sum<- cbind(tapply(mod4_sub$Va_bias,list(mod4_sub$r,mod4_sub$na_mod5), function(x) mean(abs(x))),tapply(mod45_sub$Va_bias,list(mod45_sub$r,mod45_sub$model), function(x) mean(abs(x),na.rm=TRUE)))
+
+rownames(conv_sum) <- sub("fhs_lF_","",rownames(conv_sum))
+
+colnames(conv_sum) <- c("m4 not converged","m4 converged","all","Model 4")
+
+xtable(conv_sum,digits=4)

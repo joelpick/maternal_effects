@@ -14,7 +14,7 @@ data_wd <- paste0(wd,"Data/Intermediate/")
 n_offspring=600
 
 ## Range from bonnet et al 
-m_fecundity = 6 # mean is 6.9
+m_fecundity = 6 # median is 6.5
 h_fecundity = 12 #highest is 13.3
 l_fecundity = 3 #lowest is 1.5
 ## these numbers are easier to maintain total number of phenotypes individuals

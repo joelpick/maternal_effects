@@ -10,12 +10,17 @@
 
 ## 02_simulations.R
 
-- Simulates pedigrees and datasets, and analyses them
+- Simulates pedigrees and datasets, and analyses them with simple maternal effects models
 
 
-## 03_bias_variance.R
+## 03_small_ped_sims.R
 
-- 
+- Simulates small pedigrees and datasets, and analyses them with 4 different models
+
+## 04_synthesis_metrics.R
+
+- Extracts various metrics from data from different papers used in this study
+
 
 ## Figure_1_example.R
 

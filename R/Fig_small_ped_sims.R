@@ -121,8 +121,8 @@ tva_2_4 <- tapply(abs(mod2$tVa_bias) - abs(mod4$tVa_bias), list(mod2$r_model,mod
 
 ### 
 
-hl_hist <- function(x, breaks, main="", col1, col2,...){
-	ylim=range(hist(x,plot=FALSE,breaks=breaks)$counts)
+hl_hist <- function(x, breaks, main="", ylim=NULL, col1, col2,...){
+	if(is.null(ylim)) ylim<-range(hist(x,plot=FALSE,breaks=breaks)$counts)
 	hist(x[x>=0], breaks=breaks, main=main, col=scales::alpha(col1,0.8),ylim=ylim,...)
 	hist(x[x<0], breaks=breaks, main=main, col=scales::alpha(col2,0.8), add=TRUE)
 }
@@ -134,73 +134,66 @@ cols <- alpha(palette.colors()[1:4],0.5)
 plot_va <- subset(va, r %in% ped_names_reduced[grep("bI_small",ped_names_reduced)])
 
 plot_va$Vm_abs_bias <- ifelse(plot_va$model==1,NA,plot_va$Vm_abs_bias)
+plot_va$model<-ifelse(plot_va$model==4, 3,
+	ifelse(plot_va$model==5, 4,
+	plot_va$model))
 
 breaks=seq(-0.2,0.2,0.02)
+
+setEPS()
+pdf(paste0(wd,"Figures/Fig7_small_ped.pdf"), height=6, width=10)
 {
+layout(matrix(c(1:15),ncol=3,byrow=TRUE), width=c(1.5,1,1), height=c(1,4,4,4,1))
 
-	layout(matrix(c(1:9),ncol=3,byrow=TRUE), width=c(1.5,1,1))
+	par(mar=c(0,5,0,0))#mfrow=c(3,1),
+	plot(NA,xlim=c(0.5,4.5),ylim=c(0,1),bty="n",xaxt="n",yaxt="n", ylab="")
+	arrows(1,0.2,4,0.2,code=2, xpd=TRUE, length=0.15, lwd=3)
+	text(2.5,0.6,"Increasing model complexity", cex=1.5)
 
-	par(mar=c(1,5,1,1))
+	plot(NA,xlim=c(0.5,4.5),ylim=c(0,1),bty="n",xaxt="n",yaxt="n", ylab="")
+	text(2.5,0.6,"Model 2 - Model 3", cex=1.5)
 
-beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap",ylab="Absolute Error Va", xaxt="n")#, label=order)
-legend ("topright",c("1","2","3","4"), pch=pchs, col=cols, pt.bg=cols, title="Model")
+	plot(NA,xlim=c(0.5,4.5),ylim=c(0,1),bty="n",xaxt="n",yaxt="n", ylab="")
+	text(2.5,0.6,"Model 3 - Model 4", cex=1.5)
 
-hl_hist(as.vector(va_2_4), breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2],  main ="Model 2 - Model 3", xlab="Difference")
-hl_hist(va_4_5, breaks=breaks, main ="Model 3 - Model 4", xlab="Difference", col1=palette.colors()[4],col2=palette.colors()[3])
+par(mar=c(1,5,0,1), las=1, cex.lab=1.5)
+beeswarm(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap",ylab=expression(V[A]~Absolute~Error), xaxt="n", ylim=c(0,0.6))
+# for(i in 1:nrow(scenarios)){
+# 	lines(Va_abs_bias~model,subset(plot_va, scenario==i), col=alpha(1,0.1))
+# }
 
-	par(mar=c(1,5,1,1))
 
-beeswarm(Vm_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols[2:4],bg=cols[2:4],method = "compactswarm",corral="wrap", xaxt="n",ylab="Absolute Error Vm", xlim=c(-0.5,3.5))#, label=order)
-hl_hist(vm_2_4, breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2], main ="Model 2 - Model 3", xlab="Difference")
-hl_hist(vm_4_5, breaks=breaks, main ="Model 3 - Model 4", xlab="Difference", col1=palette.colors()[4],col2=palette.colors()[3])
+par(mar=c(2,5,0.5,0.5))
+hl_hist(as.vector(va_2_4), breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2], ylim=c(0,60), ylab="")
+hl_hist(va_4_5, breaks=breaks, ylim=c(0,60), col1=palette.colors()[4],col2=palette.colors()[3], ylab="")
 
-beeswarm(tVa_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", xaxt="n",ylab="Absolute Error total Va")#, label=order)
-hl_hist(tva_2_4, breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2], main ="Model 2 - Model 3", xlab="Difference")
-hl_hist(tva_4_5, breaks=breaks, main ="Model 3 - Model 4", xlab="Difference", col1=palette.colors()[4],col2=palette.colors()[3])
+par(mar=c(1,5,0,1))
+beeswarm(Vm_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols[2:4],bg=cols[2:4],method = "compactswarm",corral="wrap", xaxt="n",ylab=
+expression(V[M]~Absolute~Error), xlim=c(-0.5,3.5), ylim=c(0,0.6))
+legend (-0.5,0.5,c("1","2","3","4"), pch=pchs, col=cols, pt.bg=cols, title="Model",bty="n", cex=1.25)
+# for(i in 1:nrow(scenarios)){
+# 	lines(Vm_abs_bias~I(model-1),subset(plot_va, scenario==i), col=alpha(1,0.1))
+# }
+
+par(mar=c(2,5,0.5,0.5))
+hl_hist(vm_2_4, breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2], ylim=c(0,60))
+hl_hist(vm_4_5, breaks=breaks, ylim=c(0,60), col1=palette.colors()[4],col2=palette.colors()[3], ylab="")
+
+par(mar=c(1,5,0,1))
+beeswarm(tVa_abs_bias~ order, plot_va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap",ylab=expression(V[At]~Absolute~Error), ylim=c(0,0.6), xaxt="n")
+axis(1,1:4,1:4, cex.axis=1.25)
+mtext("Model",1,outer=TRUE,adj=0.23, line=-1.5, cex=1.5)
+
+# for(i in 1:nrow(scenarios)){
+# 	lines(tVa_abs_bias~model,subset(plot_va, scenario==i), col=alpha(1,0.1))
+# }
+
+par(mar=c(2,5,0.5,0.5))
+hl_hist(tva_2_4, breaks=breaks, col1=palette.colors()[3],col2=palette.colors()[2], ylim=c(0,60), ylab="")
+hl_hist(tva_4_5, breaks=breaks, ylim=c(0,60), col1=palette.colors()[4],col2=palette.colors()[3], ylab="")
+
+mtext("Mean Difference in Absolute Error",1,outer=TRUE,adj=0.8, line=-1.5, cex=1.5)
+
 }
-
-
-
-	par(mfrow=c(1,1),mar=c(4,5,1,1))
-
-s_col <- rep(alpha(palette.colors()[1:4],0.5), 8)[plot_va$order]
-plot(Va_abs_bias~ order, plot_va,pch=pchs, cex=1, col=s_col, bg=s_col, ylab="Mean Absolute Error in Va", las=2)#, 
-for(i in 1:nrow(scenarios)){
-	for(j in 1:length(ped_names_reduced)){
-	lines(Va_abs_bias~order,subset(plot_va,r==ped_names_reduced[j] & scenario==i), col=alpha(1,0.2))}}
-
-{
-	breaks=seq(-0.2,0.2,0.02)
-par(mfrow=c(3,2))
-par(mar=c(4,4,1,1))
-## mod 2 better than mod 1
-
-# hist(subset(va, model==1)$Va_abs_bias-subset(va, model==2)$Va_abs_bias, breaks=seq(-0.5,0.5,0.02))
-# hist(subset(va, model==1 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==2& scenario%in%c(7:10))$Va_abs_bias, breaks=seq(-0.5,0.5,0.02), add=TRUE, col="blue")
-
-## mod 4 better than mod 3
-hist(subset(va, model==2)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=breaks)
-# hist(subset(va, model==2 & scenario%in%c(3,7:12))$Va_abs_bias-subset(va, model==4& scenario%in%c(3,7:12))$Va_abs_bias, breaks=breaks, add=TRUE, col="red")
-# hist(subset(va, model==2 & scenario%in%c(3,11,12))$Va_abs_bias-subset(va, model==4& scenario%in%c(3,11,12))$Va_abs_bias, breaks=breaks, add=TRUE, col="blue")
-
-
-## mod 5 better than mod 4
-hist(subset(va, model==4)$Va_abs_bias-subset(va, model==5)$Va_abs_bias, breaks=breaks)
-
-hist(subset(va, model==4 & scenario%in%c(7:10))$Va_abs_bias-subset(va, model==5& scenario%in%c(7:10))$Va_abs_bias, breaks=breaks, add=TRUE, col="blue")
-
-hist(subset(va, model==4 & scenario%in%c(1:4))$Va_abs_bias-subset(va, model==5& scenario%in%c(1:4))$Va_abs_bias, breaks=breaks, add=TRUE, col="red")}
-
-
-
-par(mfrow=c(2,2))
-hist(subset(va, model==2)$Va_abs_bias-subset(va, model==4)$Va_abs_bias, breaks=breaks)
-
-
-hist(subset(va, model==2)$tVa_abs_bias-subset(va, model==4)$tVa_abs_bias, breaks=breaks)
-
-hist(subset(va, model==4)$Va_abs_bias-subset(va, model==5)$Va_abs_bias, breaks=breaks)
-
-
-hist(subset(va, model==4)$tVa_abs_bias-subset(va, model==5)$tVa_abs_bias, breaks=breaks)
+dev.off()
 

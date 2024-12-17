@@ -217,6 +217,10 @@ xtable(abs_bias_cor)
 ### 
 
 
+pchs <- c(21:24)
+cols <- alpha(palette.colors()[1:4],0.5)
+
+
 setEPS()
 pdf(paste0(wd,"Figures/FigSM_small_ped_Va.pdf"), height=8, width=13)
 {
@@ -262,7 +266,7 @@ pdf(paste0(wd,"Figures/FigSM_small_ped_tVa.pdf"), height=8, width=13)
 
 
 	par(mar=c(0.5,7,0.5,0.5), cex.lab=1.5)#mfrow=c(3,1),
-	beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[A]), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+	beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[At]), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
 	abline(h=0)
 	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
 
@@ -285,7 +289,8 @@ pdf(paste0(wd,"Figures/FigSM_small_ped_tVa.pdf"), height=8, width=13)
 dev.off()
 
 
-		vm <- subset(va, model%in% c(2,4,5))
+## only model 2-4 have maternal effects estimated
+vm <- subset(va, model%in% c(2,4,5))
 
 setEPS()
 pdf(paste0(wd,"Figures/FigSM_small_ped_Vm.pdf"), height=8, width=13)
@@ -304,7 +309,7 @@ pdf(paste0(wd,"Figures/FigSM_small_ped_Vm.pdf"), height=8, width=13)
 	abline(v=(1:5)*4+0.5, col=alpha(c("grey","black"),0.5))
 
 	for(i in c(0,8,16)){
-		axis(3,c(1,4.5,8)+i,c("",paste("Model",i/8+1),""), lwd.ticks=0, line=2.5, padj=1, cex.axis=1.25)
+		axis(3,c(1,4.5,8)+i,c("",paste("Model",i/8+2),""), lwd.ticks=0, line=2.5, padj=1, cex.axis=1.25)
 		axis(3,c(1,2.5,4)+i,c("","Small",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
 		axis(3,c(1,2.5,4)+4+i,c("","Medium",""), lwd.ticks=0, line=0.5, padj=1, cex.axis=1.25)
 	}

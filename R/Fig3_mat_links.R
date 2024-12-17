@@ -1,8 +1,5 @@
 
-
 rm(list=ls())
-
-library(parallel)
 
 wd <- "/Users/joelpick/github/maternal_effects/"
 

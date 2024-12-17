@@ -54,14 +54,14 @@ tVa_means$mat_ratio <- mat_ratio[r_order]
 tVa_means[,c("ms","fec","imm")] <- do.call(rbind,strsplit(tVa_means$r,"_"))
 
 setEPS()
-pdf(paste0(wd,"Figures/Fig5_totalVa.pdf"), height=6, width=8)
+pdf(paste0(wd,"Figures/Fig6_totalVa.pdf"), height=6, width=8)
 {	
 
 	layout(matrix(c(1,2),nrow=1, byrow=TRUE), width=c(10,1))
 
 	par( mar=c(5,5,1,1), cex.lab=1.5, cex.axis=1.1 )
 
-	cols<-c(palette.colors(),1)#viridis::viridis(10)
+	cols<-c(palette.colors(),1)
 	bgs= c(palette.colors(),0)
 	pch=rep(21:25,2)
 	plot(bias~mat_ratio,tVa_means, pch=pch[as.factor(tVa_means$scenario)], col=(cols)[as.factor(tVa_means$scenario)],bg=(bgs)[as.factor(tVa_means$scenario)], ylab=expression(Bias~in~Total~V[A]), xlab="Proportion non-sibling maternal links");abline(h=0)

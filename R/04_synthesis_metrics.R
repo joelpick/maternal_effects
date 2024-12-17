@@ -9,7 +9,7 @@ data_wd <- paste0(wd,"Data/Raw/")
 ## young and postma 2023
 ############
 
-YP<-read.csv(paste0(data_wd,"young_postma_2023_data.csv"))
+YP <- read.csv(paste0(data_wd,"young_postma_2023_data.csv"))
 
 YP2 <- subset(YP,YP$method.2 %in% c("animal model (MCMC)","animal model (REML)"))
 head(YP2)

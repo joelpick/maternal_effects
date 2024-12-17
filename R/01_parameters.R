@@ -1,8 +1,6 @@
 
 rm(list=ls())
 
-# devtools::install_github("squid-group/squidSim")
-
 wd <- "/Users/joelpick/github/maternal_effects/"
 
 data_wd <- paste0(wd,"Data/Intermediate/")

@@ -11,7 +11,7 @@ data_wd <- paste0(wd,"Data/Raw/")
 
 YP <- read.csv(paste0(data_wd,"young_postma_2023_data.csv"))
 
-YP2 <- subset(YP,YP$method.2 %in% c("animal model (MCMC)","animal model (REML)"))
+YP2 <- subset(YP,YP$method %in% c("animal model (MCMC)","animal model (REML)"))
 head(YP2)
 
 # pedigree sizes
@@ -28,7 +28,7 @@ mean(YP2$SE.h2,na.rm=TRUE)
 
 postma<-read.csv(paste0(data_wd,"postma2014_SM.csv"))
 
-postma2 <- subset(postma,postma$method.2 %in% c("animal model"))
+postma2 <- subset(postma,postma$method %in% c("animal model"))
 head(postma2)
 
 ## mean SE

@@ -5,9 +5,7 @@ library(xtable)
 
 wd <- "/Users/joelpick/github/maternal_effects/"
 
-data_wd <- paste0(wd,"Data/Intermediate/")
-
-dd<-read.csv(paste0(data_wd,"MGE - all_est.csv"))
+dd<-read.csv(paste0(wd,"Data/Raw/MGE - all_est.csv"))
 
 ## n studies
 length(unique(dd$Study))
@@ -24,7 +22,7 @@ table(dd$juv_trait)
 ########
 
 setEPS()
-pdf("/Users/joelpick/github/maternal_effects/Figures/Fig2_lit.pdf", height=10, width=12)
+pdf(paste0(wd,"Figures/Fig2_lit.pdf"), height=10, width=12)
 
 {
 par(mfrow=c(2,2),mar=c(6,6,1,1), cex.lab=2, cex.axis=1.6, mgp=c(4,1,0))
@@ -77,7 +75,7 @@ sum!is.na(h2_diff))
 
 
 setEPS()
-pdf("/Users/joelpick/github/maternal_effects/Figures/FigS2_lit_excluded.pdf", height=6, width=6)
+pdf(paste0(wd,"Figures/FigS2_lit_excluded.pdf"), height=6, width=6)
 par(mar=c(6,5,1,1))
 plot(dd$m2_2/(dd$m2_2+dd$c2_2),dd$m2_2+dd$c2_2, pch=19, col=scales::alpha(1,0.3), xlab="", ylab=expression(m^2), cex.lab=1.5)
 mtext(expression(frac(V[mg] , V[mg]+V[me])), side=1, line=5, cex=1.5)

@@ -76,8 +76,8 @@ rel_cov_plot <- function(focal_mother_name="Focal's \n Mother",relative_name="Re
 
 }
 
-
-dat <- read.csv("/Users/joelpick/github/maternal_effects/Data/Raw/covariances\ -\ Sheet5.csv")
+wd <- "/Users/joelpick/github/maternal_effects/"
+dat <- read.csv(paste0(wd,"Data/Raw/covariances.csv"))
 head(dat)
 
 relative2 <- sub(" "," \n ",dat$relative)

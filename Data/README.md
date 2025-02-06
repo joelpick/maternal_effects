@@ -112,6 +112,7 @@ Data from Young and Postma 2023
 Original data repository: [https://doi.org/10.34894/RIVFHW](https://doi.org/10.34894/RIVFHW)
 
 **Variables:**
+
 estimate.ID: ID of the effect size
 
 study.ID: ID of the study

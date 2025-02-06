@@ -18,12 +18,12 @@
 ### Data
 
 - Contains two folders
-    - Raw with all raw data files for ...
+    - Raw with all raw data files
     - Intermediate with all processed files
 
 ### extract
 
-- Contains files needed to produce data extraction from figures
+- Contains files needed to re-produce data extraction from figures
 
 ### Figures
 

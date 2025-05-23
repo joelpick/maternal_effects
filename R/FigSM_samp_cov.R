@@ -105,16 +105,19 @@ Va_Vm_cor_mean[,c("ms","fec","imm")] <- do.call(rbind,strsplit(Va_Vm_cor_mean$r,
 
 par(mar=c(5,5,1,1),cex.lab=1.5, cex.axis=1.1 )
 
-cols<-c(palette.colors(),1)#viridis::viridis(10)
-	bgs= c(palette.colors(),0)
-	pch=rep(21:25,2)
+# cols<-c(palette.colors(),1)#viridis::viridis(10)
+# 	bgs= c(palette.colors(),0)
+# 	pch=rep(21:25,2)
+cols <- c(palette.colors(),palette.colors()[1:3])
+bgs <- c(palette.colors(),rep("white",3))
+pch <- rep(21:25,3)
 
 plot(Va_Vm_cor ~ mat_ratio,Va_Vm_cor_mean, pch= pch[Va_Vm_cor_mean$scenario],col= cols[Va_Vm_cor_mean$scenario],bg= bgs[Va_Vm_cor_mean$scenario], xlab="Proportion non-sibling maternal links", ylab="Estimated Sampling covariance")
 	abline(h=0, col=alpha("grey",0.5))
 
 par(mar=c(0,0,0,0))
 	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center",LETTERS[1:10], pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1.1,title="Scenario")
+	legend("center",letters[1:12], pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1.1,title="Scenario")
 
 }
 	dev.off()
@@ -154,7 +157,7 @@ par(mar=c(0,0,0,0))
 
 {
 	par(mar=c(5,5,1,1),cex.lab=1.5, cex.axis=1.1)
-	beeswarm::beeswarm(Va_Vm_cor~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.3),method = "compactswarm",corral="wrap",labels=LETTERS[1:10],ylab="Estimated Sampling covariance", xlab="Scenario")
+	beeswarm::beeswarm(Va_Vm_cor~ scenario, samp_cov,pch=19, cex=0.1, col=scales::alpha(c(1,1,2,rep(1,7)),0.3),method = "compactswarm",corral="wrap",labels=letters[1:12],ylab="Estimated Sampling covariance", xlab="Scenario")
 	abline(h=0, col=alpha("grey",0.5))
 	}	
 	dev.off()

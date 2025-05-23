@@ -345,7 +345,7 @@ pdf(paste0(wd,"Figures/FigSM_small_ped_convergence.pdf"), height=8, width=7)
 par(mfrow=c(2,1), mar=c(6,5,2,1))
 converge_scenario<-table(is.na(mod5$Va_est),mod5$scenario)
 
-barplot(converge_scenario, xlab="Scenario", names=LETTERS[1:12], ylab="Number of models")
+barplot(converge_scenario, xlab="Scenario", names=letters[1:12], ylab="Number of models")
 barplot(converge_scenario[,1:4], xlab="Scenario",col=scales::alpha("red",c(0.9,0.3)), add=TRUE,xaxt="n")
 mtext("A)",side=3,line=-2,adj=0.025, outer=TRUE, cex=1.25)
 

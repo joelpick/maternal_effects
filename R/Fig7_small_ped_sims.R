@@ -93,15 +93,26 @@ va[,c("Va_rel_prec","Vm_rel_prec","tVa_rel_prec")] <- aggregate(cbind(Va_est,Vm_
 
 va[,c("Va_abs_bias","Vm_abs_bias","tVa_abs_bias")] <- aggregate(cbind(Va_bias,Vm_bias,tVa_bias) ~ scenario+r_model+r+model, all_mod, function(x) mean(abs(x)))[,c("Va_bias","Vm_bias","tVa_bias")]
 
+va[,c("Va_rmse","Vm_rmse","tVa_rmse")] <- aggregate(cbind(Va_bias,Vm_bias,tVa_bias) ~ scenario+r_model+r+model, all_mod, function(x) sqrt(mean(x^2)))[,c("Va_bias","Vm_bias","tVa_bias")]
+
 va$order <- match(va$r_model,order)
+
+## remove models where Vm wasnt estimated
+va$Vm_rmse <- ifelse(va$model==1,NA,va$Vm_rmse)
+va$Vm_abs_bias <- ifelse(va$model==1,NA,va$Vm_abs_bias)
 
 
 plot_va <- subset(va, r %in% ped_names_reduced[grep("bI_small",ped_names_reduced)])
 
-plot_va$Vm_abs_bias <- ifelse(plot_va$model==1,NA,plot_va$Vm_abs_bias)
+# plot_va$Vm_abs_bias <- ifelse(plot_va$model==1,NA,plot_va$Vm_abs_bias)
+
+
 plot_va$model<-ifelse(plot_va$model==4, 3,
 	ifelse(plot_va$model==5, 4,
 	plot_va$model))
+
+
+
 
 
 
@@ -163,7 +174,95 @@ mtext("I)",side=3, at=0, cex=1, las=1, line=0.5)
 
 	par(mar=c(0,0,0,0))
 	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center",LETTERS[1:12], pch=pchs, pt.bg=bgs, col=cols, bty="n", cex=1,title="Scenario")
+	legend("center",letters[1:12], pch=pchs, pt.bg=bgs, col=cols, bty="n", cex=1,title="Scenario")
 
 }
 dev.off()
+
+
+
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_small_ped_rmse.pdf"), height=5.5, width=8)
+{
+# par(mfrow=c(3,3))
+	layout(matrix(c(1,2,3,11,4,5,6,10,7,8,9,12),nrow=3, byrow=TRUE), width=c(5,5,5,1))
+
+
+par(mar=c(1,5,5,1))
+plot_bias("Va_rmse",5:10, ylab=expression(V[A]~RMSE), main=expression(V[A]~and~V[Mg]), pch=pchs[5:10], cols=cols[5:10], bgs=bgs[5:10])
+mtext("A)",side=3, at=0, cex=1, las=1, line=0.5)
+
+plot_bias("Va_rmse",1:4, ylab="", main=expression(No~V[A]), pch=pchs[1:4], cols=cols[1:4], bgs=bgs[1:4])
+mtext("B)",side=3, at=0, cex=1, las=1, line=0.5)
+
+plot_bias("Va_rmse",11:12, ylab="", main=expression(No~V[Mg]), pch=pchs[11:12], cols=cols[11:12], bgs=bgs[11:12])
+# plot_bias("Va_rmse",5:6, cols=cols[5:6] )
+mtext("C)",side=3, at=0, cex=1, las=1, line=0.5)
+
+par(mar=c(3,5,3,1))
+plot_bias("Vm_rmse",5:10, pch=pchs[5:10], cols=cols[5:10], bgs=bgs[5:10], ylab=expression(V[M]~RMSE))
+mtext("D)",side=3, at=0, cex=1, las=1, line=0.5)
+
+plot_bias("Vm_rmse",1:4, pch=pchs[1:4], cols=cols[1:4], bgs=bgs[1:4], ylab="")
+mtext("E)",side=3, at=0, cex=1, las=1, line=0.5)
+
+plot_bias("Vm_rmse",11:12, pch=pchs[11:12], cols=cols[11:12], bgs=bgs[11:12], ylab="")
+mtext("F)",side=3, at=0, cex=1, las=1, line=0.5)
+# plot_bias("Vm_rmse",5:6, cols=cols[5:6] )
+
+par(mar=c(5,5,1,1))
+plot_bias("tVa_rmse",5:10, pch=pchs[5:10], cols=cols[5:10], bgs=bgs[5:10], ylab=expression(V[At]~RMSE))
+mtext("G)",side=3, at=0, cex=1, las=1, line=0.5)
+
+plot_bias("tVa_rmse",1:4, pch=pchs[1:4], cols=cols[1:4], bgs=bgs[1:4], ylab="", xlab="Model")
+mtext("H)",side=3, at=0, cex=1, las=1, line=0.5)
+
+plot_bias("tVa_rmse",11:12, pch=pchs[11:12], cols=cols[11:12], bgs=bgs[11:12], ylab="")
+mtext("I)",side=3, at=0, cex=1, las=1, line=0.5)
+# plot_bias("tVa_abs_bias",5:6, cols=cols[5:6] )
+
+
+	par(mar=c(0,0,0,0))
+	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
+	legend("center",letters[1:12], pch=pchs, pt.bg=bgs, col=cols, bty="n", cex=1,title="Scenario")
+
+}
+dev.off()
+
+
+
+
+
+
+
+
+
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_mae_rmse.pdf"), height=10, width=10)
+{
+
+par(mfrow=c(2,2))
+plot(Va_rmse~Va_abs_bias,va, pch=19, col=scales::alpha(1,0.3), cex=0.75,ylab=expression(V[A]~RMSE), xlab=expression(V[A]~MAE)); abline(0,1)
+text(0.8*max(va$Va_abs_bias),0.2*max(va$Va_rmse),paste("r = ",round(cor(va$Va_rmse,va$Va_abs_bias),3)))
+
+plot(Vm_rmse~Vm_abs_bias,va, pch=19, col=scales::alpha(1,0.3), cex=0.75,ylab=expression(V[M]~RMSE), xlab=expression(V[M]~MAE)); abline(0,1)
+text(0.8*max(va$Vm_abs_bias,na.rm=TRUE),0.2*max(va$Vm_rmse,na.rm=TRUE),paste("r = ",round(cor(va$Vm_rmse,va$Vm_abs_bias, use="complete.obs"),3)))
+
+plot(tVa_rmse~tVa_abs_bias,va, pch=19, col=scales::alpha(1,0.3), cex=0.75, ylab=expression(V[At]~RMSE), xlab=expression(V[At]~MAE)); abline(0,1)
+text(0.8*max(va$tVa_abs_bias),0.2*max(va$tVa_rmse),paste("r = ",round(cor(va$tVa_rmse,va$tVa_abs_bias),3)))
+
+
+}
+dev.off()
+
+
+head(all_mod)
+tapply(all_mod$Va_est==0)
+
+sum(all_mod$Va_est<0.001,na.rm=TRUE)
+table(all_mod$Va_est<0.001, all_mod$model,all_mod$scenario)
+barplot(table(all_mod$Va_est<0.001, all_mod$model,all_mod$scenario)[2,,], beside=TRUE)
+
+hist(all_mod$Va_est, breaks=1000)
+
+hist(all_mod$Va_est, breaks=100000, xlim=c(0,0.001))

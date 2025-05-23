@@ -47,7 +47,7 @@ total_Va$bias <- total_Va$min - total_Va$sim
 
 
 
-tVa_means <- aggregate(cbind(coverage,bias)~ r+scenario, total_Va, mean)
+tVa_means <- aggregate(bias~ r+scenario, total_Va, mean)
 r_order<- sapply(tVa_means$r, function(x) which(ped_names==x))
 tVa_means$mat_ratio <- mat_ratio[r_order]
 # tVa_means$matM_ratio<- matM_ratio[r_order]
@@ -64,7 +64,7 @@ pdf(paste0(wd,"Figures/Fig6_totalVa.pdf"), height=6, width=8)
 	cols<-c(palette.colors(),1)
 	bgs= c(palette.colors(),0)
 	pch=rep(21:25,2)
-	plot(bias~mat_ratio,tVa_means, pch=pch[as.factor(tVa_means$scenario)], col=(cols)[as.factor(tVa_means$scenario)],bg=(bgs)[as.factor(tVa_means$scenario)], ylab=expression(Bias~in~Total~V[A]), xlab="Proportion non-sibling maternal links");abline(h=0)
+	plot(bias~mat_ratio,tVa_means, pch=pch[as.factor(tVa_means$scenario)], col=(cols)[as.factor(tVa_means$scenario)],bg=(bgs)[as.factor(tVa_means$scenario)], ylab=expression(Bias~"in"~Total~V[A]), xlab="Proportion non-sibling maternal links");abline(h=0)
 
 	par(mar=c(0,0,0,0))
 	# scenarios2 <- formatC(scenarios,digits=2,format="f")
@@ -78,7 +78,7 @@ pdf(paste0(wd,"Figures/Fig6_totalVa.pdf"), height=6, width=8)
 	# legend_text<-(c(apply(scenarios2[s,,drop=FALSE],1, function(x) paste(colnames(scenarios2[s,,drop=FALSE]),"=",x, collapse=", ")),recursive=TRUE))
 
 	plot(NA, xaxt="n", yaxt="n", xlim=c(0,1), ylim=c(0,1), xlab="",ylab="",bty="n")
-	legend("center",LETTERS[1:10], pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1,title="Scenario")
+	legend("center",letters[1:10], pch=pch, pt.bg=bgs, col=cols, bty="n", cex=1,title="Scenario")
 
 
 

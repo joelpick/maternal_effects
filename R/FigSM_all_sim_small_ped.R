@@ -80,6 +80,9 @@ all_mod$tVa_bias <- all_mod$tVa_est - all_mod$tVa_sim
 
 
 
+all_mod$Vmg_bias <- all_mod$Vmg_est - all_mod$Vmg_sim
+all_mod$cov_amg_bias <- all_mod$cov_amg_est - all_mod$cov_amg_sim
+
 
 pchs <- c(21:24)
 cols <- alpha(palette.colors()[1:4],0.5)
@@ -96,7 +99,7 @@ for(j in 1:12){
 
 	par(mar=c(1,7,5,0.5), cex.lab=1.5)#mfrow=c(3,1),
 	
-	beeswarm(Va_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.3, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[A]),las=2, xaxt="n", xlim=c(1.5,31.5))
+	beeswarm(Va_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.3, col=cols,method = "compactswarm",corral="wrap", ylab=expression(italic(hat(V)[A])),las=2, xaxt="n", xlim=c(1.5,31.5))
 	abline(h=scenarios[j,"Va"], col=alpha(palette.colors()[8],0.5))
 	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
 
@@ -113,7 +116,7 @@ for(j in 1:12){
 
 	par(mar=c(6,7,0,0.5))
 
-	beeswarm(Vm_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[M]), labels=c("M","N","U","F"), xlab="", xlim=c(1.5,31.5))
+	beeswarm(Vm_est~ order, subset(all_mod,scenario==j),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(italic(hat(V)[M])), labels=c("M","N","U","F"), xlab="", xlim=c(1.5,31.5))
 	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
 	abline(h=scenarios[j,"Vmg"]+scenarios[j,"Vme"], col=alpha(palette.colors()[8],0.5))
 	
@@ -123,7 +126,7 @@ for(j in 1:12){
 ####
 		par(mar=c(3,7,3,0.5))
 
-	beeswarm(Vmg_est~ order, subset(all_mod,scenario==j & model %in% c(4,5)),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~V[Mg]), labels=c("M","N","U","F"), xlab="", xlim=c(1,16))
+	beeswarm(Vmg_est~ order, subset(all_mod,scenario==j & model %in% c(4,5)),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(italic(hat(V)[Mg])), labels=c("M","N","U","F"), xlab="", xlim=c(1,16))
 	abline(h=scenarios[j,"Vmg"], col=alpha(palette.colors()[8],0.5))
 	abline(v=(1:3)*4+0.5, col=alpha(c("grey","black"),0.5))
 
@@ -136,7 +139,7 @@ for(j in 1:12){
 	mtext("Immigration", side=2, line=1, adj=0.9, las=1, padj=10)
 
 
-	beeswarm(cov_amg_est~ order, subset(all_mod,scenario==j & model ==5),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(Estimated~COV["A,Mg"]), labels=c("M","N","U","F"), xlab="", xlim=c(0.5,8.5))
+	beeswarm(cov_amg_est~ order, subset(all_mod,scenario==j & model ==5),pch=19, cex=0.2, col=cols,method = "compactswarm",corral="wrap", ylab=expression(italic(hat(COV)["A,Mg"])), labels=c("M","N","U","F"), xlab="", xlim=c(0.5,8.5))
 	abline(h=scenarios[j,"cov_amg"], col=alpha(palette.colors()[8],0.5))
 	abline(v=4.5, col=alpha(c("grey"),0.5))
 	axis(3,c(1,4.5,8),c("","Model 4",""), lwd.ticks=0, line=2.5, padj=1, cex.axis=1.25)
@@ -156,7 +159,7 @@ dev.off()
 ## MAKE SUMMARIES
 ########
 
-va<- aggregate(cbind(Va_bias,Vm_bias,tVa_bias) ~ scenario+r_model+r+model, all_mod,mean)
+va<- aggregate(cbind(Va_bias,Vm_bias,tVa_bias,Vmg_bias,cov_amg_bias) ~ scenario+r_model+r+model, all_mod,mean)
 
 va[,c("Va_precision","Vm_precision","tVa_precision")] <- aggregate(cbind(Va_est,Vm_est,tVa_est) ~ scenario+r_model+r+model, all_mod, function(x)1/sd(x))[,c("Va_est","Vm_est","tVa_est")]
 
@@ -232,7 +235,7 @@ pdf(paste0(wd,"Figures/FigSM_small_ped_Va.pdf"), height=8, width=13)
 
 
 	par(mar=c(0.5,7,0.5,0.5), cex.lab=1.5)#mfrow=c(3,1),
-	beeswarm(Va_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[A]), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+	beeswarm(Va_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~italic(hat(V)[A])), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
 	abline(h=0)
 	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
 
@@ -266,7 +269,7 @@ pdf(paste0(wd,"Figures/FigSM_small_ped_tVa.pdf"), height=8, width=13)
 
 
 	par(mar=c(0.5,7,0.5,0.5), cex.lab=1.5)#mfrow=c(3,1),
-	beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[At]), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
+	beeswarm(tVa_bias~ order, va,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~italic(hat(V)[At])), las=2,xaxt="n", xlim=c(1.5,31.5))#, 
 	abline(h=0)
 	abline(v=(1:7)*4+0.5, col=alpha(c("grey","black"),0.5))
 
@@ -304,7 +307,7 @@ pdf(paste0(wd,"Figures/FigSM_small_ped_Vm.pdf"), height=8, width=13)
 
 
 	par(mar=c(0.5,7,0.5,0.5), cex.lab=1.5)#mfrow=c(3,1),
-	beeswarm(Vm_bias~ order, vm,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~V[M]), las=2,xaxt="n", xlim=c(1.5,23.5))#, 
+	beeswarm(Vm_bias~ order, vm,pch=pchs, cex=1, col=cols,bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~italic(hat(V)[M])), las=2,xaxt="n", xlim=c(1.5,23.5))#, 
 	abline(h=0)
 	abline(v=(1:5)*4+0.5, col=alpha(c("grey","black"),0.5))
 

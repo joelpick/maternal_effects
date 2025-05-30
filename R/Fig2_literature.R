@@ -27,7 +27,7 @@ pdf(paste0(wd,"Figures/Fig2_lit.pdf"), height=10, width=12)
 {
 par(mfrow=c(2,2),mar=c(6,6,1,1), cex.lab=2, cex.axis=1.6, mgp=c(4,1,0))
 
-hist(dd$m2_2, breaks=20, xlab=expression(m[g]^2), main="", col="blue") 
+hist(dd$m2_2, breaks=20, xlab=expression(italic(hat(m)[g]^2)), main="", col="blue") 
 legend("topright",c("1st year traits","Older traits"),col=c("lightblue","blue"), pch=15, bty="n", cex=1.6)
 hist(dd$m2_2[dd$juv_trait==1], breaks=20, main="", add=TRUE, col="lightblue") 
 text(0.65,16.5,paste("1st year mean =",round(mean(dd$m2_2[dd$juv_trait==1],na.rm=TRUE),3)), adj=0, cex=1.75, pos=2)
@@ -39,8 +39,8 @@ mtext("A)",side=3, adj = -0.175, cex=1.7, las=1, line=-0.7)
 
 ## proportion of variance due to Mge
 hist((dd$m2_2/(dd$m2_2+dd$c2_2))[(dd$m2_2+dd$c2_2)>0.05], breaks=20, xlab="", main="", col="blue")
-mtext(expression(frac(V[mg] , V[mg]+V[me])), side=1, line=5, cex=1)
-mtext(expression( (m^2>0.05)), side=1, line=3.5, cex=1, adj=1)
+mtext(expression(italic(frac(hat(V)[Mg] , hat(V)[Mg]+hat(V)[Me]))), side=1, line=5, cex=1)
+mtext(expression( italic(hat(m)^2>0.05)), side=1, line=3.5, cex=1, adj=1)
 
 # hist((dd$m2_2/(dd$m2_2+dd$c2_2)), breaks=20, xlab="Vmg / Vmg+Vme", main="") 
 hist((dd$m2_2/(dd$m2_2+dd$c2_2))[dd$juv_trait==1 & (dd$m2_2+dd$c2_2)>0.05], breaks=20,add=TRUE, col="lightblue") 
@@ -53,13 +53,13 @@ mtext("B)",side=3, adj = -0.175, cex=1.7, las=1, line=-0.7)
 # hist(round(dd$h2_1-dd$h2_2,3)[dd$h2_1-dd$h2_2<0], breaks=5,col="red", add=TRUE)
 
 h2_diff <- dd$h2_1-dd$h2_2
-hist(h2_diff[h2_diff>=0], breaks=10, xlim=c(-0.1,0.2), main="",xlab=expression(h^2~difference),col=scales::alpha("red",0.8))
+hist(h2_diff[h2_diff>=0], breaks=10, xlim=c(-0.1,0.2), main="",xlab=expression(italic(hat(h)^2)~difference),col=scales::alpha("red",0.8))
 hist(h2_diff[h2_diff<0], breaks=2, add=TRUE)
 mtext("C)",side=3, adj = -0.175, cex=1.7, las=1, line=-0.7)
 
 
 m2_diff <- dd$c2_1 - (dd$m2_2+dd$c2_2)
-hist(m2_diff[m2_diff<0], breaks=15, col=scales::alpha("red",0.8), xlim=c(-0.15,0.05),xlab=expression(m^2~difference), main="")
+hist(m2_diff[m2_diff<0], breaks=15, col=scales::alpha("red",0.8), xlim=c(-0.15,0.05),xlab=expression(italic(hat(m)^2)~difference), main="")
 hist(m2_diff[m2_diff>0], breaks=2, add=TRUE)
 mtext("D)",side=3, adj = -0.175, cex=1.7, las=1, line=-0.7)
 
@@ -75,10 +75,10 @@ sum!is.na(h2_diff))
 
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS2_lit_excluded.pdf"), height=6, width=6)
+pdf(paste0(wd,"Figures/FigSM_lit_excluded.pdf"), height=6, width=6)
 par(mar=c(6,5,1,1))
-plot(dd$m2_2/(dd$m2_2+dd$c2_2),dd$m2_2+dd$c2_2, pch=19, col=scales::alpha(1,0.3), xlab="", ylab=expression(m^2), cex.lab=1.5)
-mtext(expression(frac(V[mg] , V[mg]+V[me])), side=1, line=5, cex=1.5)
+plot(dd$m2_2/(dd$m2_2+dd$c2_2),dd$m2_2+dd$c2_2, pch=19, col=scales::alpha(1,0.3), xlab="", ylab=expression(italic(hat(m)^2)), cex.lab=1.5)
+mtext(expression(frac(italic(hat(V)[Mg]) , italic(hat(V)[Mg])+italic(hat(V)[Me]))), side=1, line=5, cex=1.5)
 
 abline(h=0.05, col=scales::alpha(2,0.75))
 dev.off()

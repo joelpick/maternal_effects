@@ -19,14 +19,15 @@ cov_ratio_all<-sapply(ped_str,function(x){
 })
 
 mat_ratio <- colMeans(mat_ratio_all)
-mat_ratio_se <- apply(mat_ratio_all,2,se)
 
 cov_ratio <- colMeans(cov_ratio_all)
 
 
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS3_links_cor.pdf"), height=5, width=5)
+pdf(paste0(wd,"Figures/FigSM_links_cor.pdf"), height=5, width=5)
 par(mar=c(6,6,1,1))
-plot(cov_ratio~mat_ratio, pch=19, xlab="Proportion non-sibling maternal links (Vmg)", ylab="Proportion non-sibling links \nthrough single mother (COVa,mg)")
+plot(cov_ratio~mat_ratio, pch=19, xlab=expression(Proportion~non-sibling~maternal~links~(italic(V[Mg]))), ylab=expression('Proportion non-sibling maternal links \nthrough single mother'~(italic(COV["A,Mg"]))))
 dev.off()
+
+

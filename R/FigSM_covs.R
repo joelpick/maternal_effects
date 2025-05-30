@@ -66,12 +66,12 @@ rel_cov_plot <- function(focal_mother_name="Focal's \n Mother",relative_name="Re
 	text(1.4-offset,1.575,r4)
 	
 	if(is.numeric(r1)&is.numeric(r2)&is.numeric(r3)&is.numeric(r4)){
-		print_r2 <- if(r2>0 & r2<1) paste0(" + ",r2,"~V[Mg]") else if(r2==1) " + ~V[Mg]" else ""
-		print_r_34 <- if((r3+r4)==1) " + ~COV['A,Mg']" else if((r3+r4)>0) paste0(" + ",(r3+r4),"~COV['A,Mg']") else ""
-		print_r <- paste0(r1,"~V[A]",print_r2,print_r_34)
+		print_r2 <- if(r2>0 & r2<1) paste0(" + ",r2,"~italic(V[Mg])") else if(r2==1) " + ~italic(V[Mg])" else ""
+		print_r_34 <- if((r3+r4)==1) " + ~italic(COV['A,Mg'])" else if((r3+r4)>0) paste0(" + ",(r3+r4),"~italic(COV['A,Mg'])") else ""
+		print_r <- paste0(r1,"~italic(V[A])",print_r2,print_r_34)
 		text(1.5,0.5, parse(text=print_r), col="blue")
 	}else{
-		text(1.5,0.5, expression(r[1]*V[A] + r[2]*V[Mg] + (r[3]+r[4])*COV["A,Mg"]), col="blue")
+		text(1.5,0.5, expression(r[1]*italic(V[A]) + r[2]*italic(V[Mg]) + (r[3]+r[4])*italic(COV["A,Mg"])), col="blue")
 	}
 
 }
@@ -86,7 +86,7 @@ relative_mother2 <- sub(" ","\n",dat$relative_mother)
 
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS1_relative_cov.pdf"), height=10, width=7)
+pdf(paste0(wd,"Figures/FigSM_relative_cov.pdf"), height=10, width=7)
 
 {	
 par(mfrow=c(7,3))
@@ -108,7 +108,7 @@ dd <- paste(expression(frac(V[mg] , V[mg]+V[me])),1)
 expression(eval(dd))
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS1_relative_cov_eg.pdf"), height=4, width=4)
+pdf(paste0(wd,"Figures/FigSM_relative_cov_eg.pdf"), height=4, width=4)
 
 {	
 par(mfrow=c(1,1))

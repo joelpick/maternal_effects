@@ -64,7 +64,7 @@ pdf(paste0(wd,"Figures/Fig6_totalVa.pdf"), height=6, width=8)
 	cols<-c(palette.colors(),1)
 	bgs= c(palette.colors(),0)
 	pch=rep(21:25,2)
-	plot(bias~mat_ratio,tVa_means, pch=pch[as.factor(tVa_means$scenario)], col=(cols)[as.factor(tVa_means$scenario)],bg=(bgs)[as.factor(tVa_means$scenario)], ylab=expression(Bias~"in"~Total~V[A]), xlab="Proportion non-sibling maternal links");abline(h=0)
+	plot(bias~mat_ratio,tVa_means, pch=pch[as.factor(tVa_means$scenario)], col=(cols)[as.factor(tVa_means$scenario)],bg=(bgs)[as.factor(tVa_means$scenario)], ylab=expression(Bias~"in"~italic(hat(V)[At])), xlab="Proportion non-sibling maternal links");abline(h=0)
 
 	par(mar=c(0,0,0,0))
 	# scenarios2 <- formatC(scenarios,digits=2,format="f")

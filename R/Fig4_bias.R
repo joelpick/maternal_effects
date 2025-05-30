@@ -87,7 +87,7 @@ plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.35), Vm_lim=c(-0.17,0.06),c
 	bg= bgs[dd$scenario]
 
 	# layout(matrix(c(1,2,3,4,4,4),nrow=2, byrow=TRUE), height=c(5,2))
-	plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~V[A]), 
+	plot(Va_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~italic(hat(V)[A])), 
 		pch=pch, 
 		col=col,
 		bg=bg,
@@ -113,7 +113,7 @@ plot_fig3 <-function(s, lines=TRUE, Va_lim=c(-0.11,0.35), Vm_lim=c(-0.17,0.06),c
 	mtext(labels[1],side=3, at=label_at, cex=1.4, las=1, line=-0.6)
 
 
-	plot(Vm_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~V[M]), 
+	plot(Vm_bias~ mat_ratio, dd, cex=1, xlab="Proportion non-sibling maternal links", ylab=expression(Bias~"in"~italic(hat(V)[M])), 
 		pch=pch, 
 		col=col,
 		bg=bg,
@@ -141,7 +141,7 @@ plot_fig4 <-function(s, Va_lim=c(-0.11,0.35), Vm_lim=c(-0.17,0.06), legend_pos="
 	
 cols <- c(palette.colors(),1)[dd$scenario]
 
-	plot(Vm_bias~ Va_bias, dd, cex=1, xlab=expression(Bias~"in"~V[A]), ylab=expression(Bias~"in"~V[M]), 
+	plot(Vm_bias~ Va_bias, dd, cex=1, xlab=expression(Bias~"in"~italic(hat(V)[A])), ylab=expression(Bias~"in"~italic(hat(V)[M])), 
 		pch= rep(21:25,2)[dd$scenario], 
 		col= cols,
 		bg= c(palette.colors(),"white")[dd$scenario],

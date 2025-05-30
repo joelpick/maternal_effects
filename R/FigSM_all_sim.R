@@ -44,7 +44,7 @@ for(j in 1:12){
 	pdf(paste0(wd,"Figures/FigSM_all_sim",j,".pdf"), height=8, width=13)
 {	
 	par(mfrow=c(2,1), mar=c(0.5,5,5,1))
-	beeswarm(Va_est~ order, subset(mod2,scenario==j),pch=19, cex=0.2, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab="Estimated Va", xaxt="n")
+	beeswarm(Va_est~ order, subset(mod2,scenario==j),pch=19, cex=0.2, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab=expression(italic(hat(V)[A])), xaxt="n")
 	abline(v=(1:2)*12+0.5, col=alpha("grey",0.5))
 	abline(h=scenarios[j,"Va"], col=alpha(palette.colors()[8],0.5))
 
@@ -63,7 +63,7 @@ for(j in 1:12){
 
 	par(mar=c(5,5,1,0.5))
 
-	beeswarm(Vm_est~ order, subset(mod2,scenario==j),pch=19, cex=0.2, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab="Estimated Vm", labels=c("M","N","U","F"), xlab="Immigration")
+	beeswarm(Vm_est~ order, subset(mod2,scenario==j),pch=19, cex=0.2, col=alpha(palette.colors()[1:4],0.5),method = "compactswarm",corral="wrap", ylab=expression(italic(hat(V)[M])), labels=c("M","N","U","F"), xlab="Immigration")
 	abline(v=(1:2)*12+0.5, col=alpha("grey",0.5))
 	abline(h=scenarios[j,"Vmg"]+scenarios[j,"Vme"], col=alpha(palette.colors()[8],0.5))
 }

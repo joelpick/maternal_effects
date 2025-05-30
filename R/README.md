@@ -71,12 +71,15 @@
     - *Figures/Fig6_totalVa.pdf*
 
 ### Fig7_small_ped_sims.R
-- Generates figure 7
+- Generates figures 7, S14 and S15
 - Imports 
     - *Data/Intermediate/parameters.Rdata*
     - *Data/Intermediate/mge_sims_small_ped.Rdata*
 - Produces
     - *Figures/Fig7_small_ped.pdf*
+    - *Figures/FigSM_small_ped_rmse.pdf*
+    - *Figures/FigSM_mae_rmse.pdf*
+
 
 ### FigSM_all_sim_small_ped.R
 - Generates Table S2-3, Figures S11-14 and S27-S38

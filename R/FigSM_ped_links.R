@@ -24,7 +24,7 @@ ratio_dat <- cbind(ratio_dat,t(sapply(ped_str,colMeans)))
 
 
 setEPS()
-pdf(paste0(wd,"Figures/FigS4_links_ped.pdf"), height=10, width=5)
+pdf(paste0(wd,"Figures/FigSM_links_ped.pdf"), height=10, width=5)
 {
 par(mfrow=c(3,1), mar=c(4,4,1,1), cex.lab=1.4,mgp=c(2,0.5,0))
 

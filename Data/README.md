@@ -1,6 +1,6 @@
 # Data README
 
-**Project title:** Simple maternal effect animal models provide biased estimates of additive genetic and maternal variation
+**Project title:** Simple maternal effect animal models may provide biased estimates of additive genetic and maternal variation
 
 **Data License:** CC-BY 4.0
 
@@ -10,8 +10,7 @@
 Directory containing raw data
 
 ### Bonnet/
-Directory containing data files from Bonnet et al 2022 Science.
-Original data available at: https://doi.org/10.1126/science.abk0853
+Directory containing data files from Bonnet et al 2022 Science. Original data available at: https://doi.org/10.1126/science.abk0853
 
 Directory contains a file for each of the 19 populations used in the study: bsR = bighorn sheep on Ram Mountain, btM = blue tits at Muro, btP = blue tits at Pirio, btR = blue tits at la Rouvi`ere, cfG = collared flycatchers on Gotland, gtH = great tits in Hoge Veluwe, gtW = great tits in Wytham Woods, hhT = hihi on Tiritiri Matangi Island, hhK = hihi at Karori, mkK = meerkats in the Kalahari, rdR = red deer on the Isle of Rum, rmC = rhesus macaques at Cayo Santiago, rsK=red squirrels in Kluane, sfC = superb fairy-wrens in Canberra, shN = spotted hyenas in the Ngorongoro Crater, spM= song sparrows on Mandarte Island, ssS = Soay sheep on St Kilda, ,svG = snow voles in Graubunden, ybA = yellow baboons at Amboseli. 
 
@@ -144,7 +143,10 @@ Dam: father ID
 Contains processed data files
 
 ### mge_sims_small_ped.Rdata
+Data from small and medium sized pedigree simulations, from 4 different models across different pedigrees and scenarios
 
 ### mge_sims3.Rdata
+Data from main part of the simulation study, with results from simple maternal effects animal models across different pedigrees and scenarios
 
 ### parameters.Rdata
+Saved parameter values to be used for the various simulations 

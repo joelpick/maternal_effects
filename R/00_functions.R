@@ -356,7 +356,7 @@ m4_func <- function(data){
 
 ## Model 4 - additive genetic effects with maternal environment and genetic effects, and direct-maternal covariance 
 m5_func <- function(data){
-	tryCatch({
+	tryCatch({ ## catch convergence errors 
 		suppressWarnings(
 			mod<-asreml(
 				fixed= p~1

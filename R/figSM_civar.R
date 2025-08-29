@@ -35,6 +35,9 @@ extract_func <- function(x,k) {
 		cov_amg_sim = scenarios[,"cov_amg"],
 		r_amg_sim = scenarios[,"r_amg"]
 
+# Va_Vm_cov = x[["samp_cov"]]["mother_PE","animal",],
+# Va_Vm_cor = apply(x[["samp_cov"]], 3, function(y) cov2cor(y)["mother_PE","animal"]),
+
 	)
 }
 
@@ -102,11 +105,12 @@ vmg$r_amg_bias <- ifelse(vmg$model == 4,0,vmg$r_amg_bias)
 
 cols <- c(alpha(palette.colors()[1:4],0.5),palette.colors()[5])
 
-
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_small_ped_COV.pdf"), height=10, width=8)
 {par(mfrow=c(4,1), mar=c(0,5,5,1))
 	beeswarm(Va_bias~ scenario2 + ped_size + model, vmg,pch=c(15:17), cex=1, pwcol=cols[as.factor(vmg$scenario3)],bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~italic(hat(V)[A])), labels=c("both","no_va","no_vmg"))
 		abline(h=0)
-	abline(v=(1:7)*3+0.5, col=alpha(c("grey","black"),0.5))
+	abline(v=c(3.5,6.5,9.5), col=alpha(c("grey","black","grey"),0.5))
 		axis(3,c(2,5,8,11),c("Medium","Small","Medium","Small"), lwd.ticks=0, padj=1, cex.axis=1.25)
 
 		axis(3,c(2,3.5,5),c(" ","model 3 (no cov)"," "), lwd.ticks=0, padj=1, cex.axis=1.25, line=2)
@@ -116,27 +120,33 @@ par(mar=c(1,5,4,1))
 
 	beeswarm(Vmg_bias~ scenario2 + ped_size + model, vmg,pch=c(15:17), cex=1, pwcol=cols[as.factor(vmg$scenario3)],bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~italic(hat(V)[Mg])), labels=c("both","no_va","no_vmg"))
 		abline(h=0)
-	abline(v=(1:7)*3+0.5, col=alpha(c("grey","black"),0.5))
+	abline(v=c(3.5,6.5,9.5), col=alpha(c("grey","black","grey"),0.5))
 
 par(mar=c(2,5,3,1))
 
 	beeswarm(cov_amg_bias~ scenario2 + ped_size + model, vmg,pch=c(15:17), cex=1, pwcol=cols[as.factor(vmg$scenario3)],bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~italic(hat(COV)['A,Mg'])), labels=c("both","no_va","no_vmg"))
 		abline(h=0)
-	abline(v=(1:7)*3+0.5, col=alpha(c("grey","black"),0.5))
+	abline(v=c(3.5,6.5,9.5), col=alpha(c("grey","black","grey"),0.5))
 
 par(mar=c(4,5,1,1))
 
 	beeswarm(r_amg_bias~ scenario2 + ped_size + model, vmg,pch=c(15:17), cex=1, pwcol=cols[as.factor(vmg$scenario3)],bg=cols,method = "compactswarm",corral="wrap", ylab=expression(Bias~"in"~italic(hat(r)['A,Mg'])), labels=c("both","no_va","no_vmg"))
 		abline(h=0)
-	abline(v=(1:7)*3+0.5, col=alpha(c("grey","black"),0.5))
+	abline(v=c(3.5,6.5,9.5), col=alpha(c("grey","black","grey"),0.5))
+
+	legend("bottomleft",c("both (no COV)","both (- COV)","both (+ COV)","no_va","no_vmg"), pch=19,col=cols)
 }
+dev.off()
 
-
+setEPS()
+pdf(paste0(wd,"Figures/FigSM_small_ped_COV2.pdf"), height=5, width=15)
 
 {
-par(mfrow=c(1,3), cex.lab=2, cex.axis=1.5)
+par(mfrow=c(1,3), mar=c(6,6,1,1), cex.lab=2, cex.axis=1.5)
 plot(Vmg_bias~ r_amg_bias, subset(va,model==5), col=cols[as.factor(va$scenario3)], pch=c(15:16)[as.factor(va$ped_size)],cex=2)
 abline(h=0,v=0)
+	legend("bottomleft",c("both (no COV)","both (- COV)","both (+ COV)","no_va","no_vmg"), pch=19,col=cols)
+
 
 plot(Va_bias~ r_amg_bias, subset(va,model==5), col=cols[as.factor(va$scenario3)], pch=c(15:16)[as.factor(va$ped_size)],cex=2)
 abline(h=0,v=0)
@@ -145,3 +155,7 @@ plot(Vmg_bias~ Va_bias, subset(va,model==5), col=cols[as.factor(va$scenario3)], 
 abline(h=0,v=0)
 
 }
+dev.off()
+
+
+### work out sampling covariances?

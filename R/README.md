@@ -1,6 +1,6 @@
 # Code README
 
-**Project title:** Simple maternal effect animal models provide biased estimates of additive genetic and maternal variation
+**Project title:** Simple maternal effect animal models may provide biased estimates of additive genetic and maternal variation
 
 **Code Author:** Joel Pick
 
@@ -15,7 +15,7 @@
 
 ### 01_parameters.R
 - Defines the parameters used in the simulations
-- Produces *Data/Intermediate/parameters.Rdata* which is used for the simulations in in *02_simulations.R* and *03_small_ped_sims.R*
+- Produces *Data/Intermediate/parameters.Rdata* which is used for the simulations in *02_simulations.R* and *03_small_ped_sims.R*
 
 ### 02_simulations.R
 - Code for the main set of simulations, looking a the bias in Va in simple maternal effects models. Simulates pedigrees and datasets, and analyses them with a simple maternal effects model, and saves results
@@ -84,61 +84,69 @@
 ### FigSM_all_sim_small_ped.R
 - Generates Table S2-3, Figures S11-14 and S27-S38
 - Imports 
-    - mge_sims3.Rdata
-    - parameters.Rdata
-    - mge_sims_small_ped.Rdata
+    - *Data/Intermediate/mge_sims3.Rdata*
+    - *Data/Intermediate/parameters.Rdata*
+    - *Data/Intermediate/mge_sims_small_ped.Rdata*
 - Produces
     - all Figures/FigSM_all_sim_bv... figures
-    - Figures/FigSM_small_ped_Va.pdf
-    - Figures/FigSM_small_ped_tVa.pdf
-    - Figures/FigSM_small_ped_Vm.pdf
-    - Figures/FigSM_small_ped_convergence.pdf
-    - Table S2
-    - Table S3
+    - *Figures/FigSM_small_ped_Va.pdf*
+    - *Figures/FigSM_small_ped_tVa.pdf*
+    - *Figures/FigSM_small_ped_Vm.pdf*
+    - *Figures/FigSM_small_ped_convergence.pdf*
+    - *Table S2*
+    - *Table S3*
 
 ### FigSM_all_sim.R
 - Generates Figures S15-S26
 - Imports 
-    - mge_sims3.Rdata
-    - parameters.Rdata
+    - *Data/Intermediate/mge_sims3.Rdata*
+    - *Data/Intermediate/parameters.Rdata*
 - Produces
-    - all Figures/FigSM_all_sim
+    - *all Figures/FigSM_all_sim*
+
+### FigSM_civars.R
+- Generates figures S14 showing bias in Va, Vmg, and Cov_A,Mg across different scenarios.
+- Imports 
+    - *Data/Intermediate/parameters.Rdata*
+    - *Data/Intermediate/mge_sims_small_ped.Rdata*
+- Produces
+    - *Figures/FigSM_small_ped_COV.pdf*
 
 ### FigSM_covs.R
 - Generates figures S1-2 showing how the covariance between different relatives is generated.
 - Imports 
-    - Data/Raw/covariances.csv
+    - *Data/Raw/covariances.csv*
 - Produces
-    - Figures/FigS1_relative_cov.pdf
-    - Figures/FigS1_relative_cov_eg.pdf
+    - *Figures/FigSM_relative_cov.pdf*
+    - *Figures/FigSM_relative_cov_eg.pdf*
 
 ### FigSM_links.R
 - Generates Figure S5
 - Imports 
-    - mge_sims3.Rdata
+    - *Data/Intermediate/mge_sims3.Rdata*
 - Produces
-    - Figures/FigS3_links_cor.pdf
+    - *Figures/FigSM_links_cor.pdf*
 
 ### FigSM_ped_depth.R
 - Runs pedigree depth simulations and generates figure S6
 - Produces
-    - Figures/FigSM_ped_depth.pdf
+    - *Figures/FigSM_ped_depth.pdf*
 
 ### FigSM_ped_links.R
 - Generates Figure S4
 - Imports 
-    - mge_sims3.Rdata
+    - *Data/Intermediate/mge_sims3.Rdata*
 - Produces
-    - Figures/FigS4_links_ped.pdf
+    - *Figures/FigSM_links_ped.pdf*
 
 ### FigSM_samp_cov.R
 - Generates S8-10
 - Imports 
-    - mge_sims3.Rdata
+    - *Data/Intermediate/mge_sims3.Rdata*
 - Produces
-    - Figures/FigSM_samp_cov_mat_links.pdf
-    - Figures/FigSM_samp_cov_ped.pdf
-    - Figures/FigSM_samp_cov_scenario.pdf
+    - *Figures/FigSM_samp_cov_mat_links.pdf*
+    - *Figures/FigSM_samp_cov_ped.pdf*
+    - *Figures/FigSM_samp_cov_scenario.pdf*
 
 
 
@@ -150,10 +158,8 @@ pedAgree version 0.0.1 (installed from github)
 
 squidSim version 0.2.3 (installed from github)
 
-parallel version xxx
+beeswarm version 0.4.0 
 
-beeswarm version xxx
+scales version 1.4.0
 
-scales version xxx
-
-viridis version xxx
+viridis version 0.6.5

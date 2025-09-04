@@ -1,3 +1,4 @@
+# This script generates figure 3
 
 rm(list=ls())
 

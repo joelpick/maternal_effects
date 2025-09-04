@@ -1,3 +1,4 @@
+# this script generates results from literature survey; Figure 2 and S3, and Table S1
 
 rm(list=ls())
 

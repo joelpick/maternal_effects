@@ -1,4 +1,8 @@
 
+######
+#  This script defines the parameters used in the simulations
+######
+
 rm(list=ls())
 
 wd <- "/Users/joelpick/github/maternal_effects/"
@@ -9,9 +13,11 @@ data_wd <- paste0(wd,"Data/Intermediate/")
 ## Pedigree parameters
 ##------------------------
 
+## total offspring per generation
 n_offspring=600
 
-## Range from bonnet et al 
+#Fecundity values
+## Chosen to be comparable to range from bonnet et al 
 m_fecundity = 6 # median is 6.5
 h_fecundity = 12 #highest is 13.3
 l_fecundity = 3 #lowest is 1.5
@@ -19,14 +25,16 @@ l_fecundity = 3 #lowest is 1.5
 
 ## first number is female, then male immigration rate
 no_immigration = c(0,0)
-f_immigration=c(0.4,0.1)
-m_immigration=c(0.1,0.4)
+f_immigration=c(0.4,0.1)   # female bias
+m_immigration=c(0.1,0.4)   # male bias
 b_immigration=c(0.25,0.25) # same overall immigration but no sex bias
 
+# mating system parameters (full versus half sib)
 fhs = 0.75
 fs = 1
 hs = 0
 
+## put these together
 fecundity <- c(m_fecundity,h_fecundity,l_fecundity)
 immigration <- rbind(no_immigration,f_immigration,m_immigration,b_immigration)
 p_sire <- c(fhs,hs,fs)
@@ -38,6 +46,7 @@ ms_names <- c("fhs","hs","fs")
 ## make all combos 
 combos<-expand.grid(p_sire=1:3,immigration=1:4,fecundity=1:3)
 
+## make parameters for pedigree simulations
 peds_param <- cbind(
 	n_females=n_offspring / fecundity[combos[,"fecundity"]],
 	fecundity=fecundity[combos[,"fecundity"]],

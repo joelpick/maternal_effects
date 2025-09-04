@@ -21,6 +21,7 @@ change2zero <- function(x) ifelse(is.na(x), 0, x)
 ####
 #--- rbind that doesnt mind abut names not matching, and takes the first set of names, or a given set of names
 ####
+
 rbind_notAnnoying <- function(..., names=NULL){
   x <- list(...)
   y <- lapply(x, function(y){
@@ -29,6 +30,14 @@ rbind_notAnnoying <- function(..., names=NULL){
   } )
   do.call(rbind,y)
 }
+
+
+####
+#--- turn a list into an array 
+####
+
+list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(rownames(x[[1]]),colnames(x[[1]]),NULL))
+
 
 
 ########################
@@ -41,8 +50,7 @@ rbind_notAnnoying <- function(..., names=NULL){
 combo_prod <- function(x) if(length(x)>1){sum( utils::combn(x, m =2)[1, ] * utils::combn(x, m =2)[2, ])}else{0}
 
 
-combo_au <- function(x) if(length(x)>1){sum(x * (length(x)-1))}else{0}
-
+## calculates number of cousins from a given pedigree
 n_cousin <- function(p,gp,ped){
 	if(all(is.na(ped[,gp]))){ ## stops working when there no links through a certain grandparent type
 		0
@@ -54,7 +62,7 @@ n_cousin <- function(p,gp,ped){
 	}
 }
 
-
+## calculates number of aunt/uncle links from a given pedigree
 n_au <- function(link,ped){
 	if(all(is.na(ped[,link]))){
 		0
@@ -69,17 +77,7 @@ n_au <- function(link,ped){
 	}
 }
 
-total_links <- function(ped) nrow(ped) * (nrow(ped) - 1) / 2
-
-non_zero_links <- function(ped){
-	# pedA<-nadiv::makeA(ped[,1:3])
-	# sum(pedA[lower.tri(pedA)]>0)
-nrow(Matrix::summary(nadiv::makeA(ped[,1:3])))
-}
-
-
-# ped<-ped_sub_full
-
+## calculates all of the different types of relatives
 ped_stat <- function(ped, phenotyped=NULL){	
 	colnames(ped) <- c("animal","dam","sire")
 
@@ -336,6 +334,7 @@ m2_func <- function(data){
 }
 
 ## Model 3 - additive genetic effects with maternal environment and genetic effects, no covariance modelled
+## named model 4 in the code for historical reasons
 m4_func <- function(data){
   mod <- asreml(
 		fixed= p~1
@@ -355,6 +354,7 @@ m4_func <- function(data){
 }
 
 ## Model 4 - additive genetic effects with maternal environment and genetic effects, and direct-maternal covariance 
+## named model 5 in the code for historical reasons
 m5_func <- function(data){
 	tryCatch({ ## catch convergence errors 
 		suppressWarnings(
@@ -389,7 +389,7 @@ m5_func <- function(data){
 	)
 }	
 
-
+## runs the specified model across a set of provided datasets and pedigrees
 model_func <- function(FUN,peds,data,mc.cores=8){
 	mclapply(1:length(data), function(i){
 		if(is.list(peds)&!is.data.frame(peds)) { 
@@ -411,11 +411,8 @@ model_func <- function(FUN,peds,data,mc.cores=8){
 }
 
 
-list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(rownames(x[[1]]),colnames(x[[1]]),NULL))
 
-# list2array <- function(x) array(unlist(x), dim = c(nrow(x[[1]]), ncol(x[[1]]), length(x)), dimnames=list(NULL,c("A","Me","Mg","cov_AMg","E"),NULL))
-
-
+# calculate total va from output
 total_va <- function(x, j, m){
 	out<-rep(NA, nrow(x))
 	y <- change2zero(x)

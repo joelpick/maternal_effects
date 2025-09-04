@@ -1,4 +1,4 @@
-
+# This script contains code for the second set of simulations, assessing the accuracy of more complex models with small pedigrees. Simulates small pedigrees and datasets, and analyses them with 4 different models, and saves results
 
 rm(list=ls())
 
@@ -28,6 +28,7 @@ n_sims <-100
 set.seed(20240822)
 
 	
+# for each of the pedigree types, simulate n_sim pedigrees,  simulate a dataset for each scenario for each pedigree, and then analyse all datasets with 4 different animal models
 
 for(k in ped_names_reduced){
 	cat(k, "\n")
@@ -68,10 +69,10 @@ for(k in ped_names_reduced){
 	cat("\nModel 2: ")
 	model2 <- model_func(m2_func,peds,dat,mc.cores=cores)
 
-	cat("\nModel 4: ")
+	cat("\nModel 4: ") ## model 3 in the manuscript
 	model4 <- model_func(m4_func,peds,dat,mc.cores=cores)
 
-	cat("\nModel 5: ")
+	cat("\nModel 5: ") ## model 4 in the manuscript
 	model5 <- model_func(m5_func,peds,dat,mc.cores=cores)
 
 	assign(paste0("model1_",k),model1)
@@ -83,6 +84,7 @@ for(k in ped_names_reduced){
 	rm(peds,dat)
 }
 
+# save all simulation output
 
 save(list=c(
 	paste0("model1_",ped_names_reduced),

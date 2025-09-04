@@ -24,7 +24,7 @@
 - NOTE: require ASREML licence to run the models. Model output is saved for use in other code files
 
 ### 03_small_ped_sims.R
-- Code for the main set of simulations, assessing the accuracy of more complex models with small pedigrees. Simulates small pedigrees and datasets, and analyses them with 4 different models, and saves results
+- Code for the second set of simulations, assessing the accuracy of more complex models with small pedigrees. Simulates small pedigrees and datasets, and analyses them with 4 different models, and saves results
 - Imports simulation parameters from *Data/Intermediate/parameters.Rdata*
 - Produces *mge_sims_small_ped.Rdata*
 - NOTE: require ASREML licence to run the models. Model output is saved for use in other code files

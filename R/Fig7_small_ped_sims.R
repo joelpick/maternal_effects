@@ -1,3 +1,4 @@
+# This script generates figures 7, S14 and S15
 
 rm(list=ls())
 

@@ -1,3 +1,4 @@
+# This script extracts various metrics from the data of the different syntheses used in this study.
 
 rm(list=ls())
 

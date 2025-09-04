@@ -1,3 +1,4 @@
+# This script includes the code for the main set of simulations, looking a the bias in Va in simple maternal effects models. Simulates pedigrees and datasets, and analyses them with a simple maternal effects model, and saves results
 
 rm(list=ls())
 
@@ -78,6 +79,8 @@ for(k in ped_names){
 	rm(peds,dat)
 }
 
+
+# save all simulation output
 save(list=(c("ped_names","peds_param","scenarios","ped_str",paste0("model2_",ped_names))),file=paste0(data_wd,"mge_sims3.Rdata"))
 
 

@@ -1,4 +1,4 @@
-
+# This script generates figures 4 and 5, and S7
 rm(list=ls())
 
 wd <- "/Users/joelpick/github/maternal_effects/"
